@@ -3,15 +3,14 @@
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
-    <title>REGISTRO POLICIAL V2.10</title>
+    <title>REGISTRO POLICIAL V2.11</title>
     <script src='https://cdn.tailwindcss.com'></script>
     <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css'>
 </head>
 <body class='bg-slate-900 text-white font-sans'>
-    <!-- LOGIN -->
     <div id='pin-screen' class='fixed inset-0 flex flex-col items-center justify-center p-6 text-center z-[200] bg-slate-900'>
         <i class='fas fa-shield-halved text-7xl text-blue-500 mb-6'></i>
-        <h1 class='text-4xl font-black mb-2 italic uppercase tracking-tighter'>REGISTRO <span class='text-blue-500'>V2.10</span></h1>
+        <h1 class='text-4xl font-black mb-2 italic uppercase tracking-tighter'>REGISTRO <span class='text-blue-500'>V2.11</span></h1>
         <div class='bg-slate-800 p-8 rounded-[40px] w-full max-w-xs shadow-2xl border border-slate-700'>
             <input type='password' id='pin-input' placeholder='PIN' class='w-full p-4 rounded-2xl text-center text-3xl mb-6 bg-slate-900 text-white border-none outline-none font-black'>
             <button onclick='entrar()' class='w-full bg-blue-600 py-4 rounded-2xl font-black text-xl active:scale-95 shadow-lg'>INGRESAR</button>
@@ -19,7 +18,6 @@
     </div>
 
     <div id='app' class='hidden bg-slate-100 text-slate-900 min-h-screen'>
-        <!-- HEADER ESTILO VIEJO -->
         <header class='bg-slate-900 text-white p-5 sticky top-0 z-50 shadow-2xl'>
             <div class='flex justify-between items-center mb-4'>
                 <h1 class='font-black italic text-xl uppercase'>REGISTRO <span class='text-blue-500'>POLICIAL</span></h1>
@@ -32,7 +30,6 @@
         </header>
 
         <main class='p-4 pb-32'>
-            <!-- BOTONES AGREGAR ESTILO VIEJO -->
             <div class='grid grid-cols-2 gap-4 mb-6'>
                 <button onclick='abrirForm(false)' class='bg-blue-900 text-white p-6 rounded-3xl shadow-xl flex flex-col items-center justify-center active:scale-95 transition-all'>
                     <i class='fas fa-user-plus text-3xl mb-2'></i>
@@ -44,9 +41,8 @@
                 </button>
             </div>
 
-            <!-- STATUS LOCAL -->
             <div id='local-status' class='bg-amber-50 border-l-4 border-amber-500 text-amber-700 p-4 mb-4 rounded-r-xl text-[10px] font-bold flex justify-between items-center'>
-                <span>MODO LOCAL ACTIVO (Datos en teléfono)</span>
+                <span>MODO LOCAL (Teléfono)</span>
                 <input type='file' id='file-input' accept='.csv,.xlsx' class='hidden' onchange='importarArchivo(this)'>
                 <button onclick='document.getElementById("file-input").click()' class='bg-amber-600 text-white px-2 py-1 rounded-lg uppercase text-[8px]'>Cargar</button>
             </div>
@@ -54,31 +50,36 @@
             <div id='lista' class='grid gap-2'></div>
         </main>
 
-        <!-- FORMULARIO COMPLETO ESTILO VIEJO -->
+        <!-- FORMULARIO AJUSTADO -->
         <div id='view-form' class='fixed inset-0 bg-white z-[150] hidden flex flex-col p-6 overflow-y-auto'>
             <div onclick='irA("view-list")' class='mb-6 flex items-center font-black text-sm uppercase text-slate-400'><i class='fas fa-arrow-left mr-3'></i> VOLVER</div>
             <h2 id='f-titulo' class='text-3xl font-black uppercase italic mb-8 border-b-8 border-slate-900 pb-2 text-slate-900'></h2>
             <div class='space-y-4 pb-10'>
-                <div><label class='text-[10px] font-black text-slate-400 uppercase ml-2'>Nombre Completo</label><input id='f-nom' type='text' class='w-full p-5 rounded-2xl bg-slate-100 outline-none font-bold text-slate-900'></div>
-                <div><label class='text-[10px] font-black text-slate-400 uppercase ml-2'>Cédula</label><input id='f-ci' type='text' class='w-full p-5 rounded-2xl bg-slate-100 outline-none font-bold text-slate-900'></div>
-                <input id='f-dom' type='text' placeholder='DOMICILIO' class='w-full p-5 rounded-2xl bg-slate-100 outline-none font-bold text-slate-900'>
-                <input id='f-tel' type='text' placeholder='TELÉFONO' class='w-full p-5 rounded-2xl bg-slate-100 outline-none font-bold text-slate-900'>
-                <input id='f-veh' type='text' placeholder='MATRÍCULA' class='w-full p-5 rounded-2xl bg-slate-100 outline-none font-bold text-slate-900'>
-                <textarea id='f-notas' rows='6' placeholder='ANTECEDENTES / NOTAS' class='w-full p-6 rounded-3xl bg-red-50 border border-red-100 outline-none font-bold text-red-900'></textarea>
+                <div id='c-nom'><label class='text-[10px] font-black text-slate-400 uppercase ml-2'>Nombre Completo</label><input id='f-nom' type='text' class='w-full p-5 rounded-2xl bg-slate-100 outline-none font-bold text-slate-900'></div>
+                <div id='c-ci'><label class='text-[10px] font-black text-slate-400 uppercase ml-2'>Cédula</label><input id='f-ci' type='text' class='w-full p-5 rounded-2xl bg-slate-100 outline-none font-bold text-slate-900'></div>
+                <div id='c-dom'><label class='text-[10px] font-black text-slate-400 uppercase ml-2'>Domicilio</label><input id='f-dom' type='text' class='w-full p-5 rounded-2xl bg-slate-100 outline-none font-bold text-slate-900'></div>
+                <div id='c-tel'><label class='text-[10px] font-black text-slate-400 uppercase ml-2'>Teléfono</label><input id='f-tel' type='text' class='w-full p-5 rounded-2xl bg-slate-100 outline-none font-bold text-slate-900'></div>
+                
+                <!-- CAMPOS VEHICULO SIEMPRE VISIBLES PARA MATRICULA -->
+                <div id='c-veh'><label class='text-[10px] font-black text-slate-400 uppercase ml-2'>Vehículo (Marca/Modelo)</label><input id='f-veh' type='text' class='w-full p-5 rounded-2xl bg-slate-100 outline-none font-bold text-slate-900'></div>
+                <div id='c-mat'><label class='text-[10px] font-black text-slate-400 uppercase ml-2'>Matrícula</label><input id='f-mat' type='text' class='w-full p-5 rounded-2xl bg-slate-100 outline-none font-bold text-slate-900'></div>
+                
+                <div><label class='text-[10px] font-black text-red-400 uppercase ml-2'>Antecedentes / Notas</label><textarea id='f-notas' rows='6' class='w-full p-6 rounded-3xl bg-red-50 border border-red-100 outline-none font-bold text-red-900'></textarea></div>
+                
                 <button onclick='guardarLocal()' class='w-full bg-blue-700 text-white py-6 rounded-3xl font-black uppercase shadow-2xl active:scale-95'>GUARDAR REGISTRO</button>
             </div>
         </div>
 
-        <!-- MODAL DETALLES ESTILO VIEJO -->
         <div id='modal' class='fixed inset-0 bg-black/95 z-[160] hidden flex items-center justify-center p-4' onclick='this.classList.add("hidden")'>
             <div class='bg-white w-full max-w-md rounded-[50px] p-10 shadow-2xl relative' onclick='event.stopPropagation()'>
-                <h2 id='m-nom' class='text-3xl font-black uppercase italic text-slate-900 border-b-4 border-blue-600 pb-4 mb-8 tracking-tighter leading-tight'></h2>
-                <div class='space-y-6 max-h-[55vh] overflow-y-auto pr-2'>
-                    <div><p class='text-[10px] font-black text-slate-400 uppercase'>Cédula</p><p id='m-ci' class='text-blue-700 font-black text-2xl tracking-tighter'></p></div>
-                    <div><p class='text-[10px] font-black text-slate-400 uppercase'>Domicilio</p><p id='m-dom' class='text-slate-800 font-bold text-lg leading-snug'></p></div>
-                    <div><p class='text-[10px] font-black text-red-500 uppercase italic'>Historial / Notas</p><div id='m-notas' class='text-red-700 font-bold leading-tight text-sm whitespace-pre-wrap bg-red-50 p-6 rounded-3xl border border-red-100 mt-2 shadow-inner'></div></div>
+                <h2 id='m-nom' class='text-3xl font-black uppercase italic text-slate-900 border-b-4 border-blue-600 pb-4 mb-8 leading-tight'></h2>
+                <div class='space-y-6 max-h-[55vh] overflow-y-auto pr-2 text-slate-900'>
+                    <div id='m-ci-c'><p class='text-[10px] font-black text-slate-400 uppercase'>Cédula</p><p id='m-ci' class='text-blue-700 font-black text-2xl'></p></div>
+                    <div id='m-dom-c'><p class='text-[10px] font-black text-slate-400 uppercase'>Domicilio</p><p id='m-dom' class='text-slate-800 font-bold'></p></div>
+                    <div id='m-veh-c'><p class='text-[10px] font-black text-slate-400 uppercase'>Vehículo / Matrícula</p><p id='m-veh' class='text-slate-800 font-bold'></p></div>
+                    <div><p class='text-[10px] font-black text-red-500 uppercase italic'>Historial / Notas</p><div id='m-notas' class='text-red-700 font-bold text-sm bg-red-50 p-6 rounded-3xl border border-red-100 mt-2 whitespace-pre-wrap'></div></div>
                 </div>
-                <button onclick='document.getElementById("modal").classList.add("hidden")' class='mt-10 w-full bg-slate-900 text-white py-6 rounded-3xl font-black uppercase shadow-xl'>CERRAR</button>
+                <button onclick='document.getElementById("modal").classList.add("hidden")' class='mt-10 w-full bg-slate-900 text-white py-6 rounded-3xl font-black uppercase'>CERRAR</button>
             </div>
         </div>
     </div>
@@ -116,15 +117,15 @@
                 db = raw.map((p, idx) => ({
                     id: Date.now() + idx,
                     nombre: p.nombre || p.Nombre || p.NOMBRE || 'S/N',
-                    ci: p.ci || p.CI || p.Cedula || p.documento || '',
-                    domicilio: p.domicilio || p.Direccion || p.direccion || '',
-                    telefono: p.telefono || p.Tel || '',
-                    vehiculo1: p.vehiculo1 || p.matricula || '',
-                    notas: p.notas || p.Notas || p.antecedentes || ''
+                    ci: p.ci || p.CI || p.Cedula || '',
+                    domicilio: p.domicilio || p.Direccion || '',
+                    vehiculo: p.vehiculo || p.marca || '',
+                    matricula: p.matricula || p.vehiculo1 || '',
+                    notas: p.notas || p.antecedentes || ''
                 }));
                 localStorage.setItem('registro_offline_db', JSON.stringify(db));
                 cargarDB();
-                alert('IMPORTACIÓN EXITOSA');
+                alert('DATOS CARGADOS');
             };
             reader.readAsArrayBuffer(file);
         }
@@ -137,26 +138,34 @@
         function abrirForm(m) {
             modoMat = m;
             document.getElementById('f-titulo').innerText = m ? 'NUEVA MATRÍCULA' : 'NUEVA PERSONA';
-            document.getElementById('f-nom').value = '';
-            document.getElementById('f-ci').value = '';
-            document.getElementById('f-dom').value = '';
-            document.getElementById('f-tel').value = '';
-            document.getElementById('f-veh').value = '';
-            document.getElementById('f-notas').value = '';
+            
+            // Ocultar campos de persona si es matrícula
+            document.getElementById('c-nom').style.display = m ? 'none' : 'block';
+            document.getElementById('c-ci').style.display = m ? 'none' : 'block';
+            document.getElementById('c-dom').style.display = m ? 'none' : 'block';
+            document.getElementById('c-tel').style.display = m ? 'none' : 'block';
+            
+            // Limpiar todo
+            document.querySelectorAll('#view-form input, #view-form textarea').forEach(i => i.value = '');
             irA('view-form');
         }
 
         function guardarLocal() {
             const n = document.getElementById('f-nom').value;
             const v = document.getElementById('f-veh').value;
-            if(!n && !v) return alert('Debe ingresar al menos un nombre o matrícula');
+            const m = document.getElementById('f-mat').value;
+            
+            if(!modoMat && !n) return alert('Nombre obligatorio');
+            if(modoMat && !m) return alert('Matrícula obligatoria');
+
             const nuevo = {
                 id: Date.now(),
-                nombre: modoMat ? 'MATRÍCULA: ' + v : n,
+                nombre: modoMat ? 'MATRÍCULA: ' + m : n,
                 ci: document.getElementById('f-ci').value,
                 domicilio: document.getElementById('f-dom').value,
                 telefono: document.getElementById('f-tel').value,
-                vehiculo1: v,
+                vehiculo: v,
+                matricula: m,
                 notas: document.getElementById('f-notas').value
             };
             db.unshift(nuevo);
@@ -170,11 +179,11 @@
             const lista = document.getElementById('lista');
             lista.innerHTML = datos.map(p => `
                 <div onclick="verDetalles(${p.id})" class='bg-white p-5 rounded-3xl shadow-sm border-l-8 border-blue-900 flex justify-between items-center mb-1 active:bg-slate-50'>
-                    <div class='overflow-hidden'>
-                        <h3 class='font-black uppercase text-slate-800 text-[12px] truncate'>${p.nombre}</h3>
-                        <p class='text-[10px] text-slate-400 font-black'>${p.ci ? 'CI: '+p.ci : (p.vehiculo1 ? 'MAT: '+p.vehiculo1 : '---')}</p>
+                    <div>
+                        <h3 class='font-black uppercase text-slate-800 text-[12px]'>${p.nombre}</h3>
+                        <p class='text-[10px] text-slate-400 font-black'>${p.ci ? 'CI: '+p.ci : (p.matricula ? 'MAT: '+p.matricula : '---')}</p>
                     </div>
-                    <i class='fas fa-chevron-right text-slate-200 text-xs ml-4'></i>
+                    <i class='fas fa-chevron-right text-slate-200 text-xs'></i>
                 </div>`).join('');
         }
 
@@ -183,8 +192,9 @@
             if(!p) return;
             document.getElementById('m-nom').innerText = p.nombre;
             document.getElementById('m-ci').innerText = p.ci || '---';
-            document.getElementById('m-dom').innerText = p.domicilio || 'SIN DATOS';
-            document.getElementById('m-notas').innerText = p.notas || 'SIN ANTECEDENTES REGISTRADOS';
+            document.getElementById('m-dom').innerText = p.domicilio || '---';
+            document.getElementById('m-veh').innerText = (p.vehiculo || '') + ' ' + (p.matricula || '');
+            document.getElementById('m-notas').innerText = p.notas || 'S/N';
             document.getElementById('modal').classList.remove('hidden');
         }
 
@@ -194,7 +204,7 @@
             dibujar(db.filter(p => 
                 String(p.nombre).toLowerCase().includes(t) || 
                 String(p.ci).includes(t) || 
-                String(p.vehiculo1).toLowerCase().includes(t)
+                String(p.matricula).toLowerCase().includes(t)
             ));
         }
     </script>
