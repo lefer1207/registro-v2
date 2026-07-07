@@ -3,14 +3,14 @@
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
-    <title>REGISTRO V2.4 DEBUG</title>
+    <title>REGISTRO V2.5 SCAN</title>
     <script src='https://cdn.tailwindcss.com'></script>
     <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css'>
 </head>
 <body class='bg-slate-900 text-white font-sans'>
     <div id='pin-screen' class='fixed inset-0 flex flex-col items-center justify-center p-6 text-center z-[200] bg-slate-900'>
         <i class='fas fa-shield-halved text-7xl text-blue-500 mb-6'></i>
-        <h1 class='text-4xl font-black mb-2 italic'>V2.4 DEBUG</h1>
+        <h1 class='text-4xl font-black mb-2 italic text-white'>V2.5 SCAN</h1>
         <div class='bg-slate-800 p-8 rounded-[40px] w-full max-w-xs shadow-2xl border border-slate-700'>
             <input type='password' id='pin-input' placeholder='PIN' class='w-full p-4 rounded-2xl text-center text-3xl mb-6 bg-slate-900 text-white border border-slate-700 outline-none focus:border-blue-500 font-black'>
             <button onclick='entrar()' class='w-full bg-blue-600 py-4 rounded-2xl font-black text-xl active:scale-95 shadow-lg'>INGRESAR</button>
@@ -20,7 +20,7 @@
     <div id='app' class='hidden bg-slate-100 text-slate-900 min-h-screen'>
         <header class='bg-slate-900 text-white p-5 sticky top-0 z-50 shadow-2xl'>
             <div class='flex justify-between items-center mb-4'>
-                <h1 class='font-black italic text-xl'>REGISTRO <span class='text-blue-500'>V2.4</span></h1>
+                <h1 class='font-black italic text-xl'>REGISTRO <span class='text-blue-500'>V2.5</span></h1>
                 <div id='count' class='bg-blue-600 px-3 py-1 rounded-full text-[10px] font-black'>0</div>
             </div>
             <input type='text' id='bus' oninput='filtrar()' placeholder='BUSCAR...' class='w-full p-4 rounded-2xl bg-white text-slate-900 text-sm outline-none shadow-inner font-bold border-none'>
@@ -28,70 +28,55 @@
 
         <main class='p-4'>
             <div id='status-box' class='bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-4 rounded-r-xl text-[11px] font-bold'>
-                <p id='status-text'>BUSCANDO TABLA EN SUPABASE...</p>
-                <div class='mt-2 flex gap-2'>
-                    <button onclick='cargar("personas")' class='bg-red-600 text-white px-2 py-1 rounded text-[9px] uppercase'>Probar 'personas'</button>
-                    <button onclick='cargar("Personas")' class='bg-red-600 text-white px-2 py-1 rounded text-[9px] uppercase'>Probar 'Personas'</button>
+                <p id='status-text text-lg'>SISTEMA DE ESCANEO ACTIVO</p>
+                <p class='mt-2'>Probá estos nombres de tabla:</p>
+                <div class='mt-3 grid grid-cols-2 gap-2'>
+                    <button onclick='cargar("persona")' class='bg-slate-800 text-white p-3 rounded-xl'>persona</button>
+                    <button onclick='cargar("Personas")' class='bg-slate-800 text-white p-3 rounded-xl'>Personas</button>
+                    <button onclick='cargar("registros")' class='bg-slate-800 text-white p-3 rounded-xl'>registros</button>
+                    <button onclick='cargar("personas_v2")' class='bg-slate-800 text-white p-3 rounded-xl'>personas_v2</button>
                 </div>
+                <button onclick='scanAPI()' class='w-full mt-4 bg-red-600 text-white py-3 rounded-xl font-black uppercase'>ESCANEAR API COMPLETA</button>
             </div>
-
-            <div class='grid grid-cols-2 gap-4 mb-6'>
-                <button onclick='abrirForm(false)' class='bg-blue-900 text-white p-6 rounded-3xl shadow-xl flex flex-col items-center justify-center'>
-                    <i class='fas fa-user-plus text-2xl mb-2'></i>
-                    <span class='text-[10px] font-black uppercase tracking-tighter'>NUEVA PERSONA</span>
-                </button>
-                <button onclick='abrirForm(true)' class='bg-slate-700 text-white p-6 rounded-3xl shadow-xl flex flex-col items-center justify-center'>
-                    <i class='fas fa-car text-2xl mb-2'></i>
-                    <span class='text-[10px] font-black uppercase tracking-tighter'>NUEVA MATRÍCULA</span>
-                </button>
-            </div>
-
             <div id='lista' class='grid gap-2 pb-24'></div>
         </main>
-
-        <div id='view-form' class='fixed inset-0 bg-white z-[150] hidden flex flex-col p-6 overflow-y-auto'>
-            <div onclick='irA("view-list")' class='mb-6 flex items-center font-black text-sm uppercase text-slate-400'><i class='fas fa-arrow-left mr-3'></i> VOLVER</div>
-            <h2 id='f-titulo' class='text-3xl font-black uppercase italic mb-8 border-b-8 border-slate-900 pb-2 text-slate-900'></h2>
-            <div class='space-y-4'>
-                <input id='f-nom' type='text' placeholder='NOMBRE' class='w-full p-5 rounded-2xl bg-slate-100 outline-none font-bold'>
-                <input id='f-ci' type='text' placeholder='CEDULA' class='w-full p-5 rounded-2xl bg-slate-100 outline-none font-bold'>
-                <input id='f-dom' type='text' placeholder='DOMICILIO' class='w-full p-5 rounded-2xl bg-slate-100 outline-none font-bold'>
-                <input id='f-veh' type='text' placeholder='MATRÍCULA' class='w-full p-5 rounded-2xl bg-slate-100 outline-none font-bold'>
-                <textarea id='f-notas' rows='5' placeholder='NOTAS' class='w-full p-6 rounded-3xl bg-red-50 border border-red-100 outline-none font-bold text-red-900'></textarea>
-                <button onclick='guardar()' class='w-full bg-blue-700 text-white py-6 rounded-3xl font-black uppercase shadow-2xl'>GUARDAR</button>
-            </div>
-        </div>
     </div>
 
     <script>
         const SB = 'https://pdoeklmwquxggppvigrf.supabase.co';
         const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBkb2VrbG13cXV4Z2dwcHZpZ3JmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5OTc1NzIsImV4cCI6MjA5NTU3MzU3Mn0.VDVsGgC3b00tJHWkiyPze9wGrqMVQAbKeMxBvMsHQRM';
         let db = [];
-        let modoMat = false;
+
+        async function scanAPI() {
+            const status = document.getElementById('status-text');
+            status.innerText = 'ESCANEANDO ESTRUCTURA...';
+            try {
+                // El endpoint /rest/v1/ (sin tabla) a veces devuelve el esquema JSON
+                const r = await fetch(SB + '/rest/v1/', {
+                    headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY }
+                });
+                const data = await r.json();
+                console.log(data);
+                status.innerText = 'API DETECTADA. BUSCANDO TABLAS...';
+                // Intentar buscar 'personas' en singular si falló el plural
+                cargar('persona');
+            } catch(e) { status.innerText = 'NO SE PUDO LEER LA API'; }
+        }
 
         async function cargar(tabla) {
             const status = document.getElementById('status-text');
-            status.innerText = 'PROBANDO TABLA: ' + tabla + '...';
+            status.innerText = 'PROBANDO: ' + tabla + '...';
             try {
-                const r = await fetch(SB + '/rest/v1/' + tabla + '?select=*&limit=10', {
+                const r = await fetch(SB + '/rest/v1/' + tabla + '?select=*&limit=5', {
                     headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY }
                 });
                 if(r.ok) {
-                    const data = await r.json();
-                    db = data;
-                    document.getElementById('status-box').className = 'bg-green-50 border-l-4 border-green-500 text-green-700 p-4 mb-4 rounded-r-xl text-[11px] font-bold';
-                    status.innerText = '¡TABLA ENCONTRADA! (' + tabla + ')';
-                    dibujar(db);
-                    // Si funciona con esta tabla, cargar todo lo demás
-                    const rFull = await fetch(SB + '/rest/v1/' + tabla + '?select=*&limit=2000', {
-                        headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY }
-                    });
-                    db = await rFull.json();
-                    document.getElementById('count').innerText = db.length;
+                    db = await r.json();
+                    document.getElementById('status-box').className = 'bg-green-100 border-l-4 border-green-500 text-green-800 p-4 mb-4 rounded-r-xl font-bold';
+                    status.innerText = '¡EXITO! TABLA: ' + tabla;
                     dibujar(db);
                 } else {
-                    const txt = await r.text();
-                    status.innerText = 'TABLA ' + tabla + ' NO EXISTE (Error ' + r.status + ')';
+                    status.innerText = 'TABLA "' + tabla + '" NO ENCONTRADA';
                 }
             } catch(e) { status.innerText = 'ERROR DE RED'; }
         }
@@ -100,36 +85,16 @@
             if (document.getElementById('pin-input').value === '3268') {
                 document.getElementById('pin-screen').style.display = 'none';
                 document.getElementById('app').classList.remove('hidden');
-                cargar('personas'); // Intento inicial
             } else { alert('PIN INCORRECTO'); }
-        }
-
-        function irA(id) {
-            if(id === 'view-list') document.getElementById('view-form').classList.add('hidden');
-            else document.getElementById('view-form').classList.remove('hidden');
-        }
-
-        function abrirForm(m) {
-            modoMat = m;
-            document.getElementById('f-titulo').innerText = m ? 'Matrícula' : 'Persona';
-            irA('view-form');
         }
 
         function dibujar(datos) {
             const lista = document.getElementById('lista');
             lista.innerHTML = datos.map(p => `
-                <div class='bg-white p-5 rounded-3xl shadow-sm border-l-8 border-blue-900 flex justify-between items-center mb-1'>
-                    <div>
-                        <h3 class='font-black uppercase text-slate-800 text-[11px]'>${p.nombre || 'S/N'}</h3>
-                        <p class='text-[10px] text-slate-400 font-black'>${p.ci || p.vehiculo1 || '---'}</p>
-                    </div>
+                <div class='bg-white p-5 rounded-3xl shadow-sm border-l-8 border-blue-900 mb-1'>
+                    <h3 class='font-black uppercase text-slate-800 text-[11px]'>${p.nombre || 'S/N'}</h3>
+                    <p class='text-[10px] text-slate-400 font-black'>${p.ci || p.vehiculo1 || '---'}</p>
                 </div>`).join('');
-        }
-
-        function filtrar() {
-            const t = document.getElementById('bus').value.toLowerCase().trim();
-            if(!t) return dibujar(db);
-            dibujar(db.filter(p => (p.nombre||'').toLowerCase().includes(t)));
         }
     </script>
 </body>
