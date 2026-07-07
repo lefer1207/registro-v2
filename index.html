@@ -3,13 +3,13 @@
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
-    <title>REGISTRO V2.8 OFFLINE</title>
+    <title>REGISTRO V2.9</title>
     <script src='https://cdn.tailwindcss.com'></script>
     <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css'>
 </head>
 <body class='bg-slate-900 text-white font-sans'>
     <div id='pin-screen' class='fixed inset-0 flex flex-col items-center justify-center p-6 text-center z-[200] bg-slate-900'>
-        <h1 class='text-4xl font-black mb-6 italic uppercase'>Registro v2.8</h1>
+        <h1 class='text-4xl font-black mb-6 italic uppercase'>Registro v2.9</h1>
         <div class='bg-slate-800 p-8 rounded-[40px] w-full max-w-xs shadow-2xl'>
             <input type='password' id='pin-input' placeholder='PIN' class='w-full p-4 rounded-2xl text-center text-3xl mb-6 bg-slate-900 text-white border-none outline-none font-black'>
             <button onclick='entrar()' class='w-full bg-blue-600 py-4 rounded-2xl font-black text-xl'>INGRESAR</button>
@@ -17,41 +17,74 @@
     </div>
 
     <div id='app' class='hidden bg-slate-100 text-slate-900 min-h-screen'>
-        <header class='bg-slate-900 text-white p-5 sticky top-0 z-50 shadow-2xl flex justify-between items-center'>
-            <h1 class='font-black italic text-xl'>REGISTRO <span class='text-blue-500'>V2.8</span></h1>
-            <div id='count' class='bg-blue-600 px-3 py-1 rounded-full text-[10px] font-black'>0</div>
+        <header class='bg-slate-900 text-white p-5 sticky top-0 z-50 shadow-2xl'>
+            <div class='flex justify-between items-center mb-4'>
+                <h1 class='font-black italic text-xl uppercase'>Registro <span class='text-blue-500'>v2.9</span></h1>
+                <div id='count' class='bg-blue-600 px-3 py-1 rounded-full text-[10px] font-black'>0</div>
+            </div>
+            <input type='text' id='bus' oninput='filtrar()' placeholder='BUSCAR...' class='w-full p-4 rounded-2xl bg-white text-slate-900 text-sm outline-none shadow-md font-bold border-none'>
         </header>
 
         <main class='p-4'>
-            <!-- ALERTA DE CUOTA -->
-            <div id='quota-alert' class='bg-amber-50 border-l-4 border-amber-500 text-amber-700 p-4 mb-4 rounded-r-xl text-[11px] font-bold'>
-                <p>⚠️ SUPABASE BLOQUEADO POR CUOTA</p>
-                <p class='mt-2 mb-3'>Podés cargar tu archivo Excel/CSV para seguir trabajando sin internet:</p>
-                <input type='file' id='file-input' accept='.csv,.xlsx' class='hidden' onchange='importarArchivo(this)'>
-                <button onclick='document.getElementById("file-input").click()' class='bg-amber-600 text-white px-4 py-2 rounded-xl w-full uppercase font-black'>Cargar Respaldo (Excel/CSV)</button>
+            <!-- BOTONES AGREGAR -->
+            <div class='grid grid-cols-2 gap-4 mb-6'>
+                <button onclick='abrirForm(false)' class='bg-blue-900 text-white p-6 rounded-3xl shadow-xl flex flex-col items-center justify-center active:scale-95'>
+                    <i class='fas fa-user-plus text-2xl mb-2'></i>
+                    <span class='text-[10px] font-black uppercase tracking-tighter'>NUEVA PERSONA</span>
+                </button>
+                <button onclick='abrirForm(true)' class='bg-slate-700 text-white p-6 rounded-3xl shadow-xl flex flex-col items-center justify-center active:scale-95'>
+                    <i class='fas fa-car text-2xl mb-2'></i>
+                    <span class='text-[10px] font-black uppercase tracking-tighter'>NUEVA MATRÍCULA</span>
+                </button>
             </div>
 
-            <input type='text' id='bus' oninput='filtrar()' placeholder='BUSCAR EN LOCAL...' class='w-full p-4 rounded-2xl bg-white text-slate-900 text-sm outline-none shadow-md font-bold mb-4 border-none'>
+            <!-- ALERTA DE CUOTA / IMPORTADOR -->
+            <div id='quota-alert' class='bg-amber-50 border-l-4 border-amber-500 text-amber-700 p-4 mb-4 rounded-r-xl text-[11px] font-bold hidden'>
+                <p>⚠️ MODO LOCAL ACTIVO</p>
+                <input type='file' id='file-input' accept='.csv,.xlsx' class='hidden' onchange='importarArchivo(this)'>
+                <button onclick='document.getElementById("file-input").click()' class='mt-2 bg-amber-600 text-white px-3 py-1 rounded-lg uppercase text-[9px]'>Cargar otro archivo</button>
+            </div>
+
             <div id='lista' class='grid gap-2 pb-24'></div>
         </main>
+
+        <!-- FORMULARIO -->
+        <div id='view-form' class='fixed inset-0 bg-white z-[150] hidden flex flex-col p-6 overflow-y-auto'>
+            <div onclick='irA("view-list")' class='mb-6 flex items-center font-black text-sm uppercase text-slate-400'><i class='fas fa-arrow-left mr-3'></i> VOLVER</div>
+            <h2 id='f-titulo' class='text-3xl font-black uppercase italic mb-8 border-b-8 border-slate-900 pb-2 text-slate-900'></h2>
+            <div class='space-y-4'>
+                <input id='f-nom' type='text' placeholder='NOMBRE' class='w-full p-5 rounded-2xl bg-slate-100 outline-none font-bold text-slate-900'>
+                <input id='f-ci' type='text' placeholder='CEDULA' class='w-full p-5 rounded-2xl bg-slate-100 outline-none font-bold text-slate-900'>
+                <textarea id='f-notas' rows='5' placeholder='ANTECEDENTES / NOTAS' class='w-full p-6 rounded-3xl bg-red-50 border border-red-100 outline-none font-bold text-red-900'></textarea>
+                <button onclick='guardarLocal()' class='w-full bg-blue-700 text-white py-6 rounded-3xl font-black uppercase shadow-2xl active:scale-95'>GUARDAR</button>
+            </div>
+        </div>
     </div>
 
     <script src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'></script>
     <script>
         let db = [];
+        let modoMat = false;
 
         function entrar() {
             if (document.getElementById('pin-input').value === '3268') {
                 document.getElementById('pin-screen').style.display = 'none';
                 document.getElementById('app').classList.remove('hidden');
-                const localData = localStorage.getItem('registro_offline_db');
-                if(localData) {
-                    db = JSON.parse(localData);
-                    document.getElementById('count').innerText = db.length;
-                    dibujar(db);
-                    document.getElementById('quota-alert').classList.add('hidden');
-                }
+                cargarDB();
             } else { alert('PIN INCORRECTO'); }
+        }
+
+        function cargarDB() {
+            const localData = localStorage.getItem('registro_offline_db');
+            if(localData) {
+                db = JSON.parse(localData);
+                document.getElementById('count').innerText = db.length;
+                dibujar(db);
+                document.getElementById('quota-alert').classList.remove('hidden');
+            } else {
+                document.getElementById('quota-alert').classList.remove('hidden');
+                document.getElementById('quota-alert').querySelector('p').innerText = '⚠️ SIN DATOS. CARGÁ UN ARCHIVO.';
+            }
         }
 
         function importarArchivo(input) {
@@ -61,22 +94,47 @@
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, {type: 'array'});
                 const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                db = XLSX.utils.sheet_to_json(sheet);
-                
-                // Mapear campos si los nombres son diferentes
-                db = db.map(p => ({
+                let raw = XLSX.utils.sheet_to_json(sheet);
+                db = raw.map(p => ({
                     nombre: p.nombre || p.Nombre || p.NOMBRE || 'S/N',
                     ci: p.ci || p.CI || p.Cedula || p.documento || '',
-                    vehiculo1: p.vehiculo1 || p.matricula || p.Matricula || ''
+                    notas: p.notas || p.Notas || p.antecedentes || ''
                 }));
-
                 localStorage.setItem('registro_offline_db', JSON.stringify(db));
-                document.getElementById('count').innerText = db.length;
-                dibujar(db);
-                document.getElementById('quota-alert').classList.add('hidden');
-                alert('¡DATOS CARGADOS! ' + db.length + ' registros listos.');
+                cargarDB();
+                alert('¡DATOS CARGADOS!');
             };
             reader.readAsArrayBuffer(file);
+        }
+
+        function irA(id) {
+            if(id === 'view-list') document.getElementById('view-form').classList.add('hidden');
+            else document.getElementById('view-form').classList.remove('hidden');
+        }
+
+        function abrirForm(m) {
+            modoMat = m;
+            document.getElementById('f-titulo').innerText = m ? 'Nueva Matrícula' : 'Nueva Persona';
+            document.getElementById('f-nom').value = '';
+            document.getElementById('f-ci').value = '';
+            document.getElementById('f-notas').value = '';
+            irA('view-form');
+        }
+
+        function guardarLocal() {
+            const n = document.getElementById('f-nom').value;
+            if(!n) return alert('El nombre/matrícula es obligatorio');
+            const nuevo = {
+                nombre: modoMat ? 'MATRÍCULA: ' + n : n,
+                ci: document.getElementById('f-ci').value,
+                notas: document.getElementById('f-notas').value
+            };
+            db.unshift(nuevo);
+            localStorage.setItem('registro_offline_db', JSON.stringify(db));
+            document.getElementById('count').innerText = db.length;
+            dibujar(db);
+            irA('view-list');
+            alert('Guardado en el teléfono correctamente');
         }
 
         function dibujar(datos) {
@@ -84,7 +142,7 @@
             lista.innerHTML = datos.map(p => `
                 <div class='bg-white p-5 rounded-3xl shadow-sm border-l-8 border-blue-900 mb-1'>
                     <h3 class='font-black uppercase text-slate-800 text-[12px]'>${p.nombre}</h3>
-                    <p class='text-[10px] text-slate-400 font-black'>${p.ci ? 'CI: '+p.ci : (p.vehiculo1 ? 'MAT: '+p.vehiculo1 : '---')}</p>
+                    <p class='text-[10px] text-slate-400 font-black'>${p.ci ? 'CI: '+p.ci : '---'}</p>
                 </div>`).join('');
         }
 
