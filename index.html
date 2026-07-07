@@ -3,14 +3,14 @@
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
-    <title>REGISTRO V2.3</title>
+    <title>REGISTRO V2.4 DEBUG</title>
     <script src='https://cdn.tailwindcss.com'></script>
     <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css'>
 </head>
 <body class='bg-slate-900 text-white font-sans'>
     <div id='pin-screen' class='fixed inset-0 flex flex-col items-center justify-center p-6 text-center z-[200] bg-slate-900'>
         <i class='fas fa-shield-halved text-7xl text-blue-500 mb-6'></i>
-        <h1 class='text-4xl font-black mb-2 italic'>REGISTRO V2.3</h1>
+        <h1 class='text-4xl font-black mb-2 italic'>V2.4 DEBUG</h1>
         <div class='bg-slate-800 p-8 rounded-[40px] w-full max-w-xs shadow-2xl border border-slate-700'>
             <input type='password' id='pin-input' placeholder='PIN' class='w-full p-4 rounded-2xl text-center text-3xl mb-6 bg-slate-900 text-white border border-slate-700 outline-none focus:border-blue-500 font-black'>
             <button onclick='entrar()' class='w-full bg-blue-600 py-4 rounded-2xl font-black text-xl active:scale-95 shadow-lg'>INGRESAR</button>
@@ -20,62 +20,45 @@
     <div id='app' class='hidden bg-slate-100 text-slate-900 min-h-screen'>
         <header class='bg-slate-900 text-white p-5 sticky top-0 z-50 shadow-2xl'>
             <div class='flex justify-between items-center mb-4'>
-                <h1 class='font-black italic text-xl'>REGISTRO <span class='text-blue-500'>V2</span></h1>
-                <div class='flex items-center gap-2'>
-                    <div id='load-icon' class='hidden animate-spin'><i class='fas fa-circle-notch'></i></div>
-                    <div id='count' class='bg-blue-600 px-3 py-1 rounded-full text-[10px] font-black'>0</div>
-                </div>
+                <h1 class='font-black italic text-xl'>REGISTRO <span class='text-blue-500'>V2.4</span></h1>
+                <div id='count' class='bg-blue-600 px-3 py-1 rounded-full text-[10px] font-black'>0</div>
             </div>
             <input type='text' id='bus' oninput='filtrar()' placeholder='BUSCAR...' class='w-full p-4 rounded-2xl bg-white text-slate-900 text-sm outline-none shadow-inner font-bold border-none'>
         </header>
 
         <main class='p-4'>
-            <!-- BOTONES AGREGAR -->
+            <div id='status-box' class='bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-4 rounded-r-xl text-[11px] font-bold'>
+                <p id='status-text'>BUSCANDO TABLA EN SUPABASE...</p>
+                <div class='mt-2 flex gap-2'>
+                    <button onclick='cargar("personas")' class='bg-red-600 text-white px-2 py-1 rounded text-[9px] uppercase'>Probar 'personas'</button>
+                    <button onclick='cargar("Personas")' class='bg-red-600 text-white px-2 py-1 rounded text-[9px] uppercase'>Probar 'Personas'</button>
+                </div>
+            </div>
+
             <div class='grid grid-cols-2 gap-4 mb-6'>
-                <button onclick='abrirForm(false)' class='bg-blue-900 text-white p-6 rounded-3xl shadow-xl flex flex-col items-center justify-center active:scale-95'>
+                <button onclick='abrirForm(false)' class='bg-blue-900 text-white p-6 rounded-3xl shadow-xl flex flex-col items-center justify-center'>
                     <i class='fas fa-user-plus text-2xl mb-2'></i>
                     <span class='text-[10px] font-black uppercase tracking-tighter'>NUEVA PERSONA</span>
                 </button>
-                <button onclick='abrirForm(true)' class='bg-slate-700 text-white p-6 rounded-3xl shadow-xl flex flex-col items-center justify-center active:scale-95'>
+                <button onclick='abrirForm(true)' class='bg-slate-700 text-white p-6 rounded-3xl shadow-xl flex flex-col items-center justify-center'>
                     <i class='fas fa-car text-2xl mb-2'></i>
                     <span class='text-[10px] font-black uppercase tracking-tighter'>NUEVA MATRÍCULA</span>
                 </button>
             </div>
 
-            <!-- MENSAJE DE ESTADO -->
-            <div id='status-box' class='bg-blue-50 border-l-4 border-blue-500 text-blue-700 p-4 mb-4 rounded-r-xl text-[11px] font-bold flex justify-between items-center'>
-                <span id='status-text'>CARGANDO DATOS...</span>
-                <button onclick='cargarTodo()' class='bg-blue-600 text-white px-3 py-1 rounded-lg text-[9px]'>REINTENTAR</button>
-            </div>
-
             <div id='lista' class='grid gap-2 pb-24'></div>
         </main>
 
-        <!-- FORMULARIO -->
         <div id='view-form' class='fixed inset-0 bg-white z-[150] hidden flex flex-col p-6 overflow-y-auto'>
             <div onclick='irA("view-list")' class='mb-6 flex items-center font-black text-sm uppercase text-slate-400'><i class='fas fa-arrow-left mr-3'></i> VOLVER</div>
             <h2 id='f-titulo' class='text-3xl font-black uppercase italic mb-8 border-b-8 border-slate-900 pb-2 text-slate-900'></h2>
             <div class='space-y-4'>
-                <div id='f-nom-c'><label class='text-[10px] font-black text-slate-400 uppercase'>Nombre</label><input id='f-nom' type='text' class='w-full p-5 rounded-2xl bg-slate-100 outline-none font-bold'></div>
-                <div id='f-ci-c'><label class='text-[10px] font-black text-slate-400 uppercase'>Cédula</label><input id='f-ci' type='text' class='w-full p-5 rounded-2xl bg-slate-100 outline-none font-bold'></div>
+                <input id='f-nom' type='text' placeholder='NOMBRE' class='w-full p-5 rounded-2xl bg-slate-100 outline-none font-bold'>
+                <input id='f-ci' type='text' placeholder='CEDULA' class='w-full p-5 rounded-2xl bg-slate-100 outline-none font-bold'>
                 <input id='f-dom' type='text' placeholder='DOMICILIO' class='w-full p-5 rounded-2xl bg-slate-100 outline-none font-bold'>
-                <input id='f-tel' type='text' placeholder='TELÉFONO' class='w-full p-5 rounded-2xl bg-slate-100 outline-none font-bold'>
                 <input id='f-veh' type='text' placeholder='MATRÍCULA' class='w-full p-5 rounded-2xl bg-slate-100 outline-none font-bold'>
-                <textarea id='f-notas' rows='5' placeholder='ANTECEDENTES' class='w-full p-6 rounded-3xl bg-red-50 border border-red-100 outline-none font-bold text-red-900'></textarea>
+                <textarea id='f-notas' rows='5' placeholder='NOTAS' class='w-full p-6 rounded-3xl bg-red-50 border border-red-100 outline-none font-bold text-red-900'></textarea>
                 <button onclick='guardar()' class='w-full bg-blue-700 text-white py-6 rounded-3xl font-black uppercase shadow-2xl'>GUARDAR</button>
-            </div>
-        </div>
-
-        <!-- DETALLES -->
-        <div id='modal' class='fixed inset-0 bg-black/95 z-[160] hidden flex items-center justify-center p-4' onclick='this.classList.add("hidden")'>
-            <div class='bg-white w-full max-w-md rounded-[50px] p-10 shadow-2xl relative' onclick='event.stopPropagation()'>
-                <h2 id='m-nom' class='text-3xl font-black uppercase italic text-slate-900 border-b-4 border-blue-600 pb-4 mb-8 tracking-tighter'></h2>
-                <div class='space-y-6 max-h-[50vh] overflow-y-auto pr-2'>
-                    <div><p class='text-[10px] font-black text-slate-400 uppercase'>Cédula</p><p id='m-ci' class='text-blue-700 font-black text-2xl tracking-tighter'></p></div>
-                    <div><p class='text-[10px] font-black text-slate-400 uppercase'>Domicilio</p><p id='m-dom' class='text-slate-800 font-bold text-lg leading-snug'></p></div>
-                    <div><p class='text-[10px] font-black text-red-500 uppercase italic'>Notas</p><div id='m-notas' class='text-red-700 font-bold leading-tight text-sm whitespace-pre-wrap bg-red-50 p-6 rounded-3xl border border-red-100 mt-2 shadow-inner'></div></div>
-                </div>
-                <button onclick='document.getElementById("modal").classList.add("hidden")' class='mt-10 w-full bg-slate-900 text-white py-6 rounded-3xl font-black uppercase'>CERRAR</button>
             </div>
         </div>
     </div>
@@ -86,47 +69,38 @@
         let db = [];
         let modoMat = false;
 
-        async function cargarTodo() {
+        async function cargar(tabla) {
             const status = document.getElementById('status-text');
-            const icon = document.getElementById('load-icon');
-            icon.classList.remove('hidden');
-            status.innerText = 'CONECTANDO CON SUPABASE...';
-            
+            status.innerText = 'PROBANDO TABLA: ' + tabla + '...';
             try {
-                // Pedimos solo 1000 registros para probar la conexión
-                const r = await fetch(SB + '/rest/v1/personas?select=*&limit=1000', {
+                const r = await fetch(SB + '/rest/v1/' + tabla + '?select=*&limit=10', {
                     headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY }
                 });
-                
-                if(!r.ok) {
-                    const err = await r.text();
-                    status.innerText = 'ERROR: ' + r.status + ' - ' + err.substring(0, 20);
-                    return;
+                if(r.ok) {
+                    const data = await r.json();
+                    db = data;
+                    document.getElementById('status-box').className = 'bg-green-50 border-l-4 border-green-500 text-green-700 p-4 mb-4 rounded-r-xl text-[11px] font-bold';
+                    status.innerText = '¡TABLA ENCONTRADA! (' + tabla + ')';
+                    dibujar(db);
+                    // Si funciona con esta tabla, cargar todo lo demás
+                    const rFull = await fetch(SB + '/rest/v1/' + tabla + '?select=*&limit=2000', {
+                        headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY }
+                    });
+                    db = await rFull.json();
+                    document.getElementById('count').innerText = db.length;
+                    dibujar(db);
+                } else {
+                    const txt = await r.text();
+                    status.innerText = 'TABLA ' + tabla + ' NO EXISTE (Error ' + r.status + ')';
                 }
-                
-                db = await r.json();
-                document.getElementById('count').innerText = db.length;
-                dibujar(db);
-                status.innerText = 'DATOS CARGADOS (' + db.length + ')';
-                localStorage.setItem('cache_v2_db', JSON.stringify(db));
-            } catch(e) {
-                status.innerText = 'FALLO DE RED. REINTENTE.';
-            } finally {
-                icon.classList.add('hidden');
-            }
+            } catch(e) { status.innerText = 'ERROR DE RED'; }
         }
 
         function entrar() {
             if (document.getElementById('pin-input').value === '3268') {
                 document.getElementById('pin-screen').style.display = 'none';
                 document.getElementById('app').classList.remove('hidden');
-                const cache = localStorage.getItem('cache_v2_db');
-                if(cache) {
-                    db = JSON.parse(cache);
-                    document.getElementById('count').innerText = db.length;
-                    dibujar(db);
-                }
-                cargarTodo();
+                cargar('personas'); // Intento inicial
             } else { alert('PIN INCORRECTO'); }
         }
 
@@ -138,63 +112,24 @@
         function abrirForm(m) {
             modoMat = m;
             document.getElementById('f-titulo').innerText = m ? 'Matrícula' : 'Persona';
-            document.getElementById('f-nom-c').style.display = m ? 'none' : 'block';
-            document.getElementById('f-ci-c').style.display = m ? 'none' : 'block';
             irA('view-form');
-        }
-
-        async function guardar() {
-            const n = document.getElementById('f-nom').value;
-            const v = document.getElementById('f-veh').value;
-            if(!modoMat && !n) return alert('Nombre obligatorio');
-            const payload = { 
-                nombre: modoMat ? 'MATRÍCULA: ' + v : n, 
-                ci: document.getElementById('f-ci').value, 
-                domicilio: document.getElementById('f-dom').value, 
-                telefono: document.getElementById('f-tel').value, 
-                vehiculo1: v, 
-                notas: document.getElementById('f-notas').value 
-            };
-            try {
-                const r = await fetch(SB + '/rest/v1/personas', {
-                    method: 'POST', headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY, 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                if(r.ok) {
-                    alert('GUARDADO OK');
-                    db.unshift(payload);
-                    dibujar(db);
-                    irA('view-list');
-                }
-            } catch(e) { alert('Error de red'); }
         }
 
         function dibujar(datos) {
             const lista = document.getElementById('lista');
             lista.innerHTML = datos.map(p => `
-                <div onclick="verDetalles('${p.id || p.ci || p.nombre}')" class='bg-white p-5 rounded-3xl shadow-sm border-l-8 border-blue-900 flex justify-between items-center mb-1'>
-                    <div class='overflow-hidden'>
-                        <h3 class='font-black uppercase text-slate-800 text-[12px] truncate'>${p.nombre || 'S/N'}</h3>
-                        <p class='text-[10px] text-slate-400 font-black'>${p.ci ? 'CI: '+p.ci : (p.vehiculo1 ? 'MAT: '+p.vehiculo1 : '---')}</p>
+                <div class='bg-white p-5 rounded-3xl shadow-sm border-l-8 border-blue-900 flex justify-between items-center mb-1'>
+                    <div>
+                        <h3 class='font-black uppercase text-slate-800 text-[11px]'>${p.nombre || 'S/N'}</h3>
+                        <p class='text-[10px] text-slate-400 font-black'>${p.ci || p.vehiculo1 || '---'}</p>
                     </div>
-                    <i class='fas fa-chevron-right text-slate-200 text-xs'></i>
                 </div>`).join('');
-        }
-
-        function verDetalles(id) {
-            const p = db.find(x => String(x.id || x.ci || x.nombre) === String(id));
-            if(!p) return;
-            document.getElementById('m-nom').innerText = p.nombre || 'S/N';
-            document.getElementById('m-ci').innerText = p.ci || '---';
-            document.getElementById('m-dom').innerText = p.domicilio || p.direccion || '---';
-            document.getElementById('m-notas').innerText = (p.antecedentes ? 'ANTECEDENTES:\n'+p.antecedentes+'\n\n' : '') + (p.notas || 'S/N');
-            document.getElementById('modal').classList.remove('hidden');
         }
 
         function filtrar() {
             const t = document.getElementById('bus').value.toLowerCase().trim();
             if(!t) return dibujar(db);
-            dibujar(db.filter(p => (p.nombre||'').toLowerCase().includes(t) || (p.ci||'').includes(t) || (p.vehiculo1||'').toLowerCase().includes(t)));
+            dibujar(db.filter(p => (p.nombre||'').toLowerCase().includes(t)));
         }
     </script>
 </body>
