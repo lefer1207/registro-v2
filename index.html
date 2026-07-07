@@ -3,13 +3,13 @@
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
-    <title>REGISTRO V2.6</title>
+    <title>REGISTRO V2.7 FIX</title>
     <script src='https://cdn.tailwindcss.com'></script>
     <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css'>
 </head>
 <body class='bg-slate-900 text-white font-sans'>
     <div id='pin-screen' class='fixed inset-0 flex flex-col items-center justify-center p-6 text-center z-[200] bg-slate-900'>
-        <h1 class='text-4xl font-black mb-6 italic'>REGISTRO V2.6</h1>
+        <h1 class='text-4xl font-black mb-6 italic'>V2.7 FINAL TEST</h1>
         <div class='bg-slate-800 p-8 rounded-[40px] w-full max-w-xs shadow-2xl'>
             <input type='password' id='pin-input' placeholder='PIN' class='w-full p-4 rounded-2xl text-center text-3xl mb-6 bg-slate-900 text-white border-none outline-none font-black'>
             <button onclick='entrar()' class='w-full bg-blue-600 py-4 rounded-2xl font-black text-xl'>INGRESAR</button>
@@ -17,17 +17,14 @@
     </div>
 
     <div id='app' class='hidden bg-slate-100 text-slate-900 min-h-screen'>
-        <header class='bg-slate-900 text-white p-5 sticky top-0 z-50 shadow-2xl'>
-            <div class='flex justify-between items-center mb-4'>
-                <h1 class='font-black italic text-xl'>REGISTRO <span class='text-blue-500'>V2</span></h1>
-                <div id='count' class='bg-blue-600 px-3 py-1 rounded-full text-[10px] font-black'>0</div>
-            </div>
-            <input type='text' id='bus' oninput='filtrar()' placeholder='BUSCAR...' class='w-full p-4 rounded-2xl bg-white text-slate-900 text-sm outline-none shadow-inner font-bold border-none'>
+        <header class='bg-slate-900 text-white p-5 sticky top-0 z-50 shadow-2xl flex justify-between items-center'>
+            <h1 class='font-black italic text-xl uppercase'>Registro v2.7</h1>
+            <div id='count' class='bg-blue-600 px-3 py-1 rounded-full text-[10px] font-black'>0</div>
         </header>
 
         <main class='p-4'>
-            <div id='status' class='bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-4 rounded-r-xl text-[11px] font-bold'>
-                ESTADO: <span id='status-text'>CONECTANDO...</span>
+            <div id='status-box' class='bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-4 rounded-r-xl text-[11px] font-bold'>
+                <p id='status-text'>BUSCANDO TABLA...</p>
             </div>
             <div id='lista' class='grid gap-2 pb-24'></div>
         </main>
@@ -42,39 +39,43 @@
             if (document.getElementById('pin-input').value === '3268') {
                 document.getElementById('pin-screen').style.display = 'none';
                 document.getElementById('app').classList.remove('hidden');
-                
-                // Intento automático con el nombre de tabla que SIEMPRE usamos
-                const status = document.getElementById('status-text');
+                probarTablas();
+            } else { alert('PIN INCORRECTO'); }
+        }
+
+        async function probarTablas() {
+            const status = document.getElementById('status-text');
+            const nombres = ['Personas', 'personas', 'PERSONAS', 'registros'];
+            
+            for (let t of nombres) {
+                status.innerText = 'PROBANDO TABLA: ' + t + '...';
                 try {
-                    const r = await fetch(SB + '/rest/v1/personas?select=*&limit=2000', {
+                    const r = await fetch(SB + '/rest/v1/' + t + '?select=*&limit=10', {
                         headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY }
                     });
                     if (r.ok) {
-                        db = await r.json();
+                        const rFull = await fetch(SB + '/rest/v1/' + t + '?select=*&limit=3000', {
+                            headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY }
+                        });
+                        db = await rFull.json();
+                        document.getElementById('status-box').className = 'bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4 rounded-r-xl text-[11px] font-bold';
+                        status.innerText = 'CONECTADO EXITOSAMENTE A: ' + t;
                         document.getElementById('count').innerText = db.length;
-                        document.getElementById('status').className = 'bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4 rounded-r-xl text-[11px] font-bold';
-                        status.innerText = 'CONECTADO (' + db.length + ' REGISTROS)';
                         dibujar(db);
-                    } else {
-                        status.innerText = 'ERROR ' + r.status + ' - CONTACTAR SOPORTE';
+                        return;
                     }
-                } catch(e) { status.innerText = 'ERROR DE RED'; }
-            } else { alert('PIN INCORRECTO'); }
+                } catch(e) {}
+            }
+            status.innerText = 'ERROR: NINGUNA TABLA ENCONTRADA (404). REVISAR NOMBRE EN SUPABASE.';
         }
 
         function dibujar(datos) {
             const lista = document.getElementById('lista');
             lista.innerHTML = datos.map(p => `
                 <div class='bg-white p-5 rounded-3xl shadow-sm border-l-8 border-blue-900 mb-1'>
-                    <h3 class='font-black uppercase text-slate-800 text-[12px]'>${p.nombre || 'S/N'}</h3>
-                    <p class='text-[10px] text-slate-400 font-black'>${p.ci || p.vehiculo1 || '---'}</p>
+                    <h3 class='font-black uppercase text-slate-800 text-[11px]'>${p.nombre || p.Nombre || 'S/N'}</h3>
+                    <p class='text-[10px] text-slate-400 font-black'>${p.ci || p.CI || p.vehiculo1 || '---'}</p>
                 </div>`).join('');
-        }
-
-        function filtrar() {
-            const t = document.getElementById('bus').value.toLowerCase().trim();
-            if(!t) return dibujar(db);
-            dibujar(db.filter(p => (p.nombre||'').toLowerCase().includes(t) || (p.ci||'').includes(t)));
         }
     </script>
 </body>
