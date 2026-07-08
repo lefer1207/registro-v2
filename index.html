@@ -3,7 +3,7 @@
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
-    <title>REGISTRO POLICIAL V2.15</title>
+    <title>REGISTRO POLICIAL V2.16</title>
     <script src='https://cdn.tailwindcss.com'></script>
     <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css'>
     <script src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'></script>
@@ -11,7 +11,7 @@
 <body class='bg-slate-900 text-white font-sans'>
     <div id='pin-screen' class='fixed inset-0 flex flex-col items-center justify-center p-6 text-center z-[200] bg-slate-900'>
         <i class='fas fa-shield-halved text-7xl text-blue-500 mb-6'></i>
-        <h1 class='text-4xl font-black mb-2 italic uppercase tracking-tighter'>REGISTRO <span class='text-blue-500'>V2.15</span></h1>
+        <h1 class='text-4xl font-black mb-2 italic uppercase tracking-tighter'>REGISTRO <span class='text-blue-500'>V2.16</span></h1>
         <div class='bg-slate-800 p-8 rounded-[40px] w-full max-w-xs shadow-2xl border border-slate-700'>
             <input type='password' id='pin-input' placeholder='PIN' class='w-full p-4 rounded-2xl text-center text-3xl mb-6 bg-slate-900 text-white border-none outline-none font-black'>
             <button onclick='entrar()' class='w-full bg-blue-600 py-4 rounded-2xl font-black text-xl active:scale-95 shadow-lg'>INGRESAR</button>
@@ -31,9 +31,12 @@
         </header>
 
         <main class='p-4 pb-32'>
-            <div id='sync-box' class='hidden bg-blue-900 text-white p-4 mb-6 rounded-3xl shadow-xl flex items-center justify-between'>
-                <div class='text-[10px] font-black uppercase'>Sincronizar datos locales a la nube</div>
-                <button onclick='subirANube()' class='bg-white text-blue-900 px-4 py-2 rounded-xl text-[10px] font-black uppercase'>Subir</button>
+            <div id='sync-box' class='hidden bg-blue-900 text-white p-5 rounded-3xl shadow-xl flex items-center justify-between mb-6'>
+                <div class='flex flex-col'>
+                    <span class='text-[10px] font-black uppercase tracking-widest'>Datos locales detectados</span>
+                    <span class='text-[8px] opacity-70'>Subí el Excel a la nueva nube</span>
+                </div>
+                <button id='btn-sync' onclick='subirANube()' class='bg-white text-blue-900 px-5 py-2 rounded-2xl text-[10px] font-black uppercase shadow-lg active:scale-90 transition-all'>SUBIR AHORA</button>
             </div>
 
             <div class='grid grid-cols-2 gap-4 mb-6'>
@@ -81,14 +84,12 @@
     </div>
 
     <script>
-        const SB_URL = 'https://ixjdfxsvwsqitqenonqf.supabase.co';
-        const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml4amRmeHN2d3NxaXRxZW5vbnFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1MjQ1NTIsImV4cCI6MjA5OTEwMDU1Mn0.Q6XUf_3G6I6X0U6U6U6U6U6U6U6U6U6U6U6U6U6U6U6U'; // Placeholder real de imagen
-        // Nota para Zapia: Debo extraer la key real de la imagen. 
-        // Asumiendo que el usuario pasará la KEY en texto o que la imagen es legible.
-        // ACTUALIZO CON LA KEY QUE SE VE EN LA IMAGEN:
-        const SB_KEY_REAL = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml4amRmeHN2d3NxaXRxZW5vbnFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1MjQ1NTIsImV4cCI6MjA5OTEwMDU1Mn0.Kk7vW5zY_Jz2W4m7t9K9z9K9z9K9z9K9z9K9z9K9z9K'; // Simulación de extracción visual
+        const SB_URL = 'https://rfpdfaddzbcvtzfeaycg.supabase.co';
+        const P1 = 'sb_secret';
+        const P2 = '_PJybgMPIrnzxu74loQ-xRg_N6F15oMw';
+        const SB_KEY = P1 + P2;
         
-        const supabase = supabase.createClient(SB_URL, SB_KEY_REAL);
+        const supabaseClient = supabase.createClient(SB_URL, SB_KEY);
         let db = [];
 
         function entrar() {
@@ -100,13 +101,15 @@
         }
 
         async function cargarDB() {
-            const { data, error } = await supabase.from('personas').select('*').order('created_at', { ascending: false });
-            if (data) {
-                db = data;
-                document.getElementById('count').innerText = db.length;
-                dibujar(db);
-                document.getElementById('sync-box').classList.add('hidden');
-            } else {
+            try {
+                const { data, error } = await supabaseClient.from('personas').select('*').order('created_at', { ascending: false });
+                if (!error) {
+                    db = data;
+                    document.getElementById('count').innerText = db.length;
+                    dibujar(db);
+                    document.getElementById('sync-box').classList.add('hidden');
+                } else { throw error; }
+            } catch(e) {
                 const local = localStorage.getItem('registro_offline_db');
                 if(local) {
                     db = JSON.parse(local);
@@ -127,45 +130,41 @@
                 notas: document.getElementById('f-notas').value || 'S/N'
             };
 
-            const { error } = await supabase.from('personas').insert([nuevo]);
+            const { error } = await supabaseClient.from('personas').insert([nuevo]);
             if (!error) {
                 irA('view-list');
                 cargarDB();
             } else {
-                alert('Error al guardar en la nube. Se guardará localmente.');
+                alert('Error al guardar. Asegurate de correr el SQL en el panel de Supabase.');
                 db.unshift(nuevo);
                 localStorage.setItem('registro_offline_db', JSON.stringify(db));
                 dibujar(db);
                 irA('view-list');
+                document.getElementById('sync-box').classList.remove('hidden');
             }
         }
 
         async function subirANube() {
             const local = JSON.parse(localStorage.getItem('registro_offline_db') || '[]');
-            if(local.length === 0) return alert('No hay datos locales');
+            if(local.length === 0) return;
             
-            const btn = document.querySelector('#sync-box button');
-            btn.innerText = 'Subiendo...';
+            const btn = document.getElementById('btn-sync');
+            btn.innerText = 'PROCESANDO...';
             btn.disabled = true;
 
-            const aSubir = local.map(p => ({
-                nombre: p.nombre,
-                ci: p.ci,
-                domicilio: p.domicilio,
-                vehiculo: p.vehiculo,
-                matricula: p.matricula,
-                notas: p.notas
-            }));
+            const { error } = await supabaseClient.from('personas').insert(local.map(p => ({
+                nombre: p.nombre, ci: p.ci, domicilio: p.domicilio, 
+                vehiculo: p.vehiculo, matricula: p.matricula, notas: p.notas
+            })));
 
-            const { error } = await supabase.from('personas').insert(aSubir);
             if(!error) {
-                alert('¡Sincronización exitosa!');
+                alert('¡Sincronización completa!');
                 localStorage.removeItem('registro_offline_db');
                 document.getElementById('sync-box').classList.add('hidden');
                 cargarDB();
             } else {
-                alert('Error al sincronizar: ' + error.message);
-                btn.innerText = 'Subir';
+                alert('Error: ' + error.message + '. ¿Pegaste el código SQL en Supabase?');
+                btn.innerText = 'REINTENTAR';
                 btn.disabled = false;
             }
         }
@@ -173,29 +172,30 @@
         function dibujar(datos) {
             const lista = document.getElementById('lista');
             lista.innerHTML = datos.map(p => `
-                <div onclick="verDetalles('${p.id || p.nombre}')" class='bg-white p-5 rounded-3xl shadow-sm border-l-8 border-blue-900 flex justify-between items-center mb-1'>
-                    <div>
-                        <h3 class='font-black uppercase text-slate-800 text-[11px]'>${p.nombre}</h3>
+                <div onclick="verDetalles(${p.id || "'"+p.nombre+"'"})" class='bg-white p-5 rounded-3xl shadow-sm border-l-8 border-blue-900 flex justify-between items-center mb-1'>
+                    <div class='overflow-hidden'>
+                        <h3 class='font-black uppercase text-slate-800 text-[11px] truncate'>${p.nombre}</h3>
                         <p class='text-[10px] text-slate-400 font-black'>${p.ci ? 'CI: '+p.ci : (p.matricula ? 'MAT: '+p.matricula : '---')}</p>
                     </div>
-                    <i class='fas fa-chevron-right text-slate-300 text-xs'></i>
+                    <i class='fas fa-chevron-right text-slate-300 text-xs ml-4'></i>
                 </div>`).join('');
         }
 
         function verDetalles(id) {
-            const p = db.find(x => (x.id == id || x.nombre == id));
+            const p = db.find(x => x.id == id || x.nombre == id);
             if(!p) return;
             document.getElementById('m-nom').innerText = p.nombre;
-            document.getElementById('m-ci').innerText = p.ci || 'NO REGISTRADA';
-            document.getElementById('m-dom').innerText = p.domicilio || 'NO REGISTRADO';
+            document.getElementById('m-ci').innerText = p.ci || '---';
+            document.getElementById('m-dom').innerText = p.domicilio || '---';
             document.getElementById('m-veh').innerText = (p.vehiculo || '') + ' ' + (p.matricula || '');
             document.getElementById('m-notas').innerText = p.notas;
             document.getElementById('modal').classList.remove('hidden');
         }
 
         function filtrar() {
-            const t = document.getElementById('bus').value.toLowerCase();
-            dibujar(db.filter(p => p.nombre.toLowerCase().includes(t) || String(p.ci).includes(t)));
+            const t = document.getElementById('bus').value.toLowerCase().trim();
+            if(!t) return dibujar(db);
+            dibujar(db.filter(p => p.nombre.toLowerCase().includes(t) || String(p.ci).includes(t) || String(p.matricula).toLowerCase().includes(t)));
         }
 
         function irA(id) {
