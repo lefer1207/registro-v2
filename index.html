@@ -3,7 +3,7 @@
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
-    <title>REGISTRO POLICIAL V2.17</title>
+    <title>REGISTRO POLICIAL V2.18</title>
     <script src='https://cdn.tailwindcss.com'></script>
     <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css'>
     <script src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'></script>
@@ -15,7 +15,7 @@
 <body class='bg-slate-900 text-white font-sans'>
     <div id='pin-screen' class='fixed inset-0 flex flex-col items-center justify-center p-6 text-center z-[200] bg-slate-900'>
         <i class='fas fa-shield-halved text-7xl text-blue-500 mb-6'></i>
-        <h1 class='text-4xl font-black mb-2 italic uppercase tracking-tighter'>REGISTRO <span class='text-blue-500'>V2.17</span></h1>
+        <h1 class='text-4xl font-black mb-2 italic uppercase tracking-tighter'>REGISTRO <span class='text-blue-500'>V2.18</span></h1>
         <div class='bg-slate-800 p-8 rounded-[40px] w-full max-w-xs shadow-2xl border border-slate-700'>
             <input type='password' id='pin-input' placeholder='PIN' class='w-full p-4 rounded-2xl text-center text-3xl mb-6 bg-slate-900 text-white border-none outline-none font-black'>
             <button onclick='entrar()' class='w-full bg-blue-600 py-4 rounded-2xl font-black text-xl active:scale-95 shadow-lg'>INGRESAR</button>
@@ -26,10 +26,10 @@
         <header class='bg-slate-900 text-white p-5 sticky top-0 z-50 shadow-2xl'>
             <div class='flex justify-between items-center mb-4'>
                 <div class='flex items-center gap-2'>
-                    <h1 class='font-black italic text-xl uppercase leading-none'>REGISTRO <span class='text-blue-500'>V2.17</span></h1>
+                    <h1 class='font-black italic text-xl uppercase leading-none'>REGISTRO <span class='text-blue-500'>V2.18</span></h1>
                     <div id='status-dot' class='w-2 h-2 rounded-full bg-green-500'></div>
                 </div>
-                <div id='count' class='bg-blue-600 px-3 py-1 rounded-full text-[10px] font-black italic'>0 REGISTROS</div>
+                <div id='count' class='bg-blue-600 px-3 py-1 rounded-full text-[10px] font-black italic uppercase'>Cargando...</div>
             </div>
             <div class='relative'>
                 <i class='fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400'></i>
@@ -60,30 +60,33 @@
             <div id='lista' class='grid gap-2'></div>
         </main>
 
-        <!-- Navegación Inferior -->
         <nav class='fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 p-4 flex justify-around items-center z-40 shadow-[0_-10px_30px_rgba(0,0,0,0.05)]'>
-            <button onclick='cargarDB()' class='text-blue-600 flex flex-col items-center'><i class='fas fa-sync-alt text-xl'></i><span class='text-[8px] font-black uppercase mt-1'>Actualizar</span></button>
+            <button onclick='cargarDB()' class='text-blue-600 flex flex-col items-center'><i class='fas fa-sync-alt text-xl'></i><span class='text-[8px] font-black uppercase mt-1'>Sincronizar</span></button>
             <button onclick='window.scrollTo({top: 0, behavior: "smooth"})' class='bg-slate-900 text-white w-14 h-14 rounded-full -mt-10 flex items-center justify-center shadow-2xl border-4 border-slate-100'><i class='fas fa-search'></i></button>
-            <button onclick='alert("Versión 2.17 - Conexión Optimizada")' class='text-slate-400 flex flex-col items-center'><i class='fas fa-info-circle text-xl'></i><span class='text-[8px] font-black uppercase mt-1'>Info</span></button>
+            <button onclick='irA("view-list")' class='text-slate-400 flex flex-col items-center'><i class='fas fa-home text-xl'></i><span class='text-[8px] font-black uppercase mt-1'>Inicio</span></button>
         </nav>
 
         <div id='view-form' class='fixed inset-0 bg-white z-[150] hidden flex flex-col p-6 overflow-y-auto'>
             <div onclick='irA("view-list")' class='mb-6 flex items-center font-black text-sm uppercase text-slate-400'><i class='fas fa-arrow-left mr-3'></i> VOLVER</div>
             <h2 id='f-titulo' class='text-3xl font-black uppercase italic mb-8 border-b-8 border-slate-900 pb-2 text-slate-900'></h2>
             <div class='space-y-4 pb-10'>
+                <input type='hidden' id='f-id'>
                 <div id='c-nom'><label class='text-[10px] font-black text-slate-400 uppercase ml-2'>Nombre Completo</label><input id='f-nom' type='text' class='w-full p-5 rounded-2xl bg-slate-100 outline-none font-bold text-slate-900 uppercase'></div>
                 <div id='c-ci'><label class='text-[10px] font-black text-slate-400 uppercase ml-2'>Cédula</label><input id='f-ci' type='text' class='w-full p-5 rounded-2xl bg-slate-100 outline-none font-bold text-slate-900'></div>
                 <div id='c-dom'><label class='text-[10px] font-black text-slate-400 uppercase ml-2'>Domicilio</label><input id='f-dom' type='text' class='w-full p-5 rounded-2xl bg-slate-100 outline-none font-bold text-slate-900 uppercase'></div>
                 <div id='c-veh'><label class='text-[10px] font-black text-slate-400 uppercase ml-2'>Vehículo</label><input id='f-veh' type='text' class='w-full p-5 rounded-2xl bg-slate-100 outline-none font-bold text-slate-900 uppercase'></div>
                 <div id='c-mat'><label class='text-[10px] font-black text-slate-400 uppercase ml-2'>Matrícula</label><input id='f-mat' type='text' class='w-full p-5 rounded-2xl bg-slate-100 outline-none font-bold text-slate-900 uppercase'></div>
                 <div><label class='text-[10px] font-black text-red-400 uppercase ml-2'>Notas / Antecedentes</label><textarea id='f-notas' rows='6' class='w-full p-6 rounded-3xl bg-red-50 border border-red-100 outline-none font-bold text-red-900'></textarea></div>
-                <button id='btn-save' onclick='guardarRegistro()' class='w-full bg-blue-700 text-white py-6 rounded-3xl font-black uppercase shadow-2xl active:scale-95'>GUARDAR EN LA NUBE</button>
+                <button id='btn-save' onclick='guardarRegistro()' class='w-full bg-blue-700 text-white py-6 rounded-3xl font-black uppercase shadow-2xl active:scale-95'>GUARDAR REGISTRO</button>
             </div>
         </div>
 
         <div id='modal' class='fixed inset-0 bg-black/90 z-[160] hidden flex items-center justify-center p-4' onclick='this.classList.add("hidden")'>
             <div class='bg-white w-full max-w-md rounded-[50px] p-8 shadow-2xl relative' onclick='event.stopPropagation()'>
-                <h2 id='m-nom' class='text-2xl font-black uppercase italic text-slate-900 border-b-4 border-blue-600 pb-2 mb-6 leading-tight'></h2>
+                <div class='flex justify-between items-start mb-4'>
+                    <h2 id='m-nom' class='text-2xl font-black uppercase italic text-slate-900 border-b-4 border-blue-600 pb-2 leading-tight flex-1 mr-4'></h2>
+                    <button id='btn-edit-modal' class='bg-slate-100 p-4 rounded-2xl text-slate-900 active:scale-90'><i class='fas fa-edit'></i></button>
+                </div>
                 <div class='space-y-4 max-h-[60vh] overflow-y-auto pr-2 text-slate-900'>
                     <div><p class='text-[10px] font-black text-slate-400 uppercase'>Identificación</p><p id='m-ci' class='text-blue-700 font-black text-2xl tracking-tighter uppercase'></p></div>
                     <div><p class='text-[10px] font-black text-slate-400 uppercase'>Domicilio</p><p id='m-dom' class='text-slate-800 font-bold text-sm uppercase'></p></div>
@@ -92,7 +95,7 @@
                         <div id='m-notas' class='text-red-700 font-bold text-[13px] bg-red-50 p-5 rounded-3xl border border-red-100 mt-1 whitespace-pre-wrap'></div>
                     </div>
                 </div>
-                <button onclick='document.getElementById("modal").classList.add("hidden")' class='mt-8 w-full bg-slate-900 text-white py-5 rounded-3xl font-black uppercase shadow-xl'>CERRAR DETALLE</button>
+                <button onclick='document.getElementById("modal").classList.add("hidden")' class='mt-8 w-full bg-slate-900 text-white py-5 rounded-3xl font-black uppercase shadow-xl'>CERRAR</button>
             </div>
         </div>
     </div>
@@ -115,6 +118,7 @@
 
         async function cargarDB() {
             document.getElementById('status-dot').className = 'w-2 h-2 rounded-full bg-yellow-500 loading';
+            document.getElementById('count').innerText = 'SINCRONIZANDO...';
             try {
                 const { data, error } = await supabaseClient.from('personas').select('*').order('created_at', { ascending: false });
                 if (!error) {
@@ -138,10 +142,11 @@
 
         async function guardarRegistro() {
             const btn = document.getElementById('btn-save');
+            const id = document.getElementById('f-id').value;
             btn.innerText = 'GUARDANDO...';
             btn.disabled = true;
 
-            const nuevo = {
+            const registro = {
                 nombre: (document.getElementById('f-nom').value || 'MATRÍCULA: ' + document.getElementById('f-mat').value).toUpperCase().trim(),
                 ci: document.getElementById('f-ci').value.trim(),
                 domicilio: document.getElementById('f-dom').value.toUpperCase().trim(),
@@ -150,44 +155,48 @@
                 notas: document.getElementById('f-notas').value || 'S/N'
             };
 
-            const { error } = await supabaseClient.from('personas').insert([nuevo]);
-            if (!error) {
+            let res;
+            if (id) {
+                res = await supabaseClient.from('personas').update(registro).eq('id', id);
+            } else {
+                res = await supabaseClient.from('personas').insert([registro]);
+            }
+
+            if (!res.error) {
                 irA('view-list');
                 cargarDB();
             } else {
-                alert('Error de conexión. Se guardó en la memoria del teléfono.');
-                db.unshift(nuevo);
-                localStorage.setItem('registro_offline_db', JSON.stringify(db));
-                dibujar(db);
+                alert('Error al guardar. Se guardó localmente.');
+                if(!id) {
+                    db.unshift(registro);
+                    localStorage.setItem('registro_offline_db', JSON.stringify(db));
+                    dibujar(db);
+                    document.getElementById('sync-box').classList.remove('hidden');
+                }
                 irA('view-list');
-                document.getElementById('sync-box').classList.remove('hidden');
             }
-            btn.innerText = 'GUARDAR EN LA NUBE';
+            btn.innerText = 'GUARDAR REGISTRO';
             btn.disabled = false;
         }
 
         async function subirANube() {
             const local = JSON.parse(localStorage.getItem('registro_offline_db') || '[]');
             if(local.length === 0) return;
-            
             const btn = document.getElementById('btn-sync');
             btn.innerText = 'SUBIENDO...';
             btn.disabled = true;
 
-            // Limpieza de campos para evitar errores de Supabase
-            const cleanData = local.map(p => ({
+            const { error } = await supabaseClient.from('personas').insert(local.map(p => ({
                 nombre: String(p.nombre || '').toUpperCase(),
                 ci: String(p.ci || ''),
                 domicilio: String(p.domicilio || '').toUpperCase(),
                 vehiculo: String(p.vehiculo || '').toUpperCase(),
                 matricula: String(p.matricula || '').toUpperCase(),
                 notas: String(p.notas || 'S/N')
-            }));
-
-            const { error } = await supabaseClient.from('personas').insert(cleanData);
+            })));
 
             if(!error) {
-                alert('¡Sincronización completa! Todo está en la nube.');
+                alert('¡Sincronización completa!');
                 localStorage.removeItem('registro_offline_db');
                 document.getElementById('sync-box').classList.add('hidden');
                 cargarDB();
@@ -205,7 +214,7 @@
                 return;
             }
             lista.innerHTML = datos.map(p => `
-                <div onclick="verDetalles(${p.id || "'"+p.nombre+"'"})" class='bg-white p-5 rounded-[25px] shadow-sm border-l-[10px] border-blue-900 flex justify-between items-center mb-1 active:bg-slate-100 transition-colors'>
+                <div onclick="verDetalles('${p.id}')" class='bg-white p-5 rounded-[25px] shadow-sm border-l-[10px] border-blue-900 flex justify-between items-center mb-1 active:bg-slate-100 transition-colors'>
                     <div class='overflow-hidden'>
                         <h3 class='font-black uppercase text-slate-800 text-[11px] truncate leading-tight'>${p.nombre}</h3>
                         <p class='text-[10px] text-slate-400 font-bold'>${p.ci ? 'ID: '+p.ci : (p.matricula ? 'MAT: '+p.matricula : '---')}</p>
@@ -215,7 +224,7 @@
         }
 
         function verDetalles(id) {
-            const p = db.find(x => x.id == id || x.nombre == id);
+            const p = db.find(x => x.id == id);
             if(!p) return;
             document.getElementById('m-nom').innerText = p.nombre;
             document.getElementById('m-ci').innerText = p.ci || '---';
@@ -223,16 +232,33 @@
             document.getElementById('m-veh').innerText = (p.vehiculo || '') + ' ' + (p.matricula || '');
             document.getElementById('m-notas').innerText = p.notas;
             document.getElementById('modal').classList.remove('hidden');
+            
+            document.getElementById('btn-edit-modal').onclick = () => {
+                document.getElementById('modal').classList.add('hidden');
+                editarRegistro(p);
+            };
+        }
+
+        function editarRegistro(p) {
+            abrirForm(p.nombre.startsWith('MATRÍCULA:'));
+            document.getElementById('f-id').value = p.id;
+            document.getElementById('f-nom').value = p.nombre.replace('MATRÍCULA: ', '');
+            document.getElementById('f-ci').value = p.ci || '';
+            document.getElementById('f-dom').value = p.domicilio || '';
+            document.getElementById('f-veh').value = p.vehiculo || '';
+            document.getElementById('f-mat').value = p.matricula || '';
+            document.getElementById('f-notas').value = p.notas || '';
+            document.getElementById('f-titulo').innerText = 'EDITAR REGISTRO';
         }
 
         function filtrar() {
             const t = document.getElementById('bus').value.toLowerCase().trim();
             if(!t) return dibujar(db);
             dibujar(db.filter(p => 
-                p.nombre.toLowerCase().includes(t) || 
-                String(p.ci).includes(t) || 
-                String(p.matricula).toLowerCase().includes(t) ||
-                String(p.vehiculo).toLowerCase().includes(t)
+                (p.nombre && p.nombre.toLowerCase().includes(t)) || 
+                (p.ci && String(p.ci).includes(t)) || 
+                (p.matricula && String(p.matricula).toLowerCase().includes(t)) ||
+                (p.vehiculo && String(p.vehiculo).toLowerCase().includes(t))
             ));
         }
 
@@ -242,6 +268,7 @@
         }
 
         function abrirForm(m) {
+            document.getElementById('f-id').value = '';
             document.getElementById('f-titulo').innerText = m ? 'NUEVA MATRÍCULA' : 'NUEVA PERSONA';
             document.getElementById('c-nom').style.display = m ? 'none' : 'block';
             document.getElementById('c-ci').style.display = m ? 'none' : 'block';
