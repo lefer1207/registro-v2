@@ -2,72 +2,52 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>REGISTRO PRO V2.33</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>REGISTRO PRO V2.36</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        body { background: #0f172a; color: white; font-family: sans-serif; }
-        .card { background: white; color: #1e293b; border-radius: 15px; padding: 15px; margin-bottom: 10px; }
-    </style>
 </head>
-<body class="p-4">
-    <div id="pin-screen" class="fixed inset-0 bg-[#0f172a] z-50 flex flex-col items-center justify-center p-6">
-        <h1 class="text-3xl font-black italic mb-8 uppercase tracking-tighter">REGISTRO <span class="text-blue-500">PRO</span></h1>
-        <input type="tel" id="pin-input" placeholder="PIN" class="w-full max-w-xs p-4 rounded-xl text-center text-3xl mb-4 bg-black text-white border border-slate-700 outline-none font-black">
-        <button onclick="entrar()" class="w-full max-w-xs bg-blue-600 py-4 rounded-xl font-bold text-xl shadow-lg">INGRESAR</button>
-        <p class="mt-6 opacity-30 text-xs">V2.33 - LLAVE CORREGIDA</p>
-    </div>
-    <div id="app" class="hidden">
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-xl font-black italic">REGISTRO <span class="text-blue-500">PRO</span></h1>
-            <div id="status" class="bg-blue-900/50 text-blue-300 px-3 py-1 rounded-full text-xs font-bold uppercase">CARGANDO...</div>
+<body class="bg-slate-900 text-white font-sans min-h-screen flex items-center justify-center p-6">
+    <div id="pin-screen" class="w-full max-w-xs text-center">
+        <h1 class="text-3xl font-black italic mb-10 uppercase">REGISTRO <span class="text-blue-500">PRO</span></h1>
+        <div class="bg-slate-800 p-8 rounded-3xl shadow-2xl border border-white/5">
+            <input type="tel" id="pin-input" placeholder="PIN" class="w-full p-4 rounded-xl text-center text-4xl mb-6 bg-black text-white border border-slate-700 outline-none font-black">
+            <button onclick="entrar()" class="w-full bg-blue-600 hover:bg-blue-700 py-4 rounded-xl font-black text-xl shadow-lg">INGRESAR</button>
         </div>
-        <input type="text" id="bus" oninput="filtrar()" placeholder="Buscar..." class="w-full p-4 rounded-xl bg-slate-800 text-white mb-6 border-none outline-none">
-        <div id="lista"></div>
+        <p class="mt-8 text-[10px] opacity-30 font-bold uppercase">Versión 2.36</p>
+    </div>
+    <div id="app" class="hidden fixed inset-0 bg-slate-100 text-slate-900 overflow-y-auto p-5">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="font-black italic text-xl uppercase tracking-tighter">REGISTRO <span class="text-blue-500">PRO</span></h1>
+            <div id="status" class="bg-blue-600 text-white px-4 py-1 rounded-full text-[10px] font-black uppercase">CARGANDO...</div>
+        </div>
+        <div id="lista" class="space-y-3"></div>
     </div>
     <script>
-        var sb; var base = [];
         function entrar() {
             if (document.getElementById('pin-input').value === '3268') {
-                document.getElementById('pin-screen').classList.add('hidden');
+                document.getElementById('pin-screen').style.display = 'none';
                 document.getElementById('app').classList.remove('hidden');
-                iniciar();
+                conectar();
             } else { alert('PIN INCORRECTO'); }
         }
-        async function iniciar() {
+        async function conectar() {
             const p1 = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9';
             const p2 = 'eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJmcGRmYWRkemJjdnR6ZmVheWNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjA0MTU0NDAsImV4cCI6MjAzNjAwOTQ0MH0';
             const p3 = 'PJybgMPIrnzxu74loQ-xRg_N6F15oMw';
-            const k = p1 + '.' + p2 + '.' + p3;
             try {
-                sb = supabase.createClient('https://rfpdfaddzbcvtzfeaycg.supabase.co', k);
+                const sb = supabase.createClient('https://rfpdfaddzbcvtzfeaycg.supabase.co', p1+'.'+p2+'.'+p3);
                 const { data, error } = await sb.from('personas').select('*').order('created_at', { ascending: false });
                 if (error) throw error;
-                base = data || [];
-                document.getElementById('status').innerText = base.length + ' REGISTROS';
-                mostrar(base);
-            } catch(e) {
-                alert('ERROR DE LLAVE O CONEXIÓN: ' + e.message);
-                document.getElementById('status').innerText = 'ERROR';
-            }
-        }
-        function mostrar(datos) {
-            const l = document.getElementById('lista'); let h = '';
-            for(var i=0; i<datos.length; i++) {
-                var p = datos[i];
-                h += '<div class="card">' +
-                     '<div class="font-black uppercase text-sm">' + (p.nombre || p.matricula || '---') + '</div>' +
-                     '<div class="text-[10px] text-slate-500 font-bold">' + (p.ci || 'S/ID') + '</div>' +
-                     '</div>';
-            }
-            l.innerHTML = h || '<div class="text-center opacity-30 mt-10 font-black italic uppercase">Sin datos</div>';
-        }
-        function filtrar() {
-            const t = document.getElementById('bus').value.toLowerCase().trim();
-            if(!t) return mostrar(base);
-            const f = base.filter(p => (p.nombre && p.nombre.toLowerCase().includes(t)) || (p.ci && String(p.ci).includes(t)) || (p.matricula && p.matricula.toLowerCase().includes(t)));
-            mostrar(f);
+                document.getElementById('status').innerText = (data ? data.length : 0) + ' REGISTROS';
+                let h = '';
+                (data || []).forEach(p => {
+                    h += '<div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">' +
+                         '<div class="font-black uppercase text-xs text-slate-800">' + (p.nombre || p.matricula || '---') + '</div>' +
+                         '<div class="text-[10px] text-slate-400 font-bold">' + (p.ci || '---') + '</div></div>';
+                });
+                document.getElementById('lista').innerHTML = h || 'SIN REGISTROS';
+            } catch(e) { alert('Error: ' + e.message); }
         }
     </script>
 </body>
