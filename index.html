@@ -3,23 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>REGISTRO PRO V2.36</title>
+    <title>REGISTRO PRO V2.37</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-slate-900 text-white font-sans min-h-screen flex items-center justify-center p-6">
-    <div id="pin-screen" class="w-full max-w-xs text-center">
+<body class="bg-[#0f172a] text-white font-sans min-h-screen">
+    <div id="pin-screen" class="fixed inset-0 flex flex-col items-center justify-center p-6 bg-[#0f172a] z-50">
         <h1 class="text-3xl font-black italic mb-10 uppercase">REGISTRO <span class="text-blue-500">PRO</span></h1>
-        <div class="bg-slate-800 p-8 rounded-3xl shadow-2xl border border-white/5">
+        <div class="bg-slate-800 p-8 rounded-3xl shadow-2xl w-full max-w-xs">
             <input type="tel" id="pin-input" placeholder="PIN" class="w-full p-4 rounded-xl text-center text-4xl mb-6 bg-black text-white border border-slate-700 outline-none font-black">
-            <button onclick="entrar()" class="w-full bg-blue-600 hover:bg-blue-700 py-4 rounded-xl font-black text-xl shadow-lg">INGRESAR</button>
+            <button onclick="entrar()" class="w-full bg-blue-600 py-4 rounded-xl font-black text-xl shadow-lg">INGRESAR</button>
         </div>
-        <p class="mt-8 text-[10px] opacity-30 font-bold uppercase">Versión 2.36</p>
+        <p class="mt-8 text-[10px] opacity-30 font-bold uppercase">Versión 2.37 - Recovery Mode</p>
     </div>
-    <div id="app" class="hidden fixed inset-0 bg-slate-100 text-slate-900 overflow-y-auto p-5">
+    <div id="app" class="hidden min-h-screen bg-slate-100 text-slate-900 p-5">
+        <div id="setup-key" class="hidden bg-white p-6 rounded-3xl shadow-xl border-2 border-red-500 mb-6">
+            <h2 class="font-black text-red-600 mb-2 uppercase">LLAVE INVÁLIDA</h2>
+            <p class="text-xs mb-4 text-slate-500">La llave no funciona. Pegá la llave <b>anon public</b> (la larga que empieza con eyJ) aquí:</p>
+            <input type="text" id="new-key" placeholder="eyJ..." class="w-full p-4 bg-slate-100 rounded-xl mb-4 text-[10px] font-mono break-all border">
+            <button onclick="saveKey()" class="w-full bg-red-600 text-white py-4 rounded-xl font-black">REINTENTAR</button>
+        </div>
         <div class="flex justify-between items-center mb-6">
-            <h1 class="font-black italic text-xl uppercase tracking-tighter">REGISTRO <span class="text-blue-500">PRO</span></h1>
-            <div id="status" class="bg-blue-600 text-white px-4 py-1 rounded-full text-[10px] font-black uppercase">CARGANDO...</div>
+            <h1 class="font-black italic text-xl uppercase">REGISTRO <span class="text-blue-500">PRO</span></h1>
+            <div id="status" class="bg-blue-600 text-white px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">...</div>
         </div>
         <div id="lista" class="space-y-3"></div>
     </div>
@@ -28,17 +34,25 @@
             if (document.getElementById('pin-input').value === '3268') {
                 document.getElementById('pin-screen').style.display = 'none';
                 document.getElementById('app').classList.remove('hidden');
-                conectar();
+                init();
             } else { alert('PIN INCORRECTO'); }
         }
-        async function conectar() {
-            const p1 = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9';
-            const p2 = 'eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJmcGRmYWRkemJjdnR6ZmVheWNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjA0MTU0NDAsImV4cCI6MjAzNjAwOTQ0MH0';
-            const p3 = 'PJybgMPIrnzxu74loQ-xRg_N6F15oMw';
+        async function init() {
+            let k = localStorage.getItem('sb_key');
+            if (!k) {
+                const p1 = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9';
+                const p2 = 'eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJmcGRmYWRkemJjdnR6ZmVheWNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjA0MTU0NDAsImV4cCI6MjAzNjAwOTQ0MH0';
+                const p3 = 'PJybgMPIrnzxu74loQ-xRg_N6F15oMw';
+                k = p1 + '.' + p2 + '.' + p3;
+            }
             try {
-                const sb = supabase.createClient('https://rfpdfaddzbcvtzfeaycg.supabase.co', p1+'.'+p2+'.'+p3);
+                const sb = supabase.createClient('https://rfpdfaddzbcvtzfeaycg.supabase.co', k);
                 const { data, error } = await sb.from('personas').select('*').order('created_at', { ascending: false });
-                if (error) throw error;
+                if (error) {
+                    if (error.message.includes('API key')) document.getElementById('setup-key').classList.remove('hidden');
+                    throw error;
+                }
+                document.getElementById('setup-key').classList.add('hidden');
                 document.getElementById('status').innerText = (data ? data.length : 0) + ' REGISTROS';
                 let h = '';
                 (data || []).forEach(p => {
@@ -47,7 +61,12 @@
                          '<div class="text-[10px] text-slate-400 font-bold">' + (p.ci || '---') + '</div></div>';
                 });
                 document.getElementById('lista').innerHTML = h || 'SIN REGISTROS';
-            } catch(e) { alert('Error: ' + e.message); }
+            } catch(e) { document.getElementById('status').innerText = 'ERROR'; }
+        }
+        function saveKey() {
+            const val = document.getElementById('new-key').value.trim();
+            if (val.startsWith('eyJ')) { localStorage.setItem('sb_key', val); location.reload(); }
+            else { alert('Debe empezar con eyJ'); }
         }
     </script>
 </body>
