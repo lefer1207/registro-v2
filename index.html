@@ -3,39 +3,36 @@
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
-    <title>REGISTRO PRO V2.22</title>
+    <title>REGISTRO PRO V2.23</title>
     <script src='https://cdn.tailwindcss.com'></script>
     <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css'>
     <script src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; background: #0f172a; color: white; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; background: #0f172a; color: white; -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
         .bg-header { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); }
-        .card { background: white; border-radius: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); color: #0f172a; transition: transform 0.2s; }
-        .card:active { transform: scale(0.98); }
+        .card { background: white; border-radius: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); color: #0f172a; }
         .loading { animation: spin 1s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
-    <!-- LOGIN INFALIBLE -->
+    <!-- PANTALLA PIN -->
     <div id='pin-screen' class='fixed inset-0 flex flex-col items-center justify-center p-6 z-[200] bg-[#0f172a]'>
         <i class='fas fa-shield-halved text-7xl text-blue-500 mb-6'></i>
         <h1 class='text-4xl font-black italic mb-8 tracking-tighter uppercase'>REGISTRO <span class='text-blue-500'>PRO</span></h1>
-        <div class='bg-slate-800/50 p-8 rounded-[40px] w-full max-w-xs border border-white/10'>
+        <div class='bg-slate-800 p-8 rounded-[40px] w-full max-w-xs border border-white/10'>
             <input type='tel' id='pin-input' placeholder='PIN' class='w-full p-5 rounded-2xl text-center text-4xl mb-6 bg-slate-900 text-white border border-white/10 outline-none font-black'>
-            <button onclick='entrar()' class='w-full bg-blue-600 py-5 rounded-2xl font-black text-xl active:bg-blue-500 shadow-lg'>INGRESAR</button>
+            <button id='btn-entrar' onclick='entrar()' class='w-full bg-blue-600 py-5 rounded-2xl font-black text-xl active:bg-blue-500 shadow-lg'>INGRESAR</button>
         </div>
     </div>
 
+    <!-- APP PRINCIPAL -->
     <div id='app' class='hidden min-h-screen bg-slate-50 text-slate-900 pb-32'>
         <header class='bg-header text-white p-6 sticky top-0 z-50 shadow-2xl'>
             <div class='flex justify-between items-center mb-6'>
-                <div>
-                    <h1 class='font-black italic text-2xl uppercase tracking-tighter'>REGISTRO <span class='text-blue-500'>PRO</span></h1>
-                    <div id='status-dot' class='w-3 h-3 rounded-full bg-green-500 mt-1'></div>
-                </div>
-                <div id='count' class='bg-blue-600/20 text-blue-400 border border-blue-500/30 px-4 py-2 rounded-2xl text-[10px] font-black uppercase'>CARGANDO...</div>
+                <h1 class='font-black italic text-2xl uppercase tracking-tighter'>REGISTRO <span class='text-blue-500'>PRO</span></h1>
+                <div id='count' class='bg-blue-600/20 text-blue-400 border border-blue-500/30 px-4 py-2 rounded-2xl text-[10px] font-black uppercase'>...</div>
             </div>
             <div class='relative'>
                 <i class='fas fa-search absolute left-5 top-1/2 -translate-y-1/2 text-slate-500'></i>
@@ -45,14 +42,8 @@
 
         <main class='p-5 space-y-6'>
             <div class='grid grid-cols-2 gap-4'>
-                <button onclick='abrirForm(false)' class='card p-6 flex flex-col items-center justify-center border border-slate-100'>
-                    <i class='fas fa-user-plus text-2xl text-blue-600 mb-2'></i>
-                    <span class='text-[10px] font-black uppercase'>Persona</span>
-                </button>
-                <button onclick='abrirForm(true)' class='card p-6 flex flex-col items-center justify-center border border-slate-100'>
-                    <i class='fas fa-car text-2xl text-slate-700 mb-2'></i>
-                    <span class='text-[10px] font-black uppercase'>Matrícula</span>
-                </button>
+                <button onclick='abrirForm(false)' class='card p-6 flex flex-col items-center justify-center'><i class='fas fa-user-plus text-2xl text-blue-600 mb-2'></i><span class='text-[10px] font-black uppercase'>Persona</span></button>
+                <button onclick='abrirForm(true)' class='card p-6 flex flex-col items-center justify-center'><i class='fas fa-car text-2xl text-slate-700 mb-2'></i><span class='text-[10px] font-black uppercase'>Matrícula</span></button>
             </div>
             <div id='lista' class='space-y-3'></div>
         </main>
@@ -63,107 +54,110 @@
             <button onclick='irA("view-list")' class='text-blue-600 text-xl'><i class='fas fa-home'></i></button>
         </nav>
 
-        <!-- FORMULARIO -->
-        <div id='view-form' class='fixed inset-0 bg-slate-50 z-[150] hidden flex flex-col'>
-            <div class='bg-[#0f172a] text-white p-6 flex items-center gap-4'>
+        <!-- VISTAS ADICIONALES (FORM, MODAL) -->
+        <div id='view-form' class='fixed inset-0 bg-slate-50 z-[150] hidden flex flex-col overflow-y-auto pb-24'>
+            <div class='bg-[#0f172a] text-white p-6 flex items-center gap-4 sticky top-0'>
                 <button onclick='irA("view-list")'><i class='fas fa-arrow-left text-xl'></i></button>
                 <h2 id='f-titulo' class='text-xl font-black uppercase italic'></h2>
             </div>
-            <div class='flex-1 overflow-y-auto p-6 space-y-5 pb-24'>
+            <div class='p-6 space-y-5'>
                 <input type='hidden' id='f-id'>
                 <div class='flex flex-col items-center mb-6'>
                     <img id='f-img-prev' class='w-40 h-40 rounded-[40px] object-cover border-4 border-white shadow-xl hidden'>
-                    <div id='f-img-placeholder' class='w-40 h-40 rounded-[40px] bg-slate-200 flex items-center justify-center shadow-inner text-slate-400'><i class='fas fa-user text-5xl'></i></div>
+                    <div id='f-img-placeholder' class='w-40 h-40 rounded-[40px] bg-slate-200 flex items-center justify-center text-slate-400'><i class='fas fa-user text-5xl'></i></div>
                     <button onclick='document.getElementById("f-foto").click()' class='-mt-8 bg-blue-600 text-white w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg'><i class='fas fa-camera'></i></button>
                     <input type='file' id='f-foto' accept='image/*' onchange='previsualizar(this)' class='hidden'>
                     <input type='hidden' id='f-foto-base64'>
                 </div>
-                <div class='grid gap-4'>
-                    <input id='f-nom' type='text' placeholder='NOMBRE COMPLETO' class='w-full p-5 rounded-2xl bg-white border border-slate-200 font-bold uppercase outline-none focus:border-blue-500'>
-                    <input id='f-ci' type='text' placeholder='CÉDULA DE IDENTIDAD' class='w-full p-5 rounded-2xl bg-white border border-slate-200 font-bold outline-none focus:border-blue-500'>
-                    <input id='f-dom' type='text' placeholder='DOMICILIO' class='w-full p-5 rounded-2xl bg-white border border-slate-200 font-bold uppercase outline-none focus:border-blue-500'>
-                    <div class='grid grid-cols-2 gap-4'>
-                        <input id='f-veh' type='text' placeholder='VEHÍCULO' class='w-full p-5 rounded-2xl bg-white border border-slate-200 font-bold uppercase outline-none focus:border-blue-500'>
-                        <input id='f-mat' type='text' placeholder='MATRÍCULA' class='w-full p-5 rounded-2xl bg-white border border-slate-200 font-bold uppercase outline-none focus:border-blue-500'>
-                    </div>
-                    <textarea id='f-notas' rows='5' placeholder='NOTAS / HISTORIAL' class='w-full p-6 rounded-[30px] bg-red-50 border border-red-100 font-bold text-red-900 outline-none focus:border-red-300'></textarea>
+                <input id='f-nom' type='text' placeholder='NOMBRE COMPLETO' class='w-full p-5 rounded-2xl bg-white border border-slate-200 font-bold uppercase'>
+                <input id='f-ci' type='text' placeholder='CÉDULA' class='w-full p-5 rounded-2xl bg-white border border-slate-200 font-bold'>
+                <input id='f-dom' type='text' placeholder='DOMICILIO' class='w-full p-5 rounded-2xl bg-white border border-slate-200 font-bold uppercase'>
+                <div class='grid grid-cols-2 gap-4'>
+                    <input id='f-veh' type='text' placeholder='VEHÍCULO' class='w-full p-5 rounded-2xl bg-white border border-slate-200 font-bold uppercase'>
+                    <input id='f-mat' type='text' placeholder='MATRÍCULA' class='w-full p-5 rounded-2xl bg-white border border-slate-200 font-bold uppercase'>
                 </div>
-                <button id='btn-save' onclick='guardarRegistro()' class='w-full bg-blue-700 text-white py-6 rounded-3xl font-black uppercase shadow-xl mt-4 active:bg-blue-800'>GUARDAR REGISTRO</button>
+                <textarea id='f-notas' rows='5' placeholder='NOTAS / HISTORIAL' class='w-full p-6 rounded-[30px] bg-red-50 border border-red-100 font-bold text-red-900'></textarea>
+                <button id='btn-save' onclick='guardarRegistro()' class='w-full bg-blue-700 text-white py-6 rounded-3xl font-black uppercase shadow-xl active:bg-blue-800'>GUARDAR REGISTRO</button>
             </div>
         </div>
 
-        <!-- MODAL DETALLES -->
         <div id='modal' class='fixed inset-0 bg-[#0f172a]/95 z-[160] hidden flex items-center justify-center p-4 backdrop-blur-sm' onclick='this.classList.add("hidden")'>
             <div class='bg-white w-full max-w-md rounded-[50px] p-8 shadow-2xl relative mt-12' onclick='event.stopPropagation()'>
                 <div class='flex flex-col items-center -mt-24 mb-6'>
                     <img id='m-foto' class='w-40 h-40 rounded-[45px] border-[10px] border-white shadow-2xl object-cover hidden'>
-                    <div id='m-foto-empty' class='w-40 h-40 rounded-[45px] border-[10px] border-white shadow-2xl bg-slate-100 flex items-center justify-center text-slate-300'><i class='fas fa-user text-6xl'></i></div>
+                    <div id='m-foto-empty' class='w-40 h-40 rounded-[45px] border-[10px] border-white bg-slate-100 flex items-center justify-center text-slate-300'><i class='fas fa-user text-6xl'></i></div>
                 </div>
-                <div class='flex justify-between items-start mb-6'>
+                <div class='flex justify-between items-start mb-4'>
                     <h2 id='m-nom' class='text-2xl font-black uppercase italic text-slate-900 border-b-4 border-blue-600 flex-1 mr-4'></h2>
-                    <button id='btn-edit-modal' class='bg-slate-100 w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm'><i class='fas fa-edit'></i></button>
+                    <button id='btn-edit-modal' class='bg-slate-100 w-12 h-12 rounded-2xl flex items-center justify-center'><i class='fas fa-edit'></i></button>
                 </div>
-                <div class='space-y-4 max-h-[45vh] overflow-y-auto pr-2'>
-                    <div class='bg-slate-50 p-4 rounded-2xl'><p class='text-[10px] font-black text-slate-400 uppercase'>Identificación</p><p id='m-ci' class='text-blue-700 font-black text-2xl uppercase'></p></div>
-                    <div><p class='text-[10px] font-black text-slate-400 uppercase'>Domicilio</p><p id='m-dom' class='text-slate-800 font-bold uppercase text-sm'></p></div>
-                    <div><p class='text-[10px] font-black text-slate-400 uppercase'>Vehículo / Matrícula</p><p id='m-veh' class='text-slate-800 font-bold uppercase text-sm'></p></div>
-                    <div id='m-notas' class='text-red-700 font-bold text-[13px] bg-red-50 p-6 rounded-[30px] border border-red-100 whitespace-pre-wrap leading-relaxed'></div>
+                <div class='space-y-3 max-h-[40vh] overflow-y-auto'>
+                    <p id='m-ci' class='text-blue-700 font-black text-2xl uppercase'></p>
+                    <p id='m-dom' class='text-slate-800 font-bold uppercase text-sm'></p>
+                    <p id='m-veh' class='text-slate-800 font-bold uppercase text-sm'></p>
+                    <div id='m-notas' class='text-red-700 font-bold text-[13px] bg-red-50 p-5 rounded-[30px] border border-red-100 whitespace-pre-wrap'></div>
                 </div>
-                <button onclick='document.getElementById("modal").classList.add("hidden")' class='mt-8 w-full bg-[#0f172a] text-white py-5 rounded-3xl font-black uppercase shadow-xl'>CERRAR</button>
+                <button onclick='document.getElementById("modal").classList.add("hidden")' class='mt-6 w-full bg-[#0f172a] text-white py-5 rounded-3xl font-black uppercase shadow-xl'>CERRAR</button>
             </div>
         </div>
     </div>
 
     <script>
-        const SB_URL = 'https://rfpdfaddzbcvtzfeaycg.supabase.co';
-        const k1 = 'sb_secret';
-        const k2 = '_PJybgMPIrnzxu74loQ-xRg_N6F15oMw';
-        const SB_KEY = k1 + k2;
-        const supabaseClient = supabase.createClient(SB_URL, SB_KEY);
-        let db = [];
-
+        // Función entrar al principio para garantizar acceso
         function entrar() {
-            const pin = document.getElementById('pin-input').value;
-            console.log('Intento de entrada con PIN:', pin);
-            if (pin === '3268') {
+            const val = document.getElementById('pin-input').value;
+            if (val === '3268') {
                 document.getElementById('pin-screen').style.display = 'none';
                 document.getElementById('app').classList.remove('hidden');
-                cargarDB();
+                // Intentar cargar después de liberar la UI
+                setTimeout(cargarDB, 100);
             } else {
                 alert('PIN INCORRECTO');
             }
         }
 
+        // Configuración de Supabase
+        const k1 = 'sb_secret';
+        const k2 = '_PJybgMPIrnzxu74loQ-xRg_N6F15oMw';
+        const SB_URL = 'https://rfpdfaddzbcvtzfeaycg.supabase.co';
+        const SB_KEY = k1 + k2;
+        let supabaseClient;
+        let db = [];
+
+        try {
+            supabaseClient = supabase.createClient(SB_URL, SB_KEY);
+        } catch(e) {
+            console.error('Error Supabase:', e);
+        }
+
         async function cargarDB() {
-            document.getElementById('status-dot').className = 'w-3 h-3 rounded-full bg-yellow-500 loading';
+            if(!supabaseClient) return;
+            document.getElementById('count').innerText = 'SINCRONIZANDO...';
             try {
                 const { data, error } = await supabaseClient.from('personas').select('*').order('created_at', { ascending: false });
                 if (error) throw error;
                 db = data || [];
                 document.getElementById('count').innerText = db.length + ' REGISTROS';
                 dibujar(db);
-                document.getElementById('status-dot').className = 'w-3 h-3 rounded-full bg-green-500';
             } catch(e) {
-                console.error('Error:', e);
-                document.getElementById('status-dot').className = 'w-3 h-3 rounded-full bg-red-500';
-                document.getElementById('count').innerText = 'ERROR DE CARGA';
+                document.getElementById('count').innerText = 'ERROR';
             }
         }
 
         function dibujar(datos) {
             const lista = document.getElementById('lista');
             if(!datos || datos.length === 0) {
-                lista.innerHTML = "<div class='text-center p-10 opacity-30 font-black italic'>SIN DATOS</div>";
+                lista.innerHTML = "<div class='text-center p-10 opacity-30 font-black italic uppercase'>Sin datos en la nube</div>";
                 return;
             }
             let html = '';
             datos.forEach(p => {
-                const img = p.foto ? '<img src="'+p.foto+'" class="w-12 h-12 rounded-2xl object-cover shadow-sm">' : '<div class="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 font-black text-xs">'+(p.nombre ? p.nombre[0] : '?')+'</div>';
-                html += "<div onclick="verDetalles('"+p.id+"')" class='card p-5 flex justify-between items-center'>" +
+                const img = p.foto ? '<img src="'+p.foto+'" class="w-12 h-12 rounded-2xl object-cover">' : '<div class="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 font-black text-xs">'+(p.nombre ? p.nombre[0] : '?')+'</div>';
+                html += "<div onclick="verDetalles('"+p.id+"')" class='card p-5 flex justify-between items-center active:bg-slate-50 transition-colors'>" +
                         "<div class='flex items-center gap-4 overflow-hidden'>" + img +
                         "<div class='overflow-hidden'><h3 class='font-black uppercase text-slate-900 text-xs truncate leading-tight'>"+(p.nombre || 'SIN NOMBRE')+"</h3>" +
                         "<p class='text-[10px] text-slate-400 font-bold'>"+(p.ci || p.matricula || '---')+"</p></div></div>" +
-                        "<i class='fas fa-chevron-right text-slate-200 text-xs ml-4'></i></div>";
+                        "<i class='fas fa-chevron-right text-slate-200 text-xs'></i></div>";
             });
             lista.innerHTML = html;
         }
@@ -175,8 +169,8 @@
             const mfe = document.getElementById('m-foto-empty');
             if(p.foto) { mf.src = p.foto; mf.classList.remove('hidden'); mfe.classList.add('hidden'); } else { mf.classList.add('hidden'); mfe.classList.remove('hidden'); }
             document.getElementById('m-nom').innerText = p.nombre;
-            document.getElementById('m-ci').innerText = p.ci || 'SIN IDENTIFICACIÓN';
-            document.getElementById('m-dom').innerText = p.domicilio || 'SIN DOMICILIO';
+            document.getElementById('m-ci').innerText = p.ci || 'S/ID';
+            document.getElementById('m-dom').innerText = p.domicilio || 'S/DOMICILIO';
             document.getElementById('m-veh').innerText = (p.vehiculo || '') + ' ' + (p.matricula || '');
             document.getElementById('m-notas').innerText = p.notas;
             document.getElementById('modal').classList.remove('hidden');
