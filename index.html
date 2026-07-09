@@ -1,102 +1,72 @@
 <!DOCTYPE html>
-<html lang='es'>
+<html lang="es">
 <head>
-    <meta charset='UTF-8'>
-    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
-    <title>REGISTRO PRO V2.32</title>
-    <script src='https://cdn.tailwindcss.com'></script>
-    <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css'>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REGISTRO PRO V2.33</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { background: #0f172a; color: white; font-family: sans-serif; margin: 0; padding: 0; }
-        #pin-screen { position: fixed; inset: 0; background: #0f172a; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-        #app { display: none; background: #f1f5f9; color: #0f172a; min-height: 100vh; }
-        .bg-header { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: white; padding: 20px; }
-        .card { background: white; border-radius: 20px; padding: 15px; margin-bottom: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        body { background: #0f172a; color: white; font-family: sans-serif; }
+        .card { background: white; color: #1e293b; border-radius: 15px; padding: 15px; margin-bottom: 10px; }
     </style>
 </head>
-<body>
-    <div id='pin-screen'>
-        <h1 style='font-size:30px; font-weight:900; font-style:italic; margin-bottom:30px;'>REGISTRO <span style='color:#3b82f6;'>PRO</span></h1>
-        <input type='tel' id='pin-input' placeholder='PIN' style='width:100%; max-width:250px; padding:15px; border-radius:15px; text-align:center; font-size:30px; margin-bottom:20px; color:#000; border:none;'>
-        <button onclick='ingresar()' style='width:100%; max-width:250px; background:#2563eb; color:white; padding:15px; border-radius:15px; font-weight:900; border:none;'>INGRESAR</button>
-        <p style='margin-top:20px; opacity:0.3; font-size:10px;'>VERSIÓN 2.32</p>
+<body class="p-4">
+    <div id="pin-screen" class="fixed inset-0 bg-[#0f172a] z-50 flex flex-col items-center justify-center p-6">
+        <h1 class="text-3xl font-black italic mb-8 uppercase tracking-tighter">REGISTRO <span class="text-blue-500">PRO</span></h1>
+        <input type="tel" id="pin-input" placeholder="PIN" class="w-full max-w-xs p-4 rounded-xl text-center text-3xl mb-4 bg-black text-white border border-slate-700 outline-none font-black">
+        <button onclick="entrar()" class="w-full max-w-xs bg-blue-600 py-4 rounded-xl font-bold text-xl shadow-lg">INGRESAR</button>
+        <p class="mt-6 opacity-30 text-xs">V2.33 - LLAVE CORREGIDA</p>
     </div>
-
-    <div id='app'>
-        <header class='bg-header shadow-xl'>
-            <div class='flex justify-between items-center mb-4'>
-                <h1 class='font-black italic text-xl uppercase'>REGISTRO <span class='text-blue-500'>PRO</span></h1>
-                <div id='status' class='text-[10px] font-black bg-blue-500/20 px-3 py-1 rounded-full text-blue-300'>ESPERANDO...</div>
-            </div>
-            <input type='text' id='bus' oninput='filtrar()' placeholder='Buscar...' style='width:100%; padding:12px; border-radius:15px; background:rgba(255,255,255,0.1); border:none; color:white; outline:none;'>
-        </header>
-        <main id='lista' style='padding:20px;'></main>
+    <div id="app" class="hidden">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-xl font-black italic">REGISTRO <span class="text-blue-500">PRO</span></h1>
+            <div id="status" class="bg-blue-900/50 text-blue-300 px-3 py-1 rounded-full text-xs font-bold uppercase">CARGANDO...</div>
+        </div>
+        <input type="text" id="bus" oninput="filtrar()" placeholder="Buscar..." class="w-full p-4 rounded-xl bg-slate-800 text-white mb-6 border-none outline-none">
+        <div id="lista"></div>
     </div>
-
-    <!-- Script de Supabase al final -->
-    <script src='https://unpkg.com/@supabase/supabase-js@2'></script>
     <script>
-        var client;
-        var base = [];
-
-        function ingresar() {
-            var p = document.getElementById('pin-input').value;
-            if (p === '3268') {
-                document.getElementById('pin-screen').style.display = 'none';
-                document.getElementById('app').style.display = 'block';
+        var sb; var base = [];
+        function entrar() {
+            if (document.getElementById('pin-input').value === '3268') {
+                document.getElementById('pin-screen').classList.add('hidden');
+                document.getElementById('app').classList.remove('hidden');
                 iniciar();
-            } else { alert('PIN Mal'); }
+            } else { alert('PIN INCORRECTO'); }
         }
-
         async function iniciar() {
-            var st = document.getElementById('status');
-            st.innerText = 'CONECTANDO...';
-            
+            const p1 = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9';
+            const p2 = 'eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJmcGRmYWRkemJjdnR6ZmVheWNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjA0MTU0NDAsImV4cCI6MjAzNjAwOTQ0MH0';
+            const p3 = 'PJybgMPIrnzxu74loQ-xRg_N6F15oMw';
+            const k = p1 + '.' + p2 + '.' + p3;
             try {
-                if (typeof supabase === 'undefined') {
-                    throw new Error('Librería Supabase no cargada. Reintenta.');
-                }
-
-                var url = 'https://rfpdfaddzbcvtzfeaycg.supabase.co';
-                var key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJmcGRmYWRkemJjdnR6ZmVheWNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjA0MTU0NDAsImV4cCI6MjAzNjAwOTQ0MH0.PJybgMPIrnzxu74loQ-xRg_N6F15oMw';
-                
-                client = supabase.createClient(url, key);
-                
-                const { data, error } = await client.from('personas').select('*').order('created_at', { ascending: false });
-                
-                if (error) {
-                    st.innerText = 'ERROR';
-                    alert('Error de DB: ' + error.message);
-                } else {
-                    base = data || [];
-                    st.innerText = base.length + ' REGISTROS';
-                    mostrar(base);
-                }
-            } catch (err) {
-                st.innerText = 'FALLO';
-                alert('Error crítico: ' + err.message);
+                sb = supabase.createClient('https://rfpdfaddzbcvtzfeaycg.supabase.co', k);
+                const { data, error } = await sb.from('personas').select('*').order('created_at', { ascending: false });
+                if (error) throw error;
+                base = data || [];
+                document.getElementById('status').innerText = base.length + ' REGISTROS';
+                mostrar(base);
+            } catch(e) {
+                alert('ERROR DE LLAVE O CONEXIÓN: ' + e.message);
+                document.getElementById('status').innerText = 'ERROR';
             }
         }
-
         function mostrar(datos) {
-            var l = document.getElementById('lista');
-            var html = '';
-            for (var i = 0; i < datos.length; i++) {
+            const l = document.getElementById('lista'); let h = '';
+            for(var i=0; i<datos.length; i++) {
                 var p = datos[i];
-                html += '<div class="card">' +
-                        '<b style="text-transform:uppercase;">' + (p.nombre || p.matricula || '---') + '</b><br>' +
-                        '<small style="color:#64748b;">' + (p.ci || '---') + '</small>' +
-                        '</div>';
+                h += '<div class="card">' +
+                     '<div class="font-black uppercase text-sm">' + (p.nombre || p.matricula || '---') + '</div>' +
+                     '<div class="text-[10px] text-slate-500 font-bold">' + (p.ci || 'S/ID') + '</div>' +
+                     '</div>';
             }
-            l.innerHTML = html || '<div style="text-align:center; padding:50px; opacity:0.3;">SIN DATOS</div>';
+            l.innerHTML = h || '<div class="text-center opacity-30 mt-10 font-black italic uppercase">Sin datos</div>';
         }
-
         function filtrar() {
-            var t = document.getElementById('bus').value.toLowerCase().trim();
-            if (!t) return mostrar(base);
-            var f = base.filter(function(x) {
-                return (x.nombre && x.nombre.toLowerCase().includes(t)) || (x.ci && String(x.ci).includes(t)) || (x.matricula && x.matricula.toLowerCase().includes(t));
-            });
+            const t = document.getElementById('bus').value.toLowerCase().trim();
+            if(!t) return mostrar(base);
+            const f = base.filter(p => (p.nombre && p.nombre.toLowerCase().includes(t)) || (p.ci && String(p.ci).includes(t)) || (p.matricula && p.matricula.toLowerCase().includes(t)));
             mostrar(f);
         }
     </script>
