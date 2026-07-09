@@ -3,17 +3,17 @@
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
-    <title>REGISTRO PRO V2.44</title>
+    <title>REGISTRO PRO V2.45</title>
     <script src='https://cdn.tailwindcss.com'></script>
     <script src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'></script>
     <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css'>
 </head>
 <body class='bg-slate-100 font-sans'>
     <div id='pin-screen' class='fixed inset-0 bg-slate-900 z-[1000] flex flex-col items-center justify-center p-6 text-center'>
-        <h1 class='text-white text-3xl font-black italic mb-10 uppercase'>REGISTRO <span class='text-blue-500'>PRO</span></h1>
+        <h1 class='text-white text-3xl font-black italic mb-10 uppercase tracking-tighter'>REGISTRO <span class='text-blue-500'>PRO</span></h1>
         <input type='tel' id='pin-input' placeholder='PIN' class='w-full max-w-xs p-4 rounded-2xl text-center text-4xl mb-6 bg-black text-white font-black outline-none border border-slate-700'>
-        <button onclick='ingresar()' class='w-full max-w-xs bg-blue-600 text-white py-4 rounded-2xl font-black text-xl shadow-lg'>INGRESAR</button>
-        <p class='text-white/20 mt-10 text-[10px] font-black uppercase tracking-widest'>v2.44 - RECOVERY</p>
+        <button onclick='ingresar()' class='w-full max-w-xs bg-blue-600 text-white py-4 rounded-2xl font-black text-xl shadow-lg active:scale-95 transition-all'>INGRESAR</button>
+        <p class='text-white/20 mt-10 text-[10px] font-black uppercase tracking-widest'>v2.45 - FULL RESCUE</p>
     </div>
 
     <div id='app' class='hidden pb-24'>
@@ -25,7 +25,7 @@
                     <button onclick='window.location.reload()' class='bg-slate-700 w-12 h-12 rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-transform'><i class='fas fa-sync'></i></button>
                 </div>
             </div>
-            <input type='text' id='bus' oninput='filtrar()' placeholder='Buscar registros...' class='w-full p-4 rounded-2xl bg-white/10 text-white border border-white/10 font-bold outline-none focus:bg-white/20'>
+            <input type='text' id='bus' oninput='filtrar()' placeholder='Buscar...' class='w-full p-4 rounded-2xl bg-white/10 text-white border border-white/10 font-bold outline-none focus:bg-white/20 transition-all'>
         </header>
         <main id='lista' class='p-5 space-y-3'></main>
     </div>
@@ -34,7 +34,7 @@
         let sb; let db = [];
         const K = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJmcGRmYWRkemJjdnR6ZmVheWNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMxMTU1MzQsImV4cCI6MjA5OTA5MTUzNH0.yXoweYF5pl01EU5R2be6GtnHto27HxLOjEmF8G87jOE';
         const U = 'https://rfpdfaddzbcvtzfeaycg.supabase.co';
-        const DRIVE_DATA = [{"n": "Maria Florencia Andrioli Araujo", "c": "55688912"}, {"n": "Donato Sebastian Silva Machado", "c": "51614256"}, {"n": "Alejandra Rosa Silva Fleitas", "c": "43248837"}, {"n": "Ruzbel Alexandro Ramirez", "c": "47529487"}, {"n": "Marianela Camiza Alvarez", "c": "34878728"}, {"n": "Martin Fabian Caceres Sappa", "c": "25295513"}, {"n": "Wilson Ney Peralta", "c": "38463442"}, {"n": "Luis Angel Lopez Santana", "c": "53262655"}, {"n": "Maria del Carmen de Leon Volppe", "c": "34756318"}, {"n": "Eduardo Joaquin Furtado Sala", "c": "51881237"}, {"n": "Cristian Marcelo Martinez Delgado", "c": "40000911"}, {"n": "Karen Musto Olivas", "c": "53223237"}];
+        const DRIVE_DATA = [{"n": "Mario Andres Oyarzo Olivera", "c": "49287546"}, {"n": "Victor Lautaro Bener Godoy", "c": "54986050"}, {"n": "Pilar Denis Rosano", "c": "59319628"}, {"n": "Alan Fernandez Cruz", "c": ""}, {"n": "Axel Fernandez Cruz", "c": "59701994"}, {"n": "Freddy Leonardo Fernandez Hunderwat", "c": "48924997"}, {"n": "Oscar Fabian Denis Etchevarne", "c": "40580028"}, {"n": "Alison Micaela Bonnefon Mederos", "c": "59324483"}, {"n": "Andres Sebastian Lopez Fernandez", "c": "55120097"}, {"n": "Maria Nela Menendez Figueroa", "c": "38363315"}, {"n": "Jairo Danilo Ortiz Sanchez", "c": "42176716"}, {"n": "Jose Enrique Martinez Delor", "c": "34121652"}, {"n": "Eliseo Raul Albernaz Alaniz", "c": "41324772"}, {"n": "Juan Ariel Fischer Rodriguez", "c": "26958853"}, {"n": "Blas Niki Seara Cawen", "c": "47922528"}, {"n": "Eliana Yasmin Acosta Feirer", "c": "59337290"}, {"n": "Romina Marisela Almada Fontela", "c": "43276537"}, {"n": "Stefani Madelaine Feirer Sosa", "c": "51614284"}, {"n": "Silvia Giovanna Larregui Martinez", "c": "41233440"}, {"n": "Luis Ormando Valenzuela Garcia", "c": "45714210"}, {"n": "Karina Magdalena Rodriguez Lopez", "c": "50369511"}, {"n": "Maria Adela Denis Cabrera", "c": "43110367"}, {"n": "Mario Alejandro Bonnefon Gauna", "c": "38940751"}, {"n": "Oscar Raul Ramos Narez", "c": "37875650"}, {"n": "Rober Alfonso Arrua Elizalde", "c": "38749167"}, {"n": "Alex Joselino Gaitan Diaz", "c": "53508215"}, {"n": "Stefany Alejandra Seara Gonzalez", "c": "47990929"}, {"n": "Marcos Raul Correa Fernandez", "c": "26492271"}, {"n": "Indy Soray Marquez Machado", "c": "50101084"}, {"n": "Nelson Matias Mazzucco Nu\u00f1ez", "c": "44066296"}, {"n": "Raquel Gisel Bonfrisco Viera", "c": "28531182"}, {"n": "Julio Orlando Peralta Valdez", "c": "39004322"}, {"n": "Evelyn Elizabeth Etchevarne Martinez", "c": "51862592"}, {"n": "Israel Lujan Alvarez Tamareo", "c": "44906042"}, {"n": "Lucia Alejandra Araujo Gao", "c": "39980378"}, {"n": "Maria Florencia Andrioli Araujo", "c": "55688912"}, {"n": "Donato Sebastian Silva Machado", "c": "51614256"}, {"n": "Alejandra Rosa Silva Fleitas", "c": "43248837"}, {"n": "Ruzbel Alexandro Ramirez", "c": "47529487"}, {"n": "Marianela Camiza Alvarez", "c": "34878728"}, {"n": "Martin Fabian Caceres Sappa", "c": "25295513"}, {"n": "Wilson Ney Peralta", "c": "38463442"}, {"n": "Nancy Anai Figueira Rodriguez", "c": "31653474"}, {"n": "Eric Ezekiel Figueira Rodriguez", "c": "56232869"}, {"n": "Cristina Rosario Balerio Rodriguez", "c": "40866652"}, {"n": "Pablo Sebastian Barragan Aguiar", "c": "46401856"}, {"n": "Eduardo Marcelo Umpierrez Pereyra", "c": "36597572"}, {"n": "Kevin Anselmo Correa Jimenez", "c": "51100417"}, {"n": "Marcela Alejandra Jimenez Floretta", "c": "37221607"}, {"n": "Saravia Angel Ramos Narez", "c": "25568578"}, {"n": "Gloria Estefani Alvarez Soarez de Lima", "c": "50675172"}, {"n": "Ruben Amadelio Aceredo Dericci", "c": "30065171"}, {"n": "Gustavo Ramiro Vidal Andreoli", "c": "49563067"}, {"n": "Gonzalo Mathias Marino Monzon", "c": "47793535"}, {"n": "Irma Joseline Miranda Mendez", "c": "53075048"}, {"n": "Josefina Noemi Umpierrez Soares de Lima", "c": "52063610"}, {"n": "Katty Mariel Bacino Vega", "c": "55504653"}, {"n": "Gustavo Moises Furtado Acosta", "c": "44703030"}, {"n": "Gustavo Marcelo Cardozo Cardozo", "c": "45476022"}, {"n": "Luis Alberto Fagundez de los Santos", "c": "30050231"}, {"n": "Washington Waldemar Da Silva", "c": "34355899"}, {"n": "Alberto Rodrigo Reyes Blanco", "c": "47531494"}, {"n": "Luis Maria Iglesias Mendez", "c": "52339821"}, {"n": "Maria Soledad Torena Blanco", "c": "53205182"}, {"n": "Christian Michel Pereira Caceres", "c": "35580348"}, {"n": "Leticia Giovana Olivera Perez", "c": "42928577"}, {"n": "Ivana Leticia To\u00f1ole Dure", "c": "41000304"}, {"n": "Juan Antonio Nassutti Berta", "c": "35813044"}, {"n": "Juan Carlos Perez Suarez", "c": "31529085"}, {"n": "Yesica Rocio Balerio Navas", "c": "54754429"}, {"n": "Ambard Dubraska Flores Tabata", "c": "64216956"}, {"n": "Oriana Sabrina Silvera Andreoli", "c": "53908592"}, {"n": "Luciano Machado Bentancor", "c": "53472204"}, {"n": "Luciana Ayelen Gimenez Nadales", "c": "53714084"}, {"n": "Jessica Micaela Soto Esparque", "c": "54341880"}, {"n": "Mariel Gonzalez Serra", "c": "36287357"}, {"n": "Vladimir Martin Cosella Ferreira", "c": "53561221"}, {"n": "Ana Amalia Cardozo Meyer", "c": "35027978"}, {"n": "Alexis Nicolas de los Santos", "c": "28585434"}, {"n": "Laura Ines Borges de los Santos", "c": "39816448"}, {"n": "Jessica Rosmary Rodriguez Maidana", "c": "42970508"}, {"n": "Elian Lautaro Benitez Rodriguez", "c": "55437947"}, {"n": "Oscar Jose Torena", "c": "28373257"}, {"n": "Oscar Ignacio Torena Viera", "c": "55767873"}, {"n": "Silvana Schiera Rodriguez", "c": "42619431"}, {"n": "Carlos Maria Caraballo Ferraz", "c": "29218098"}, {"n": "Emiliano German Vigo Camejo", "c": "46947727"}, {"n": "Nestor Andres Valenzuela Peralta", "c": "30619873"}, {"n": "Mario Sergio Etchevarne Garcia", "c": "34873289"}, {"n": "Michael Eduardo Gonzalez Curbelo", "c": "53880683"}, {"n": "Sofia Magdalena Pintos Amarillo", "c": "53583924"}, {"n": "Jorge Daniel Pintos Barrientos", "c": "39359787"}, {"n": "Juan Eduardo Bovio Casavieja", "c": "19568029"}, {"n": "Julio Nelson Etchevarne Garcia", "c": "41496513"}, {"n": "Tomas Agustin Etchevarne Olivera", "c": "50471649"}, {"n": "Janina Janet da Luz Apolo", "c": "53760083"}, {"n": "William Fabian Bernis Cosella", "c": "55616286"}, {"n": "Elirio Edgardo Gutierrez Lavie", "c": "40813746"}, {"n": "Brisa Janahina Acu\u00f1a Bruno", "c": "55086326"}, {"n": "Silvia Valeria Acu\u00f1a Bruno", "c": "25775802"}, {"n": "Ramon Alejandro Milan Da Silva", "c": "28793831"}, {"n": "Fernando Dario Amaro Irigoyen", "c": "49100304"}, {"n": "Alejandra Benedicta Olivera Silveira", "c": "42114209"}, {"n": "Juan Antonio de Leon Volpe", "c": "25822330"}, {"n": "Basilicio Victorio de Leon Volpe", "c": "27636531"}, {"n": "Maria Bernadette Fabro Presa", "c": "40694621"}, {"n": "Pablo Nicolas Gutierrez Viera", "c": "52148989"}, {"n": "Yacika Viera Bacino", "c": "42803955"}, {"n": "Melina Acosta Fabro", "c": "54227488"}, {"n": "Lucas Arrua Seara", "c": "54332427"}, {"n": "Jose Alfredo Pirez Cardozo", "c": "39910894"}, {"n": "Carlos Eduardo Perez Martinez", "c": "31213719"}, {"n": "Ana Magdalena Dorado Patron", "c": "32305030"}, {"n": "Daniela Bettina Camisa Derigo", "c": "46153552"}, {"n": "Silvia Patricia Barcelo Etchebarne", "c": "45680627"}, {"n": "Luis Angel Lopez Santana", "c": "53262655"}, {"n": "Maria del Carmen de Leon Volppe", "c": "34756318"}, {"n": "Eduardo Joaquin Furtado Sala", "c": "51881237"}, {"n": "Cristian Marcelo Martinez Delgado", "c": "40000911"}, {"n": "Karen Musto Olivas", "c": "53223237"}];
 
         function ingresar() {
             if (document.getElementById('pin-input').value === '3268') {
@@ -50,16 +50,30 @@
         }
         function dibujar(datos) {
             const l = document.getElementById('lista');
-            l.innerHTML = datos.map(p => "<div class='bg-white p-5 rounded-[32px] shadow-sm border border-slate-200 flex items-center space-x-4 animate-in fade-in duration-500'><div class='w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-200'><i class='fas fa-user text-2xl'></i></div><div class='flex-1'><div class='font-black uppercase text-xs text-slate-800 tracking-tight'>" + p.nombre + "</div><div class='text-[10px] text-slate-400 font-bold'>" + (p.ci || '---') + "</div></div></div>").join('') || '<div class="text-center p-24 opacity-20 font-black uppercase tracking-widest text-slate-400">Vacío</div>';
+            l.innerHTML = datos.map(p => "<div class='bg-white p-5 rounded-[32px] shadow-sm border border-slate-200 flex items-center space-x-4 animate-in fade-in duration-500'><div class='w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-200'><i class='fas fa-user text-2xl'></i></div><div class='flex-1'><div class='font-black uppercase text-xs text-slate-800 tracking-tight'>" + p.nombre + "</div><div class='text-[10px] text-slate-400 font-bold uppercase'>CI " + (p.ci || '---') + "</div></div></div>").join('') || '<div class="text-center p-24 opacity-20 font-black uppercase tracking-widest text-slate-400">Vacío</div>';
         }
         async function importarDrive() {
-            if (!confirm('¿Restaurar registros desde el respaldo?')) return;
+            if (!confirm('¿Restaurar los ' + DRIVE_DATA.length + ' registros del respaldo completo?')) return;
             const btn = document.getElementById('btn-import');
             btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            const batch = DRIVE_DATA.map(d => ({ nombre: d.n, ci: d.c }));
-            const { error } = await sb.from('personas').insert(batch);
-            if (error) { alert('Error: No se puede escribir. ¿Ya creaste la tabla en Supabase?'); btn.disabled = false; btn.innerHTML = '<i class="fas fa-file-import"></i>'; }
-            else { alert('¡Restauración exitosa!'); cargar(); btn.innerHTML = '<i class="fas fa-check"></i>'; }
+            
+            const batchSize = 30;
+            let successCount = 0;
+            for (let i = 0; i < DRIVE_DATA.length; i += batchSize) {
+                const chunk = DRIVE_DATA.slice(i, i + batchSize).map(d => ({ nombre: d.n, ci: d.c }));
+                const { error } = await sb.from('personas').insert(chunk);
+                if (!error) successCount += chunk.length;
+            }
+            
+            if (successCount > 0) {
+                alert('¡Restauración exitosa! Se cargaron ' + successCount + ' registros.');
+                cargar();
+                btn.innerHTML = '<i class="fas fa-check"></i>';
+            } else {
+                alert('Error al insertar. ¿Creaste la tabla personas en el Supabase nuevo?');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-file-import"></i>';
+            }
         }
         function filtrar() {
             const t = document.getElementById('bus').value.toLowerCase().trim();
