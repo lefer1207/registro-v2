@@ -3,122 +3,102 @@
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
-    <title>REGISTRO PRO V2.31</title>
+    <title>REGISTRO PRO V2.32</title>
     <script src='https://cdn.tailwindcss.com'></script>
     <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css'>
-    <script src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; background: #0f172a; color: white; margin: 0; }
-        #pin-screen { position: fixed; inset: 0; background: #0f172a; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-        .pin-box { background: #1e293b; padding: 30px; border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); width: 100%; max-width: 300px; text-align: center; }
-        input#pin-input { width: 100%; padding: 15px; border-radius: 15px; text-align: center; font-size: 35px; margin-bottom: 20px; background: #000; color: #fff; border: 1px solid #334155; outline: none; font-weight: 900; }
-        button#btn-entrar { width: 100%; background: #2563eb; color: white; padding: 20px; border-radius: 20px; font-weight: 900; font-size: 20px; border: none; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
+        body { background: #0f172a; color: white; font-family: sans-serif; margin: 0; padding: 0; }
+        #pin-screen { position: fixed; inset: 0; background: #0f172a; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
         #app { display: none; background: #f1f5f9; color: #0f172a; min-height: 100vh; }
-        .bg-header { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: white; padding: 20px; position: sticky; top: 0; z-index: 100; }
-        .card { background: white; border-radius: 25px; padding: 20px; margin-bottom: 12px; box-shadow: 0 8px 15px rgba(0,0,0,0.05); color: #0f172a; }
+        .bg-header { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: white; padding: 20px; }
+        .card { background: white; border-radius: 20px; padding: 15px; margin-bottom: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
     </style>
 </head>
 <body>
     <div id='pin-screen'>
-        <i class='fas fa-shield-halved text-6xl text-blue-500 mb-6'></i>
-        <h1 class='text-4xl font-black italic mb-10 uppercase tracking-tighter'>REGISTRO <span class='text-blue-500'>PRO</span></h1>
-        <div class='pin-box'>
-            <input type='tel' id='pin-input' placeholder='PIN'>
-            <button id='btn-entrar' onclick='ingresar()'>INGRESAR</button>
-        </div>
-        <p class='mt-10 text-[10px] opacity-30 font-black'>Versión 2.31</p>
+        <h1 style='font-size:30px; font-weight:900; font-style:italic; margin-bottom:30px;'>REGISTRO <span style='color:#3b82f6;'>PRO</span></h1>
+        <input type='tel' id='pin-input' placeholder='PIN' style='width:100%; max-width:250px; padding:15px; border-radius:15px; text-align:center; font-size:30px; margin-bottom:20px; color:#000; border:none;'>
+        <button onclick='ingresar()' style='width:100%; max-width:250px; background:#2563eb; color:white; padding:15px; border-radius:15px; font-weight:900; border:none;'>INGRESAR</button>
+        <p style='margin-top:20px; opacity:0.3; font-size:10px;'>VERSIÓN 2.32</p>
     </div>
 
-    <div id='app' class='pb-32'>
-        <header class='bg-header shadow-2xl'>
-            <div class='flex justify-between items-center mb-6'>
-                <h1 class='font-black italic text-2xl uppercase tracking-tighter'>REGISTRO <span class='text-blue-500'>PRO</span></h1>
-                <div id='count' class='bg-blue-600/20 text-blue-400 border border-blue-500/30 px-4 py-2 rounded-2xl text-[10px] font-black uppercase'>...</div>
+    <div id='app'>
+        <header class='bg-header shadow-xl'>
+            <div class='flex justify-between items-center mb-4'>
+                <h1 class='font-black italic text-xl uppercase'>REGISTRO <span class='text-blue-500'>PRO</span></h1>
+                <div id='status' class='text-[10px] font-black bg-blue-500/20 px-3 py-1 rounded-full text-blue-300'>ESPERANDO...</div>
             </div>
-            <div class='relative'>
-                <i class='fas fa-search absolute left-5 top-1/2 -translate-y-1/2 text-slate-500'></i>
-                <input type='text' id='bus' oninput='filtrar()' placeholder='Buscar...' class='w-full p-4 pl-14 rounded-2xl bg-white/10 text-white outline-none border border-white/10'>
-            </div>
+            <input type='text' id='bus' oninput='filtrar()' placeholder='Buscar...' style='width:100%; padding:12px; border-radius:15px; background:rgba(255,255,255,0.1); border:none; color:white; outline:none;'>
         </header>
-
-        <main class='p-5'>
-            <div class='grid grid-cols-2 gap-4 mb-8'>
-                <button onclick='abrirForm(false)' class='card flex flex-col items-center justify-center p-6 border-none'><i class='fas fa-user-plus text-2xl text-blue-600 mb-2'></i><span class='text-[10px] font-black uppercase'>Persona</span></button>
-                <button onclick='abrirForm(true)' class='card flex flex-col items-center justify-center p-6 border-none'><i class='fas fa-car text-2xl text-slate-700 mb-2'></i><span class='text-[10px] font-black uppercase'>Placa</span></button>
-            </div>
-            <div id='lista' class='space-y-4'></div>
-        </main>
-
-        <nav class='fixed bottom-0 inset-x-0 bg-white/90 backdrop-blur-md border-t p-5 flex justify-around items-center z-40 shadow-2xl'>
-            <button onclick='cargarDB()' class='text-slate-400 text-xl'><i class='fas fa-sync-alt'></i></button>
-            <button onclick='window.scrollTo({top:0, behavior:"smooth"})' class='bg-[#0f172a] text-white w-16 h-16 rounded-full -mt-12 flex items-center justify-center shadow-2xl border-8 border-[#f1f5f9]'><i class='fas fa-magnifying-glass'></i></button>
-            <button onclick='irA("view-list")' class='text-blue-600 text-xl'><i class='fas fa-home'></i></button>
-        </nav>
+        <main id='lista' style='padding:20px;'></main>
     </div>
 
-    <!-- FORM Y MODAL OMITIDOS BREVEMENTE PARA ASEGURAR ENTRADA -->
-
+    <!-- Script de Supabase al final -->
+    <script src='https://unpkg.com/@supabase/supabase-js@2'></script>
     <script>
+        var client;
+        var base = [];
+
         function ingresar() {
-            var pin = document.getElementById('pin-input').value;
-            if (pin === '3268') {
+            var p = document.getElementById('pin-input').value;
+            if (p === '3268') {
                 document.getElementById('pin-screen').style.display = 'none';
                 document.getElementById('app').style.display = 'block';
-                setTimeout(conectar, 300);
-            } else {
-                alert('PIN INCORRECTO');
-            }
+                iniciar();
+            } else { alert('PIN Mal'); }
         }
 
-        var sb;
-        var db = [];
-
-        function conectar() {
+        async function iniciar() {
+            var st = document.getElementById('status');
+            st.innerText = 'CONECTANDO...';
+            
             try {
+                if (typeof supabase === 'undefined') {
+                    throw new Error('Librería Supabase no cargada. Reintenta.');
+                }
+
                 var url = 'https://rfpdfaddzbcvtzfeaycg.supabase.co';
                 var key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJmcGRmYWRkemJjdnR6ZmVheWNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjA0MTU0NDAsImV4cCI6MjAzNjAwOTQ0MH0.PJybgMPIrnzxu74loQ-xRg_N6F15oMw';
-                sb = supabase.createClient(url, key);
-                cargarDB();
-            } catch(e) { console.error(e); }
-        }
-
-        async function cargarDB() {
-            if(!sb) return;
-            document.getElementById('count').innerText = '...';
-            var res = await sb.from('personas').select('*').order('created_at', { ascending: false });
-            if (res.error) { document.getElementById('count').innerText = 'ERROR'; return; }
-            db = res.data || [];
-            document.getElementById('count').innerText = db.length + ' REGISTROS';
-            dibujar(db);
-        }
-
-        function dibujar(items) {
-            var l = document.getElementById('lista');
-            var h = '';
-            for(var i=0; i<items.length; i++) {
-                var p = items[i];
-                var img = p.foto ? '<img src="'+p.foto+'" class="w-12 h-12 rounded-2xl object-cover">' : '<div class="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 font-black">'+(p.nombre ? p.nombre[0] : '?')+'</div>';
-                h += "<div class='card flex justify-between items-center'>" +
-                     "<div class='flex items-center gap-4 overflow-hidden'>" + img +
-                     "<div class='overflow-hidden'><h3 class='font-black uppercase text-xs truncate'>"+(p.nombre || 'S/N')+"</h3>" +
-                     "<p class='text-[10px] text-slate-400 font-bold'>"+(p.ci || '---')+"</p></div></div>" +
-                     "<i class='fas fa-chevron-right text-slate-200 text-xs'></i></div>";
+                
+                client = supabase.createClient(url, key);
+                
+                const { data, error } = await client.from('personas').select('*').order('created_at', { ascending: false });
+                
+                if (error) {
+                    st.innerText = 'ERROR';
+                    alert('Error de DB: ' + error.message);
+                } else {
+                    base = data || [];
+                    st.innerText = base.length + ' REGISTROS';
+                    mostrar(base);
+                }
+            } catch (err) {
+                st.innerText = 'FALLO';
+                alert('Error crítico: ' + err.message);
             }
-            l.innerHTML = h || "<div class='text-center p-10 opacity-30 font-black uppercase italic'>Sin datos</div>";
+        }
+
+        function mostrar(datos) {
+            var l = document.getElementById('lista');
+            var html = '';
+            for (var i = 0; i < datos.length; i++) {
+                var p = datos[i];
+                html += '<div class="card">' +
+                        '<b style="text-transform:uppercase;">' + (p.nombre || p.matricula || '---') + '</b><br>' +
+                        '<small style="color:#64748b;">' + (p.ci || '---') + '</small>' +
+                        '</div>';
+            }
+            l.innerHTML = html || '<div style="text-align:center; padding:50px; opacity:0.3;">SIN DATOS</div>';
         }
 
         function filtrar() {
             var t = document.getElementById('bus').value.toLowerCase().trim();
-            if(!t) return dibujar(db);
-            var f = db.filter(function(x) {
-                return (x.nombre && x.nombre.toLowerCase().indexOf(t) !== -1) || (x.ci && String(x.ci).indexOf(t) !== -1);
+            if (!t) return mostrar(base);
+            var f = base.filter(function(x) {
+                return (x.nombre && x.nombre.toLowerCase().includes(t)) || (x.ci && String(x.ci).includes(t)) || (x.matricula && x.matricula.toLowerCase().includes(t));
             });
-            dibujar(f);
+            mostrar(f);
         }
-
-        function irA(id) { location.reload(); }
-        function abrirForm(m) { alert('Habilitando formulario en v2.32...'); }
     </script>
 </body>
 </html>
