@@ -3,70 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>REGISTRO PRO V2.37</title>
+    <title>REGISTRO PRO V2.38</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background: #0f172a; color: white; margin: 0; }
+        #pin-screen { position: fixed; inset: 0; background: #0f172a; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        #app { display: none; background: #f1f5f9; color: #0f172a; min-height: 100vh; }
+        .bg-header { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: white; padding: 20px; position: sticky; top: 0; z-index: 100; }
+    </style>
 </head>
-<body class="bg-[#0f172a] text-white font-sans min-h-screen">
-    <div id="pin-screen" class="fixed inset-0 flex flex-col items-center justify-center p-6 bg-[#0f172a] z-50">
-        <h1 class="text-3xl font-black italic mb-10 uppercase">REGISTRO <span class="text-blue-500">PRO</span></h1>
-        <div class="bg-slate-800 p-8 rounded-3xl shadow-2xl w-full max-w-xs">
-            <input type="tel" id="pin-input" placeholder="PIN" class="w-full p-4 rounded-xl text-center text-4xl mb-6 bg-black text-white border border-slate-700 outline-none font-black">
-            <button onclick="entrar()" class="w-full bg-blue-600 py-4 rounded-xl font-black text-xl shadow-lg">INGRESAR</button>
-        </div>
-        <p class="mt-8 text-[10px] opacity-30 font-bold uppercase">Versión 2.37 - Recovery Mode</p>
+<body>
+    <div id="pin-screen">
+        <h1 class="text-3xl font-black italic mb-10 uppercase tracking-tighter">REGISTRO <span class="text-blue-500">PRO</span></h1>
+        <input type="tel" id="pin-input" placeholder="PIN" class="w-full max-w-xs p-4 rounded-2xl text-center text-4xl mb-6 bg-black text-white border border-slate-700 outline-none font-black">
+        <button onclick="ingresar()" class="w-full max-w-xs bg-blue-600 py-4 rounded-2xl font-black text-xl shadow-lg">INGRESAR</button>
+        <p class="mt-10 text-[10px] opacity-30 font-black uppercase">V2.38 - DEFINITIVA</p>
     </div>
-    <div id="app" class="hidden min-h-screen bg-slate-100 text-slate-900 p-5">
-        <div id="setup-key" class="hidden bg-white p-6 rounded-3xl shadow-xl border-2 border-red-500 mb-6">
-            <h2 class="font-black text-red-600 mb-2 uppercase">LLAVE INVÁLIDA</h2>
-            <p class="text-xs mb-4 text-slate-500">La llave no funciona. Pegá la llave <b>anon public</b> (la larga que empieza con eyJ) aquí:</p>
-            <input type="text" id="new-key" placeholder="eyJ..." class="w-full p-4 bg-slate-100 rounded-xl mb-4 text-[10px] font-mono break-all border">
-            <button onclick="saveKey()" class="w-full bg-red-600 text-white py-4 rounded-xl font-black">REINTENTAR</button>
-        </div>
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="font-black italic text-xl uppercase">REGISTRO <span class="text-blue-500">PRO</span></h1>
-            <div id="status" class="bg-blue-600 text-white px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">...</div>
-        </div>
-        <div id="lista" class="space-y-3"></div>
+    <div id="app" class="pb-32">
+        <header class="bg-header shadow-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="font-black italic text-2xl uppercase tracking-tighter">REGISTRO <span class="text-blue-500">PRO</span></h1>
+                <div id="count" class="bg-blue-600/20 text-blue-400 border border-blue-500/30 px-4 py-2 rounded-2xl text-[10px] font-black uppercase">...</div>
+            </div>
+            <input type="text" id="bus" oninput="filtrar()" placeholder="Buscar..." class="w-full p-4 rounded-2xl bg-white/10 text-white outline-none border border-white/10 font-bold">
+        </header>
+        <main class="p-5" id="lista"></main>
     </div>
     <script>
-        function entrar() {
+        let sb; let db = [];
+        const K = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJmcGRmYWRkemJjdnR6ZmVheWNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjA0MTU0NDAsImV4cCI6MjAzNjAwOTQ0MH0.PJybgMPIrnzxu74loQ-xRg_N6F15oMw';
+        const U = 'https://rfpdfaddzbcvtzfeaycg.supabase.co';
+        function ingresar() {
             if (document.getElementById('pin-input').value === '3268') {
                 document.getElementById('pin-screen').style.display = 'none';
-                document.getElementById('app').classList.remove('hidden');
+                document.getElementById('app').style.display = 'block';
                 init();
             } else { alert('PIN INCORRECTO'); }
         }
         async function init() {
-            let k = localStorage.getItem('sb_key');
-            if (!k) {
-                const p1 = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9';
-                const p2 = 'eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJmcGRmYWRkemJjdnR6ZmVheWNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjA0MTU0NDAsImV4cCI6MjAzNjAwOTQ0MH0';
-                const p3 = 'PJybgMPIrnzxu74loQ-xRg_N6F15oMw';
-                k = p1 + '.' + p2 + '.' + p3;
-            }
             try {
-                const sb = supabase.createClient('https://rfpdfaddzbcvtzfeaycg.supabase.co', k);
+                sb = supabase.createClient(U, K);
                 const { data, error } = await sb.from('personas').select('*').order('created_at', { ascending: false });
-                if (error) {
-                    if (error.message.includes('API key')) document.getElementById('setup-key').classList.remove('hidden');
-                    throw error;
-                }
-                document.getElementById('setup-key').classList.add('hidden');
-                document.getElementById('status').innerText = (data ? data.length : 0) + ' REGISTROS';
-                let h = '';
-                (data || []).forEach(p => {
-                    h += '<div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">' +
-                         '<div class="font-black uppercase text-xs text-slate-800">' + (p.nombre || p.matricula || '---') + '</div>' +
-                         '<div class="text-[10px] text-slate-400 font-bold">' + (p.ci || '---') + '</div></div>';
-                });
-                document.getElementById('lista').innerHTML = h || 'SIN REGISTROS';
-            } catch(e) { document.getElementById('status').innerText = 'ERROR'; }
+                if (error) throw error;
+                db = data || [];
+                document.getElementById('count').innerText = db.length + ' REGISTROS';
+                dibujar(db || []);
+            } catch(e) { alert('Error: ' + e.message); }
         }
-        function saveKey() {
-            const val = document.getElementById('new-key').value.trim();
-            if (val.startsWith('eyJ')) { localStorage.setItem('sb_key', val); location.reload(); }
-            else { alert('Debe empezar con eyJ'); }
+        function dibujar(datos) {
+            const l = document.getElementById('lista');
+            let h = '';
+            datos.forEach(p => {
+                h += '<div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-200 mb-3 flex justify-between items-center">' +
+                     '<div><div class="font-black uppercase text-xs text-slate-800 truncate">' + (p.nombre || p.matricula || '---') + '</div>' +
+                     '<div class="text-[10px] text-slate-400 font-bold">' + (p.ci || '---') + '</div></div>' +
+                     '<div class="text-blue-500 font-black text-xs">VER</div></div>';
+            });
+            l.innerHTML = h || '<div class="text-center p-20 opacity-20 font-black italic uppercase">Sin registros</div>';
+        }
+        function filtrar() {
+            const t = document.getElementById('bus').value.toLowerCase().trim();
+            if(!t) return dibujar(db);
+            dibujar(db.filter(p => (p.nombre && p.nombre.toLowerCase().includes(t)) || (p.ci && String(p.ci).includes(t))));
         }
     </script>
 </body>
