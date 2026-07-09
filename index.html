@@ -1,277 +1,68 @@
 <!DOCTYPE html>
-<html lang='es'>
+<html>
 <head>
     <meta charset='UTF-8'>
-    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
-    <title>REGISTRO PRO V2.24</title>
-    <script src='https://cdn.tailwindcss.com'></script>
-    <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>REGISTRO PRO V2.25</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; background: #0f172a; color: white; margin:0; padding:0; overflow-x: hidden; }
-        .bg-header { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); }
-        .card { background: white; border-radius: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); color: #0f172a; margin-bottom: 12px; padding: 20px; }
+        body { margin: 0; font-family: sans-serif; background: #0f172a; color: white; }
+        #banner { background: #ef4444; color: white; padding: 10px; text-align: center; font-weight: bold; position: fixed; top: 0; width: 100%; z-index: 9999; }
+        #pin-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; padding: 20px; }
+        input { width: 100%; max-width: 250px; padding: 20px; font-size: 30px; text-align: center; border-radius: 10px; border: none; margin-bottom: 20px; color: #000; }
+        button { width: 100%; max-width: 250px; padding: 20px; font-size: 20px; background: #2563eb; color: white; border: none; border-radius: 10px; font-weight: bold; }
+        #app { display: none; padding: 20px; padding-top: 60px; }
     </style>
 </head>
 <body>
-    <!-- PANTALLA PIN: CARGA INMEDIATA -->
-    <div id='pin-screen' style='position:fixed; inset:0; background:#0f172a; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:10000; padding:20px;'>
-        <i class='fas fa-shield-halved' style='font-size:70px; color:#3b82f6; margin-bottom:20px;'></i>
-        <h1 style='font-weight:900; font-style:italic; font-size:35px; margin-bottom:30px; text-transform:uppercase; letter-spacing:-2px;'>REGISTRO <span style='color:#3b82f6;'>PRO</span></h1>
-        <div style='background:rgba(30,41,59,0.5); padding:30px; border-radius:40px; width:100%; max-width:300px; border:1px solid rgba(255,255,255,0.1); text-align:center;'>
-            <input type='tel' id='pin-input' placeholder='PIN' style='width:100%; padding:15px; border-radius:15px; text-align:center; font-size:35px; margin-bottom:20px; background:#000; color:#fff; border:1px solid #333; outline:none; font-weight:900;'>
-            <button onclick='entrar()' style='width:100%; background:#2563eb; color:white; padding:15px; border-radius:15px; font-weight:900; font-size:20px; border:none; cursor:pointer;'>INGRESAR</button>
-        </div>
+    <div id='banner'>VERSIÓN ACTUAL: 2.25 (ID:8359)</div>
+    
+    <div id='pin-screen'>
+        <h1 style='font-style:italic;'>REGISTRO <span style='color:#3b82f6;'>PRO</span></h1>
+        <p>Escribe el PIN abajo:</p>
+        <input type='tel' id='p' placeholder='PIN' autofocus>
+        <button onclick='e()'>ENTRAR AHORA</button>
     </div>
 
-    <!-- APP PRINCIPAL -->
-    <div id='app' style='display:none; min-height:100vh; background:#f1f5f9; color:#0f172a;'>
-        <header class='bg-header' style='padding:20px; color:white; position:sticky; top:0; z-index:100;'>
-            <div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;'>
-                <h1 style='font-weight:900; font-style:italic; text-transform:uppercase; font-size:20px;'>REGISTRO <span style='color:#3b82f6;'>PRO</span></h1>
-                <div id='count' style='background:rgba(37,99,235,0.2); color:#60a5fa; padding:5px 15px; border-radius:20px; font-size:10px; font-weight:900;'>CONECTANDO...</div>
-            </div>
-            <div style='position:relative;'>
-                <i class='fas fa-search' style='position:absolute; left:15px; top:50%; transform:translateY(-50%); color:#64748b;'></i>
-                <input type='text' id='bus' oninput='filtrar()' placeholder='Buscar nombre, CI o placa...' style='width:100%; padding:12px 12px 12px 45px; border-radius:15px; background:rgba(255,255,255,0.1); border:none; color:white; outline:none; font-weight:bold;'>
-            </div>
-        </header>
-
-        <main style='padding:20px; padding-bottom:100px;'>
-            <div style='display:grid; grid-template-cols: 1fr 1fr; gap:15px; margin-bottom:20px;'>
-                <button onclick='abrirForm(false)' class='card' style='display:flex; flex-direction:column; align-items:center; border:none; cursor:pointer; width:100%;'><i class='fas fa-user-plus' style='font-size:25px; color:#2563eb; margin-bottom:10px;'></i><span style='font-size:10px; font-weight:900; text-transform:uppercase;'>Persona</span></button>
-                <button onclick='abrirForm(true)' class='card' style='display:flex; flex-direction:column; align-items:center; border:none; cursor:pointer; width:100%;'><i class='fas fa-car' style='font-size:25px; color:#334155; margin-bottom:10px;'></i><span style='font-size:10px; font-weight:900; text-transform:uppercase;'>Matrícula</span></button>
-            </div>
-            <div id='lista'></div>
-        </main>
-
-        <nav style='position:fixed; bottom:0; left:0; right:0; background:rgba(255,255,255,0.9); backdrop-filter:blur(10px); padding:15px; display:flex; justify-content:space-around; align-items:center; border-top:1px solid #e2e8f0;'>
-            <button onclick='cargarDB()' style='background:none; border:none; color:#94a3b8; font-size:20px;'><i class='fas fa-sync-alt'></i></button>
-            <button onclick='window.scrollTo({top:0, behavior:"smooth"})' style='background:#0f172a; color:white; width:60px; height:60px; border-radius:50%; border:5px solid #f1f5f9; margin-top:-40px; display:flex; align-items:center; justify-content:center; font-size:20px; box-shadow:0 10px 20px rgba(0,0,0,0.2);'><i class='fas fa-magnifying-glass'></i></button>
-            <button onclick='irA("view-list")' style='background:none; border:none; color:#2563eb; font-size:20px;'><i class='fas fa-home'></i></button>
-        </nav>
+    <div id='app'>
+        <h1 style='color:#3b82f6;'>CONECTADO EXITOSAMENTE</h1>
+        <p id='st'>Cargando base de datos...</p>
+        <div id='li'></div>
+        <button onclick='location.reload()' style='background:gray; margin-top:20px;'>ACTUALIZAR</button>
     </div>
 
-    <!-- VISTAS ADICIONALES (FORM, MODAL, ETC) -->
-    <div id='view-form' style='display:none; position:fixed; inset:0; background:#f1f5f9; z-index:500; overflow-y:auto; padding-bottom:50px;'>
-        <div style='background:#0f172a; color:white; padding:20px; display:flex; align-items:center; gap:15px; position:sticky; top:0;'>
-            <button onclick='irA("view-list")' style='background:none; border:none; color:white; font-size:20px;'><i class='fas fa-arrow-left'></i></button>
-            <h2 id='f-titulo' style='font-weight:900; text-transform:uppercase; font-style:italic; font-size:18px; margin:0;'></h2>
-        </div>
-        <div style='padding:20px;'>
-            <input type='hidden' id='f-id'>
-            <div style='text-align:center; margin-bottom:20px;'>
-                <img id='f-img-prev' style='width:150px; height:150px; border-radius:40px; object-fit:cover; border:4px solid white; box-shadow:0 10px 20px rgba(0,0,0,0.1); display:none; margin:0 auto;'>
-                <div id='f-img-placeholder' style='width:150px; height:150px; border-radius:40px; background:#e2e8f0; display:flex; align-items:center; justify-content:center; color:#94a3b8; margin:0 auto;'><i class='fas fa-user' style='font-size:50px;'></i></div>
-                <button onclick='document.getElementById("f-foto").click()' style='background:#2563eb; color:white; width:45px; height:45px; border-radius:15px; border:none; margin-top:-25px; position:relative; box-shadow:0 5px 10px rgba(0,0,0,0.2);'><i class='fas fa-camera'></i></button>
-                <input type='file' id='f-foto' accept='image/*' onchange='previsualizar(this)' style='display:none;'>
-                <input type='hidden' id='f-foto-base64'>
-            </div>
-            <input id='f-nom' type='text' placeholder='NOMBRE COMPLETO' style='width:100%; padding:15px; border-radius:15px; border:1px solid #e2e8f0; margin-bottom:15px; font-weight:bold; text-transform:uppercase;'>
-            <input id='f-ci' type='text' placeholder='CÉDULA' style='width:100%; padding:15px; border-radius:15px; border:1px solid #e2e8f0; margin-bottom:15px; font-weight:bold;'>
-            <input id='f-dom' type='text' placeholder='DOMICILIO' style='width:100%; padding:15px; border-radius:15px; border:1px solid #e2e8f0; margin-bottom:15px; font-weight:bold; text-transform:uppercase;'>
-            <div style='display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:15px;'>
-                <input id='f-veh' type='text' placeholder='VEHÍCULO' style='width:100%; padding:15px; border-radius:15px; border:1px solid #e2e8f0; font-weight:bold; text-transform:uppercase;'>
-                <input id='f-mat' type='text' placeholder='PLACA' style='width:100%; padding:15px; border-radius:15px; border:1px solid #e2e8f0; font-weight:bold; text-transform:uppercase;'>
-            </div>
-            <textarea id='f-notas' rows='5' placeholder='NOTAS / ANTECEDENTES' style='width:100%; padding:15px; border-radius:15px; border:1px solid #fee2e2; background:#fef2f2; font-weight:bold; color:#991b1b; margin-bottom:20px;'></textarea>
-            <button id='btn-save' onclick='guardarRegistro()' style='width:100%; background:#1d4ed8; color:white; padding:20px; border-radius:25px; font-weight:900; border:none; text-transform:uppercase; box-shadow:0 10px 20px rgba(0,0,0,0.1);'>Guardar Registro</button>
-        </div>
-    </div>
-
-    <div id='modal' onclick='this.style.display="none"' style='display:none; position:fixed; inset:0; background:rgba(15,23,42,0.95); z-index:1000; padding:20px; align-items:center; justify-content:center;'>
-        <div onclick='event.stopPropagation()' style='background:white; width:100%; max-width:400px; border-radius:50px; padding:30px; position:relative; margin-top:50px;'>
-            <img id='m-foto' style='width:150px; height:150px; border-radius:45px; border:8px solid white; position:absolute; top:-75px; left:50%; transform:translateX(-50%); object-fit:cover; box-shadow:0 10px 30px rgba(0,0,0,0.3); display:none;'>
-            <div id='m-foto-empty' style='width:150px; height:150px; border-radius:45px; border:8px solid white; position:absolute; top:-75px; left:50%; transform:translateX(-50%); background:#f1f5f9; display:flex; align-items:center; justify-content:center; color:#cbd5e1; box-shadow:0 10px 30px rgba(0,0,0,0.3);'><i class='fas fa-user' style='font-size:60px;'></i></div>
-            
-            <div style='display:flex; justify-content:space-between; align-items:flex-start; margin-top:80px; margin-bottom:20px;'>
-                <h2 id='m-nom' style='font-weight:900; font-size:22px; text-transform:uppercase; font-style:italic; color:#0f172a; border-bottom:4px solid #2563eb; padding-bottom:5px; flex:1; margin-right:15px; line-height:1;'></h2>
-                <button id='btn-edit-modal' style='background:#f1f5f9; width:45px; height:45px; border-radius:15px; border:none;'><i class='fas fa-edit'></i></button>
-            </div>
-            
-            <div style='max-height:40vh; overflow-y:auto; padding-right:5px;'>
-                <div style='background:#f8fafc; padding:15px; border-radius:20px; margin-bottom:15px;'>
-                    <span style='font-size:10px; font-weight:900; color:#94a3b8; text-transform:uppercase;'>Identificación</span>
-                    <p id='m-ci' style='font-weight:900; font-size:22px; color:#1d4ed8; margin:0;'></p>
-                </div>
-                <p id='m-dom' style='font-weight:bold; text-transform:uppercase; font-size:13px; color:#334155;'></p>
-                <p id='m-veh' style='font-weight:bold; text-transform:uppercase; font-size:13px; color:#334155;'></p>
-                <div id='m-notas' style='background:#fef2f2; padding:20px; border-radius:25px; border:1px solid #fee2e2; color:#991b1b; font-weight:bold; font-size:13px; white-space:pre-wrap;'></div>
-            </div>
-            <button onclick='document.getElementById("modal").style.display="none"' style='width:100%; background:#0f172a; color:white; padding:15px; border-radius:20px; font-weight:900; margin-top:20px; border:none;'>CERRAR</button>
-        </div>
-    </div>
-
-    <!-- SCRIPTS CARGADOS AL FINAL -->
     <script src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'></script>
     <script>
-        // FUNCIÓN ENTRAR: DEBE FUNCIONAR SÍ O SÍ
-        function entrar() {
-            var pin = document.getElementById('pin-input').value;
-            if (pin === '3268') {
+        function e() {
+            var pin = document.getElementById('p').value;
+            if(pin === '3268') {
                 document.getElementById('pin-screen').style.display = 'none';
                 document.getElementById('app').style.display = 'block';
-                // Solo cargar base de datos una vez que entramos
-                setTimeout(initSupabase, 500);
+                i();
             } else {
-                alert('PIN INCORRECTO');
+                alert('PIN INCORRECTO: ' + pin);
             }
         }
 
-        var sb;
-        var db = [];
-
-        function initSupabase() {
+        var s;
+        function i() {
             try {
-                var k1 = 'sb_secret';
-                var k2 = '_PJybgMPIrnzxu74loQ-xRg_N6F15oMw';
-                sb = supabase.createClient('https://rfpdfaddzbcvtzfeaycg.supabase.co', k1 + k2);
-                cargarDB();
-            } catch(e) {
-                console.error('Error inicializando:', e);
-            }
+                var k = 'sb_secret' + '_PJybgMPIrnzxu74loQ-xRg_N6F15oMw';
+                s = supabase.createClient('https://rfpdfaddzbcvtzfeaycg.supabase.co', k);
+                c();
+            } catch(err) { document.getElementById('st').innerText = 'Error al conectar'; }
         }
 
-        async function cargarDB() {
-            if(!sb) return;
-            document.getElementById('count').innerText = 'SINCRONIZANDO...';
-            try {
-                const { data, error } = await sb.from('personas').select('*').order('created_at', { ascending: false });
-                if (error) throw error;
-                db = data || [];
-                document.getElementById('count').innerText = db.length + ' REGISTROS';
-                dibujar(db);
-            } catch(e) {
-                document.getElementById('count').innerText = 'ERROR';
-            }
-        }
-
-        function dibujar(datos) {
-            var lista = document.getElementById('lista');
-            if(!datos || datos.length === 0) {
-                lista.innerHTML = '<div style="text-align:center; padding:50px; opacity:0.3; font-weight:900;">SIN REGISTROS</div>';
-                return;
-            }
-            var html = '';
-            for(var i=0; i<datos.length; i++) {
-                var p = datos[i];
-                var img = p.foto ? '<img src="'+p.foto+'" style="width:50px; height:50px; border-radius:15px; object-fit:cover;">' : '<div style="width:50px; height:50px; border-radius:15px; background:#eff6ff; display:flex; align-items:center; justify-content:center; color:#2563eb; font-weight:900;">'+(p.nombre ? p.nombre[0] : '?')+'</div>';
-                html += '<div onclick="verDetalles(''+p.id+'')" class="card" style="display:flex; justify-content:space-between; align-items:center;">' +
-                        '<div style="display:flex; align-items:center; gap:15px; overflow:hidden;">' + img +
-                        '<div style="overflow:hidden;"><h3 style="font-size:12px; font-weight:900; text-transform:uppercase; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">'+(p.nombre || 'S/N')+'</h3>' +
-                        '<p style="font-size:10px; color:#94a3b8; font-weight:bold; margin:0;">'+(p.ci || p.matricula || '---')+'</p></div></div>' +
-                        '<i class="fas fa-chevron-right" style="color:#e2e8f0; font-size:12px;"></i></div>';
-            }
-            lista.innerHTML = html;
-        }
-
-        function verDetalles(id) {
-            var p = db.find(function(x){ return x.id == id });
-            if(!p) return;
-            var mf = document.getElementById('m-foto');
-            var mfe = document.getElementById('m-foto-empty');
-            if(p.foto) { mf.src = p.foto; mf.style.display = 'block'; mfe.style.display = 'none'; } else { mf.style.display = 'none'; mfe.style.display = 'flex'; }
-            document.getElementById('m-nom').innerText = p.nombre || '';
-            document.getElementById('m-ci').innerText = p.ci || '---';
-            document.getElementById('m-dom').innerText = p.domicilio || 'SIN DOMICILIO';
-            document.getElementById('m-veh').innerText = (p.vehiculo || '') + ' ' + (p.matricula || '');
-            document.getElementById('m-notas').innerText = p.notas || 'S/N';
-            document.getElementById('modal').style.display = 'flex';
-            document.getElementById('btn-edit-modal').onclick = function() { document.getElementById('modal').style.display = 'none'; editarRegistro(p); };
-        }
-
-        function editarRegistro(p) {
-            abrirForm(p.nombre && p.nombre.indexOf('MATRÍCULA:') === 0);
-            document.getElementById('f-id').value = p.id;
-            document.getElementById('f-nom').value = (p.nombre || '').replace('MATRÍCULA: ', '');
-            document.getElementById('f-ci').value = p.ci || '';
-            document.getElementById('f-dom').value = p.domicilio || '';
-            document.getElementById('f-veh').value = p.vehiculo || '';
-            document.getElementById('f-mat').value = p.matricula || '';
-            document.getElementById('f-notas').value = p.notas || '';
-            if(p.foto) {
-                document.getElementById('f-img-prev').src = p.foto;
-                document.getElementById('f-img-prev').style.display = 'block';
-                document.getElementById('f-img-placeholder').style.display = 'none';
-                document.getElementById('f-foto-base64').value = p.foto;
-            }
-            irA('view-form');
-        }
-
-        function filtrar() {
-            var t = document.getElementById('bus').value.toLowerCase().trim();
-            if(!t) return dibujar(db);
-            var res = db.filter(function(p){ 
-                return (p.nombre && p.nombre.toLowerCase().indexOf(t) !== -1) || (p.ci && String(p.ci).indexOf(t) !== -1) || (p.matricula && p.matricula.toLowerCase().indexOf(t) !== -1);
+        async function c() {
+            const { data, error } = await s.from('personas').select('*').order('created_at', { ascending: false });
+            if(error) { document.getElementById('st').innerText = 'Error en base de datos'; return; }
+            document.getElementById('st').innerText = data.length + ' registros encontrados';
+            let h = '';
+            data.forEach(p => {
+                h += '<div style="background:white; color:black; margin-bottom:10px; padding:15px; border-radius:10px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">' +
+                     '<b style="text-transform:uppercase;">' + (p.nombre || p.matricula || 'SIN NOMBRE') + '</b><br>' +
+                     '<span style="color:#666;">' + (p.ci || 'Sin CI') + '</span></div>';
             });
-            dibujar(res);
-        }
-
-        function irA(id) {
-            document.getElementById('view-form').style.display = (id === 'view-form' ? 'block' : 'none');
-        }
-
-        function abrirForm(m) {
-            document.getElementById('f-id').value = '';
-            document.getElementById('f-titulo').innerText = m ? 'NUEVA MATRÍCULA' : 'NUEVA PERSONA';
-            var inputs = document.querySelectorAll('#view-form input, #view-form textarea');
-            for(var i=0; i<inputs.length; i++) inputs[i].value = '';
-            document.getElementById('f-img-prev').style.display = 'none';
-            document.getElementById('f-img-placeholder').style.display = 'flex';
-            document.getElementById('f-foto-base64').value = '';
-            irA('view-form');
-        }
-
-        function previsualizar(input) {
-            if (input.files && input.files[0]) {
-                var reader = new FileReader();
-                reader.onload = function(e) {
-                    var img = new Image();
-                    img.src = e.target.result;
-                    img.onload = function() {
-                        var canvas = document.createElement('canvas');
-                        var ctx = canvas.getContext('2d');
-                        var maxW = 600;
-                        var scale = maxW / img.width;
-                        canvas.width = maxW;
-                        canvas.height = img.height * scale;
-                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        var dataUrl = canvas.toDataURL('image/jpeg', 0.6);
-                        document.getElementById('f-img-prev').src = dataUrl;
-                        document.getElementById('f-img-prev').style.display = 'block';
-                        document.getElementById('f-img-placeholder').style.display = 'none';
-                        document.getElementById('f-foto-base64').value = dataUrl;
-                    }
-                }
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-
-        async function guardarRegistro() {
-            var btn = document.getElementById('btn-save');
-            var id = document.getElementById('f-id').value;
-            btn.innerText = 'GUARDANDO...'; btn.disabled = true;
-            var reg = {
-                nombre: (document.getElementById('f-nom').value || '').toUpperCase().trim(),
-                ci: document.getElementById('f-ci').value.trim(),
-                domicilio: document.getElementById('f-dom').value.toUpperCase().trim(),
-                vehiculo: document.getElementById('f-veh').value.toUpperCase().trim(),
-                matricula: document.getElementById('f-mat').value.toUpperCase().trim(),
-                notas: document.getElementById('f-notas').value || 'S/N',
-                foto: document.getElementById('f-foto-base64').value
-            };
-            if(!reg.nombre && reg.matricula) reg.nombre = 'MATRÍCULA: ' + reg.matricula;
-            
-            try {
-                var res;
-                if(id) res = await sb.from('personas').update(reg).eq('id', id);
-                else res = await sb.from('personas').insert([reg]);
-                
-                if(!res.error) { irA('view-list'); cargarDB(); }
-                else { alert('Error: ' + res.error.message); }
-            } catch(e) { alert('Error de red.'); }
-            
-            btn.innerText = 'GUARDAR REGISTRO'; btn.disabled = false;
+            document.getElementById('li').innerHTML = h;
         }
     </script>
 </body>
