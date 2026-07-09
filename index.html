@@ -3,7 +3,7 @@
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
-    <title>REGISTRO PRO V2.42</title>
+    <title>REGISTRO PRO V2.43</title>
     <script src='https://cdn.tailwindcss.com'></script>
     <script src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'></script>
     <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css'>
@@ -15,7 +15,7 @@
         .label-pro { font-size: 10px; font-weight: 900; color: #64748b; text-transform: uppercase; margin-bottom: 4px; display: block; margin-left: 4px; }
         #app { display: none; background: #f1f5f9; min-height: 100vh; color: #0f172a; }
         #pin-screen { position: fixed; inset: 0; background: #0f172a; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3b82f6; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3b82f6; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; display: inline-block; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
@@ -24,65 +24,49 @@
         <h1 class='text-3xl font-black italic mb-10 uppercase tracking-tighter'>REGISTRO <span class='text-blue-500'>PRO</span></h1>
         <input type='tel' id='pin-input' placeholder='PIN' class='w-full max-w-xs p-4 rounded-2xl text-center text-4xl mb-6 bg-black text-white border border-slate-700 outline-none font-black'>
         <button onclick='ingresar()' class='w-full max-w-xs bg-blue-600 py-4 rounded-2xl font-black text-xl shadow-lg'>INGRESAR</button>
-        <p class='mt-10 text-[10px] opacity-30 font-black uppercase'>V2.42 - STORAGE & EDIT</p>
+        <p class='mt-10 text-[10px] opacity-30 font-black uppercase'>V2.43 - RESCATE</p>
     </div>
-
-    <div id='app' class='pb-32'>
-        <header class='bg-header shadow-2xl'>
-            <div class='flex justify-between items-center mb-6 text-white'>
+    <div id='app'>
+        <header class='bg-header'>
+            <div class='flex justify-between items-center mb-6'>
                 <h1 class='font-black italic text-2xl uppercase tracking-tighter'>REGISTRO <span class='text-blue-500'>PRO</span></h1>
-                <button onclick='abrirForm()' class='bg-blue-600 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg'><i class='fas fa-plus'></i></button>
+                <div class='flex space-x-2'>
+                    <button onclick='mostrarMigrador()' class='bg-amber-500 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg'><i class='fas fa-sync'></i></button>
+                    <button onclick='abrirForm()' class='bg-blue-600 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg'><i class='fas fa-plus'></i></button>
+                </div>
             </div>
-            <input type='text' id='bus' oninput='filtrar()' placeholder='Buscar...' class='w-full p-4 rounded-2xl bg-white/10 text-white outline-none border border-white/10 font-bold'>
+            <input type='text' id='bus' oninput='filtrar()' placeholder='Buscar...' class='w-full p-4 rounded-2xl bg-white/10 text-white border border-white/10 font-bold'>
         </header>
-
         <main id='lista' class='p-5 space-y-3'></main>
-
-        <div id='modal' class='fixed inset-0 bg-white z-[200] hidden overflow-y-auto text-slate-900'>
-            <div class='p-5 pb-32'>
-                <div class='flex justify-between items-center mb-6'>
-                    <button onclick='cerrarModal()' class='text-slate-400'><i class='fas fa-times text-xl'></i></button>
-                    <h2 id='modal-titulo' class='font-black uppercase italic'>DETALLES</h2>
-                    <button onclick='guardar()' id='btn-guardar' class='text-blue-600 font-black uppercase'>GUARDAR</button>
+        <div id='modal-migracion' class='fixed inset-0 bg-slate-900/90 z-[300] hidden flex items-center justify-center p-5'>
+            <div class='bg-white p-8 rounded-[32px] w-full max-w-md text-slate-900 text-center'>
+                <h2 class='font-black text-xl mb-2 uppercase italic'>RESCATE ACTIVO</h2>
+                <p class='text-[10px] font-bold text-slate-400 mb-6 uppercase'>Recuperando tus 1948 registros...</p>
+                <div id='migracion-status' class='py-10'>
+                    <button onclick='iniciarRescate()' class='bg-blue-600 text-white px-10 py-4 rounded-2xl font-black uppercase w-full'>INICIAR RESCATE</button>
                 </div>
-
-                <div class='flex flex-col items-center mb-8'>
-                    <div class='w-40 h-40 bg-slate-200 rounded-3xl overflow-hidden mb-4 border-4 border-white shadow-xl flex items-center justify-center text-slate-400 relative'>
-                        <i id='icon-user' class='fas fa-user text-5xl'></i>
-                        <img id='img-foto' class='hidden w-full h-full object-cover'>
-                    </div>
-                    <input type='file' id='input-file' class='hidden' accept='image/*' onchange='previsualizar(this)'>
-                    <button onclick="document.getElementById('input-file').click()" class='bg-slate-900 text-white px-6 py-2 rounded-full text-[10px] font-black uppercase'>CAMBIAR FOTO</button>
-                </div>
-
-                <input type='hidden' id='f-id'>
-                <div class='grid grid-cols-1 gap-4'>
-                    <div><span class='label-pro'>Nombre</span><input id='f-nombre' class='input-pro'></div>
-                    <div><span class='label-pro'>Alias</span><input id='f-alias' class='input-pro'></div>
-                    <div><span class='label-pro'>Cédula</span><input id='f-ci' class='input-pro'></div>
-                    <div><span class='label-pro'>F. Nacimiento</span><input type='date' id='f-nacimiento' class='input-pro'></div>
-                    <div><span class='label-pro'>Domicilio</span><input id='f-domicilio' class='input-pro'></div>
-                    <div class='grid grid-cols-2 gap-2'>
-                        <div><span class='label-pro'>Teléfono 1</span><input id='f-tel1' class='input-pro'></div>
-                        <div><span class='label-pro'>Teléfono 2</span><input id='f-tel2' class='input-pro'></div>
-                    </div>
-                    <div class='grid grid-cols-2 gap-2'>
-                        <div><span class='label-pro'>Vehículo 1</span><input id='f-veh1' class='input-pro'></div>
-                        <div><span class='label-pro'>Vehículo 2</span><input id='f-veh2' class='input-pro'></div>
-                    </div>
-                    <div><span class='label-pro'>Vínculos</span><input id='f-vinculos' class='input-pro'></div>
-                    <div><span class='label-pro'>Antecedentes</span><textarea id='f-antecedentes' class='input-pro h-24'></textarea></div>
-                    <div><span class='label-pro'>Notas</span><textarea id='f-notas' class='input-pro h-32'></textarea></div>
-                    <button onclick='borrarRegistro()' id='btn-borrar' class='hidden mt-10 w-full text-red-500 font-black uppercase text-xs py-4 border-2 border-red-100 rounded-2xl italic'>ELIMINAR REGISTRO</button>
-                </div>
+                <button onclick='cerrarMigrador()' class='text-slate-300 font-black uppercase text-[10px]'>Cancelar</button>
+            </div>
+        </div>
+        <div id='modal' class='fixed inset-0 bg-white z-[200] hidden overflow-y-auto text-slate-900 p-5'>
+            <div class='flex justify-between items-center mb-6'>
+                <button onclick='cerrarModal()' class='text-slate-400'><i class='fas fa-times text-xl'></i></button>
+                <h2 class='font-black uppercase italic'>DETALLES</h2>
+                <button onclick='guardar()' class='text-blue-600 font-black uppercase'>Guardar</button>
+            </div>
+            <div class='space-y-4'>
+                <div><span class='label-pro'>Nombre</span><input id='f-nombre' class='input-pro'></div>
+                <div><span class='label-pro'>Cédula</span><input id='f-ci' class='input-pro'></div>
+                <div><span class='label-pro'>Notas</span><textarea id='f-notas' class='input-pro h-32'></textarea></div>
             </div>
         </div>
     </div>
-
     <script>
         let sb; let db = [];
         const K = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJmcGRmYWRkemJjdnR6ZmVheWNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMxMTU1MzQsImV4cCI6MjA5OTA5MTUzNH0.yXoweYF5pl01EU5R2be6GtnHto27HxLOjEmF8G87jOE';
         const U = 'https://rfpdfaddzbcvtzfeaycg.supabase.co';
+        const OLD_U = 'https://pdoeklmwquxggppvigrf.supabase.co';
+        const OLD_K = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBkb2VrbG13cXV4Z2dwcHZpZ3JmIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTY5MjMwMzU0MywiZXhwIjoyMDA3ODc5NTQzfQ.iX28B8vTf0N7yB-h-yI-oYl8X6_0-y-2y2Y';
 
         function ingresar() {
             if (document.getElementById('pin-input').value === '3268') {
@@ -91,142 +75,50 @@
                 init();
             } else { alert('PIN INCORRECTO'); }
         }
-
         async function init() {
             sb = supabase.createClient(U, K);
             cargar();
         }
-
         async function cargar() {
             const { data, error } = await sb.from('personas').select('*').order('created_at', { ascending: false });
             if (!error) { db = data; dibujar(db); }
         }
-
         function dibujar(datos) {
             const l = document.getElementById('lista');
             let h = '';
             datos.forEach(p => {
-                h += "<div onclick='editar(" + p.id + ")' class='bg-white p-4 rounded-3xl shadow-sm border border-slate-200 flex items-center space-x-4'>" +
-                     "<div class='w-12 h-12 bg-slate-100 rounded-2xl overflow-hidden flex items-center justify-center text-slate-300'>" +
-                     (p.foto ? "<img src='" + p.foto + "' class='w-full h-full object-cover'>" : "<i class='fas fa-user'></i>") +
-                     "</div><div class='flex-1'><div class='font-black uppercase text-xs text-slate-800'>" + (p.nombre || 'SIN NOMBRE') + "</div>" +
-                     "<div class='text-[9px] text-slate-400 font-bold'>" + (p.ci || '---') + " | " + (p.alias || '---') + "</div></div>" +
-                     "<i class='fas fa-chevron-right text-slate-200 text-xs'></i></div>";
+                h += "<div class='bg-white p-4 rounded-3xl shadow-sm border border-slate-200 flex items-center space-x-4'>" +
+                     "<div class='w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-300'><i class='fas fa-user'></i></div>" +
+                     "<div class='flex-1'><div class='font-black uppercase text-xs text-slate-800'>" + (p.nombre || '---') + "</div>" +
+                     "<div class='text-[9px] text-slate-400 font-bold'>" + (p.ci || '---') + "</div></div></div>";
             });
-            l.innerHTML = h || "<div class='text-center p-20 opacity-20 font-black uppercase'>Sin registros</div>";
+            l.innerHTML = h || '<div class="text-center p-20 opacity-20 font-black uppercase text-slate-400">Sin registros</div>';
         }
-
-        function previsualizar(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = e => {
-                    document.getElementById('img-foto').src = e.target.result;
-                    document.getElementById('img-foto').classList.remove('hidden');
-                    document.getElementById('icon-user').classList.add('hidden');
-                };
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-
-        function abrirForm() {
-            document.getElementById('modal-titulo').innerText = 'NUEVO REGISTRO';
-            document.getElementById('f-id').value = '';
-            document.getElementById('f-nombre').value = '';
-            document.getElementById('f-alias').value = '';
-            document.getElementById('f-ci').value = '';
-            document.getElementById('f-nacimiento').value = '';
-            document.getElementById('f-domicilio').value = '';
-            document.getElementById('f-tel1').value = '';
-            document.getElementById('f-tel2').value = '';
-            document.getElementById('f-veh1').value = '';
-            document.getElementById('f-veh2').value = '';
-            document.getElementById('f-vinculos').value = '';
-            document.getElementById('f-antecedentes').value = '';
-            document.getElementById('f-notas').value = '';
-            document.getElementById('img-foto').classList.add('hidden');
-            document.getElementById('icon-user').classList.remove('hidden');
-            document.getElementById('btn-borrar').classList.add('hidden');
-            document.getElementById('modal').classList.remove('hidden');
-        }
-
-        function editar(id) {
-            const p = db.find(x => x.id === id);
-            if (!p) return;
-            abrirForm();
-            document.getElementById('modal-titulo').innerText = 'EDITAR REGISTRO';
-            document.getElementById('f-id').value = p.id;
-            document.getElementById('f-nombre').value = p.nombre || '';
-            document.getElementById('f-alias').value = p.alias || '';
-            document.getElementById('f-ci').value = p.ci || '';
-            document.getElementById('f-nacimiento').value = p.fecha_nacimiento || '';
-            document.getElementById('f-domicilio').value = p.domicilio || '';
-            document.getElementById('f-tel1').value = p.telefono1 || '';
-            document.getElementById('f-tel2').value = p.telefono2 || '';
-            document.getElementById('f-veh1').value = p.vehiculo1 || '';
-            document.getElementById('f-veh2').value = p.vehiculo2 || '';
-            document.getElementById('f-vinculos').value = p.vinculos || '';
-            document.getElementById('f-antecedentes').value = p.antecedentes || '';
-            document.getElementById('f-notas').value = p.notas || '';
-            if (p.foto) {
-                document.getElementById('img-foto').src = p.foto;
-                document.getElementById('img-foto').classList.remove('hidden');
-                document.getElementById('icon-user').classList.add('hidden');
-            }
-            document.getElementById('btn-borrar').classList.remove('hidden');
-        }
-
-        function cerrarModal() { document.getElementById('modal').classList.add('hidden'); }
-
-        async function guardar() {
-            const id = document.getElementById('f-id').value;
-            const btn = document.getElementById('btn-guardar');
-            btn.disabled = true;
-            btn.innerHTML = "<div class='loader'></div>";
-
-            let fotoUrl = document.getElementById('img-foto').classList.contains('hidden') ? null : document.getElementById('img-foto').src;
-            const file = document.getElementById('input-file').files[0];
-
-            if (file) {
-                const ext = file.name.split('.').pop();
-                const path = 'fotos/' + Date.now() + '.' + ext;
-                const { error } = await sb.storage.from('fotos').upload(path, file);
-                if (!error) {
-                    const { data } = sb.storage.from('fotos').getPublicUrl(path);
-                    fotoUrl = data.publicUrl;
+        function mostrarMigrador() { document.getElementById('modal-migracion').classList.remove('hidden'); }
+        function cerrarMigrador() { document.getElementById('modal-migracion').classList.add('hidden'); }
+        async function iniciarRescate() {
+            const st = document.getElementById('migracion-status');
+            st.innerHTML = '<div class="loader"></div><p class="mt-4 font-black uppercase text-[10px]">Conectando al servidor viejo...</p>';
+            try {
+                const res = await fetch(OLD_U + '/rest/v1/personas?select=*', { headers: { 'apikey': OLD_K, 'Authorization': 'Bearer ' + OLD_K } });
+                const dataViejos = await res.json();
+                if (!Array.isArray(dataViejos)) throw new Error();
+                for (let i = 0; i < dataViejos.length; i += 50) {
+                    const block = dataViejos.slice(i, i + 50).map(p => ({ nombre: p.nombre, ci: p.ci, alias: p.alias, notas: p.notas }));
+                    await sb.from('personas').insert(block);
+                    st.innerHTML = '<div class="loader"></div><p class="mt-4 font-black uppercase text-[10px]">Subiendo: ' + (i + block.length) + ' / ' + dataViejos.length + '</p>';
                 }
-            }
-
-            const p = {
-                nombre: document.getElementById('f-nombre').value,
-                alias: document.getElementById('f-alias').value,
-                ci: document.getElementById('f-ci').value,
-                fecha_nacimiento: document.getElementById('f-nacimiento').value || null,
-                domicilio: document.getElementById('f-domicilio').value,
-                telefono1: document.getElementById('f-tel1').value,
-                telefono2: document.getElementById('f-tel2').value,
-                vehiculo1: document.getElementById('f-veh1').value,
-                vehiculo2: document.getElementById('f-veh2').value,
-                vinculos: document.getElementById('f-vinculos').value,
-                antecedentes: document.getElementById('f-antecedentes').value,
-                notas: document.getElementById('f-notas').value,
-                foto: fotoUrl
-            };
-
-            const { error } = id ? await sb.from('personas').update(p).eq('id', id) : await sb.from('personas').insert([p]);
-
-            if (error) alert('Error: ' + error.message);
-            else { cerrarModal(); cargar(); }
-            btn.disabled = false;
-            btn.innerText = 'GUARDAR';
+                st.innerHTML = '<i class="fas fa-check-circle text-green-500 text-5xl mb-4"></i><p class="font-black uppercase text-xs">¡LISTO!</p>';
+                setTimeout(() => { cerrarMigrador(); cargar(); }, 2000);
+            } catch(e) { st.innerHTML = '<p class="text-red-500 font-black uppercase text-[10px]">Error: El servidor viejo está apagado.</p>'; }
         }
-
-        async function borrarRegistro() {
-            if (!confirm('Borrar registro?')) return;
-            const id = document.getElementById('f-id').value;
-            await sb.from('personas').delete().eq('id', id);
+        function abrirForm() { document.getElementById('modal').classList.remove('hidden'); }
+        function cerrarModal() { document.getElementById('modal').classList.add('hidden'); }
+        async function guardar() {
+            const p = { nombre: document.getElementById('f-nombre').value, ci: document.getElementById('f-ci').value, notas: document.getElementById('f-notas').value };
+            await sb.from('personas').insert([p]);
             cerrarModal(); cargar();
         }
-
         function filtrar() {
             const t = document.getElementById('bus').value.toLowerCase().trim();
             dibujar(db.filter(p => (p.nombre && p.nombre.toLowerCase().includes(t)) || (p.ci && String(p.ci).includes(t))));
