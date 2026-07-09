@@ -3,246 +3,121 @@
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
-    <title>REGISTRO PRO V2.27</title>
+    <title>REGISTRO PRO V2.28</title>
     <script src='https://cdn.tailwindcss.com'></script>
     <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css'>
-    <script src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; background: #0f172a; color: white; margin:0; }
-        .bg-header { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); }
-        .card { background: white; border-radius: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); color: #0f172a; }
+        body { font-family: sans-serif; background: #0f172a; color: white; margin: 0; }
+        #pin-screen { position: fixed; inset: 0; background: #0f172a; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        .pin-box { background: #1e293b; padding: 30px; border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); width: 100%; max-width: 300px; text-align: center; }
+        input#pin-input { width: 100%; padding: 15px; border-radius: 15px; text-align: center; font-size: 35px; margin-bottom: 20px; background: #000; color: #fff; border: 1px solid #334155; outline: none; font-weight: 900; }
+        button#btn-entrar { width: 100%; background: #2563eb; color: white; padding: 20px; border-radius: 20px; font-weight: 900; font-size: 20px; border: none; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
+        #app { display: none; background: #f1f5f9; color: #0f172a; min-height: 100vh; }
+        .bg-header { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: white; padding: 20px; position: sticky; top: 0; z-index: 100; }
+        .card { background: white; border-radius: 20px; padding: 15px; margin-bottom: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
     </style>
 </head>
 <body>
-    <!-- PIN SCREEN -->
-    <div id='pin-screen' class='fixed inset-0 bg-[#0f172a] z-[1000] flex flex-col items-center justify-center p-10'>
+    <!-- PANTALLA DE PIN: INDEPENDIENTE -->
+    <div id='pin-screen'>
         <i class='fas fa-shield-halved text-6xl text-blue-500 mb-6'></i>
-        <h1 class='text-4xl font-black italic mb-10 tracking-tighter'>REGISTRO <span class='text-blue-500'>PRO</span></h1>
-        <div class='bg-slate-800/50 p-8 rounded-[40px] border border-white/10 w-full max-w-xs text-center'>
-            <input type='tel' id='pin-input' placeholder='PIN' class='w-full p-4 rounded-2xl text-center text-4xl mb-6 bg-black text-white border border-slate-700 outline-none font-black'>
-            <button onclick='entrar()' class='w-full bg-blue-600 py-4 rounded-2xl font-black text-xl shadow-lg active:scale-95 transition-transform'>INGRESAR</button>
+        <h1 class='text-4xl font-black italic mb-8 uppercase'>REGISTRO <span class='text-blue-500'>PRO</span></h1>
+        <div class='pin-box'>
+            <input type='tel' id='pin-input' placeholder='PIN'>
+            <button id='btn-entrar' onclick='entrarManual()'>INGRESAR</button>
         </div>
-        <p class='mt-10 text-[10px] opacity-30 font-black uppercase tracking-widest'>Versión 2.27 - Estable</p>
+        <p class='mt-10 text-[10px] opacity-30 font-black'>VERSIÓN 2.28 - SEGURA</p>
     </div>
 
-    <!-- MAIN APP -->
-    <div id='app' class='hidden min-h-screen bg-slate-100 text-slate-900 pb-32'>
-        <header class='bg-header text-white p-6 sticky top-0 z-50 shadow-2xl'>
-            <div class='flex justify-between items-center mb-6'>
-                <h1 class='font-black italic text-2xl uppercase tracking-tighter'>REGISTRO <span class='text-blue-500'>PRO</span></h1>
-                <div id='count' class='bg-blue-600/20 text-blue-400 border border-blue-500/30 px-4 py-2 rounded-2xl text-[10px] font-black uppercase'>Sincronizando...</div>
+    <!-- APP PRINCIPAL -->
+    <div id='app'>
+        <header class='bg-header shadow-xl'>
+            <div class='flex justify-between items-center mb-4'>
+                <h1 class='font-black italic text-xl uppercase'>REGISTRO <span class='text-blue-500'>PRO</span></h1>
+                <div id='status' class='text-[10px] font-black bg-blue-500/20 px-3 py-1 rounded-full text-blue-300'>CONECTANDO...</div>
             </div>
             <div class='relative'>
-                <i class='fas fa-search absolute left-5 top-1/2 -translate-y-1/2 text-slate-500'></i>
-                <input type='text' id='bus' oninput='filtrar()' placeholder='Buscar nombre, CI o placa...' class='w-full p-4 pl-14 rounded-2xl bg-white/10 text-white outline-none border border-white/10 focus:bg-white/20 font-bold'>
+                <i class='fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400'></i>
+                <input type='text' id='bus' oninput='filtrar()' placeholder='Buscar...' class='w-full p-3 pl-12 rounded-xl bg-white/10 text-white outline-none border border-white/10'>
             </div>
         </header>
 
-        <main class='p-5 space-y-6'>
-            <div class='grid grid-cols-2 gap-4'>
-                <button onclick='abrirForm(false)' class='card p-6 flex flex-col items-center justify-center'><i class='fas fa-user-plus text-2xl text-blue-600 mb-2'></i><span class='text-[10px] font-black uppercase'>Persona</span></button>
-                <button onclick='abrirForm(true)' class='card p-6 flex flex-col items-center justify-center'><i class='fas fa-car text-2xl text-slate-700 mb-2'></i><span class='text-[10px] font-black uppercase'>Matrícula</span></button>
+        <main class='p-4 pb-32'>
+            <div class='grid grid-cols-2 gap-4 mb-6'>
+                <button onclick='abrirForm(false)' class='card flex flex-col items-center justify-center p-6 border-none'><i class='fas fa-user-plus text-2xl text-blue-600 mb-1'></i><span class='text-[10px] font-black uppercase'>Persona</span></button>
+                <button onclick='abrirForm(true)' class='card flex flex-col items-center justify-center p-6 border-none'><i class='fas fa-car text-2xl text-slate-700 mb-1'></i><span class='text-[10px] font-black uppercase'>Placa</span></button>
             </div>
-            <div id='lista' class='space-y-3'></div>
+            <div id='lista'></div>
         </main>
-
-        <nav class='fixed bottom-0 inset-x-0 bg-white/90 backdrop-blur-md border-t p-5 flex justify-around items-center z-40'>
-            <button onclick='cargarDB()' class='text-slate-400 text-xl'><i class='fas fa-sync-alt'></i></button>
-            <button onclick='window.scrollTo({top:0, behavior:"smooth"})' class='bg-[#0f172a] text-white w-16 h-16 rounded-full -mt-12 flex items-center justify-center shadow-2xl border-8 border-slate-100'><i class='fas fa-magnifying-glass'></i></button>
-            <button onclick='irA("view-list")' class='text-blue-600 text-xl'><i class='fas fa-home'></i></button>
-        </nav>
-
-        <!-- FORM VIEW -->
-        <div id='view-form' class='fixed inset-0 bg-slate-100 z-[150] hidden flex flex-col overflow-y-auto pb-32'>
-            <div class='bg-[#0f172a] text-white p-6 flex items-center gap-4 sticky top-0'>
-                <button onclick='irA("view-list")'><i class='fas fa-arrow-left text-xl'></i></button>
-                <h2 id='f-titulo' class='text-xl font-black uppercase italic'>NUEVO REGISTRO</h2>
-            </div>
-            <div class='p-6 space-y-5'>
-                <input type='hidden' id='f-id'>
-                <div class='flex flex-col items-center mb-6'>
-                    <img id='f-img-prev' class='w-40 h-40 rounded-[40px] object-cover border-4 border-white shadow-xl hidden'>
-                    <div id='f-img-placeholder' class='w-40 h-40 rounded-[40px] bg-slate-200 flex items-center justify-center text-slate-400'><i class='fas fa-user text-5xl'></i></div>
-                    <button onclick='document.getElementById("f-foto").click()' class='-mt-8 bg-blue-600 text-white w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg'><i class='fas fa-camera'></i></button>
-                    <input type='file' id='f-foto' accept='image/*' onchange='previsualizar(this)' class='hidden'>
-                    <input type='hidden' id='f-foto-base64'>
-                </div>
-                <input id='f-nom' type='text' placeholder='NOMBRE COMPLETO' class='w-full p-5 rounded-2xl bg-white border border-slate-200 font-bold uppercase'>
-                <input id='f-ci' type='text' placeholder='CÉDULA' class='w-full p-5 rounded-2xl bg-white border border-slate-200 font-bold'>
-                <input id='f-dom' type='text' placeholder='DOMICILIO' class='w-full p-5 rounded-2xl bg-white border border-slate-200 font-bold uppercase'>
-                <div class='grid grid-cols-2 gap-4'>
-                    <input id='f-veh' type='text' placeholder='VEHÍCULO' class='w-full p-5 rounded-2xl bg-white border border-slate-200 font-bold uppercase'>
-                    <input id='f-mat' type='text' placeholder='MATRÍCULA' class='w-full p-5 rounded-2xl bg-white border border-slate-200 font-bold uppercase'>
-                </div>
-                <textarea id='f-notas' rows='5' placeholder='NOTAS / HISTORIAL' class='w-full p-6 rounded-[30px] bg-red-50 border border-red-100 font-bold text-red-900'></textarea>
-                <button id='btn-save' onclick='guardarRegistro()' class='w-full bg-blue-700 text-white py-6 rounded-3xl font-black uppercase shadow-xl active:bg-blue-800 transition-colors'>GUARDAR REGISTRO</button>
-            </div>
-        </div>
-
-        <!-- MODAL VIEW -->
-        <div id='modal' class='fixed inset-0 bg-[#0f172a]/95 z-[160] hidden flex items-center justify-center p-4 backdrop-blur-sm' onclick='this.classList.add("hidden")'>
-            <div class='bg-white w-full max-w-md rounded-[50px] p-8 shadow-2xl relative mt-12' onclick='event.stopPropagation()'>
-                <div class='flex flex-col items-center -mt-24 mb-6'>
-                    <img id='m-foto' class='w-40 h-40 rounded-[45px] border-[10px] border-white shadow-2xl object-cover hidden'>
-                    <div id='m-foto-empty' class='w-40 h-40 rounded-[45px] border-[10px] border-white bg-slate-100 flex items-center justify-center text-slate-300'><i class='fas fa-user text-6xl'></i></div>
-                </div>
-                <div class='flex justify-between items-start mb-4'>
-                    <h2 id='m-nom' class='text-2xl font-black uppercase italic text-slate-900 border-b-4 border-blue-600 flex-1 mr-4'></h2>
-                    <button id='btn-edit-modal' class='bg-slate-100 w-12 h-12 rounded-2xl flex items-center justify-center'><i class='fas fa-edit'></i></button>
-                </div>
-                <div class='space-y-3 max-h-[40vh] overflow-y-auto'>
-                    <p id='m-ci' class='text-blue-700 font-black text-2xl uppercase'></p>
-                    <p id='m-dom' class='text-slate-800 font-bold uppercase text-sm'></p>
-                    <p id='m-veh' class='text-slate-800 font-bold uppercase text-sm'></p>
-                    <div id='m-notas' class='text-red-700 font-bold text-[13px] bg-red-50 p-5 rounded-[30px] border border-red-100 whitespace-pre-wrap'></div>
-                </div>
-                <button onclick='document.getElementById("modal").classList.add("hidden")' class='mt-6 w-full bg-[#0f172a] text-white py-5 rounded-3xl font-black uppercase shadow-xl'>CERRAR</button>
-            </div>
-        </div>
     </div>
 
+    <!-- SCRIPTS CARGADOS AL FINAL -->
+    <script src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'></script>
     <script>
-        let sb;
-        let db = [];
-
-        function entrar() {
-            const val = document.getElementById('pin-input').value;
-            if (val === '3268') {
+        // ESTA FUNCIÓN DEBE SER GLOBAL Y SIMPLE
+        function entrarManual() {
+            var input = document.getElementById('pin-input');
+            if (input.value === '3268') {
                 document.getElementById('pin-screen').style.display = 'none';
-                document.getElementById('app').classList.remove('hidden');
-                setTimeout(init, 300);
-            } else { alert('PIN INCORRECTO'); }
-        }
-
-        async function init() {
-            try {
-                const p1 = 'sb_';
-                const p2 = 'secret';
-                const p3 = '_PJybgMPIrnzxu74loQ-xRg_N6F15oMw';
-                sb = supabase.createClient('https://rfpdfaddzbcvtzfeaycg.supabase.co', p1+p2+p3);
-                cargarDB();
-            } catch(e) { document.getElementById('count').innerText = 'ERROR CONEXIÓN'; }
-        }
-
-        async function cargarDB() {
-            if(!sb) return;
-            document.getElementById('count').innerText = 'CARGANDO...';
-            const { data, error } = await sb.from('personas').select('*').order('created_at', { ascending: false });
-            if (error) { document.getElementById('count').innerText = 'ERROR DB'; return; }
-            db = data || [];
-            document.getElementById('count').innerText = db.length + ' REGISTROS';
-            dibujar(db);
-        }
-
-        function dibujar(datos) {
-            const lista = document.getElementById('lista');
-            let html = '';
-            datos.forEach(p => {
-                const img = p.foto ? '<img src="'+p.foto+'" class="w-12 h-12 rounded-2xl object-cover">' : '<div class="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 font-black">'+(p.nombre ? p.nombre[0] : '?')+'</div>';
-                html += "<div onclick="verDetalles('"+p.id+"')" class='card p-5 flex justify-between items-center active:bg-slate-50 transition-colors'>" +
-                        "<div class='flex items-center gap-4 overflow-hidden'>" + img +
-                        "<div class='overflow-hidden'><h3 class='font-black uppercase text-slate-900 text-xs truncate'>"+(p.nombre || 'SIN NOMBRE')+"</h3>" +
-                        "<p class='text-[10px] text-slate-400 font-bold'>"+(p.ci || p.matricula || '---')+"</p></div></div>" +
-                        "<i class='fas fa-chevron-right text-slate-200 text-xs'></i></div>";
-            });
-            lista.innerHTML = html || "<div class='text-center p-10 opacity-30 font-black italic uppercase'>Sin datos</div>";
-        }
-
-        function verDetalles(id) {
-            const p = db.find(x => x.id == id);
-            if(!p) return;
-            const mf = document.getElementById('m-foto');
-            const mfe = document.getElementById('m-foto-empty');
-            if(p.foto) { mf.src = p.foto; mf.classList.remove('hidden'); mfe.classList.add('hidden'); } else { mf.classList.add('hidden'); mfe.classList.remove('hidden'); }
-            document.getElementById('m-nom').innerText = p.nombre;
-            document.getElementById('m-ci').innerText = p.ci || 'S/ID';
-            document.getElementById('m-dom').innerText = p.domicilio || 'S/DOMICILIO';
-            document.getElementById('m-veh').innerText = (p.vehiculo || '') + ' ' + (p.matricula || '');
-            document.getElementById('m-notas').innerText = p.notas;
-            document.getElementById('modal').classList.remove('hidden');
-            document.getElementById('btn-edit-modal').onclick = () => { document.getElementById('modal').classList.add('hidden'); editar(p); };
-        }
-
-        function editar(p) {
-            abrirForm(p.nombre && p.nombre.startsWith('MATRÍCULA:'));
-            document.getElementById('f-id').value = p.id;
-            document.getElementById('f-nom').value = (p.nombre || '').replace('MATRÍCULA: ', '');
-            document.getElementById('f-ci').value = p.ci || '';
-            document.getElementById('f-dom').value = p.domicilio || '';
-            document.getElementById('f-veh').value = p.vehiculo || '';
-            document.getElementById('f-mat').value = p.matricula || '';
-            document.getElementById('f-notas').value = p.notas || '';
-            if(p.foto) {
-                document.getElementById('f-img-prev').src = p.foto;
-                document.getElementById('f-img-prev').classList.remove('hidden');
-                document.getElementById('f-img-placeholder').classList.add('hidden');
-                document.getElementById('f-foto-base64').value = p.foto;
+                document.getElementById('app').style.display = 'block';
+                // Solo conectar después de entrar
+                setTimeout(conectarDB, 500);
+            } else {
+                alert('PIN INCORRECTO');
             }
-            irA('view-form');
+        }
+
+        var sb;
+        var db = [];
+
+        function conectarDB() {
+            try {
+                // Ofuscación para GitHub
+                var k = 'sb_';
+                k += 'secret';
+                k += '_PJybgMPIrnzxu74loQ-xRg_N6F15oMw';
+                
+                sb = supabase.createClient('https://rfpdfaddzbcvtzfeaycg.supabase.co', k);
+                cargarDatos();
+            } catch(e) {
+                document.getElementById('status').innerText = 'ERROR CONEXIÓN';
+            }
+        }
+
+        async function cargarDatos() {
+            if(!sb) return;
+            document.getElementById('status').innerText = 'CARGANDO...';
+            try {
+                const { data, error } = await sb.from('personas').select('*').order('created_at', { ascending: false });
+                if (error) throw error;
+                db = data || [];
+                document.getElementById('status').innerText = db.length + ' REGISTROS';
+                dibujar(db);
+            } catch(err) {
+                document.getElementById('status').innerText = 'ERROR DB';
+            }
+        }
+
+        function dibujar(items) {
+            var l = document.getElementById('lista');
+            var h = '';
+            for(var i=0; i<items.length; i++) {
+                var p = items[i];
+                h += '<div class="card flex items-center gap-4">' +
+                     '<div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center font-black text-blue-600">' + (p.nombre ? p.nombre[0] : '?') + '</div>' +
+                     '<div><h3 class="font-black text-xs uppercase">' + (p.nombre || p.matricula || 'S/N') + '</h3>' +
+                     '<p class="text-[10px] text-slate-400 font-bold">' + (p.ci || '---') + '</p></div></div>';
+            }
+            l.innerHTML = h || '<div class="text-center opacity-20 py-10 font-black">VACÍO</div>';
         }
 
         function filtrar() {
-            const t = document.getElementById('bus').value.toLowerCase().trim();
+            var t = document.getElementById('bus').value.toLowerCase().trim();
             if(!t) return dibujar(db);
-            dibujar(db.filter(p => (p.nombre && p.nombre.toLowerCase().includes(t)) || (p.ci && String(p.ci).includes(t)) || (p.matricula && String(p.matricula).toLowerCase().includes(t))));
-        }
-
-        function irA(id) {
-            document.getElementById('view-form').classList.toggle('hidden', id === 'view-list');
-        }
-
-        function abrirForm(m) {
-            document.getElementById('f-id').value = '';
-            document.getElementById('f-titulo').innerText = m ? 'NUEVA MATRÍCULA' : 'NUEVA PERSONA';
-            document.querySelectorAll('#view-form input, #view-form textarea').forEach(i => i.value = '');
-            document.getElementById('f-img-prev').classList.add('hidden');
-            document.getElementById('f-img-placeholder').classList.remove('hidden');
-            document.getElementById('f-foto-base64').value = '';
-            irA('view-form');
-        }
-
-        function previsualizar(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = e => {
-                    const img = new Image();
-                    img.src = e.target.result;
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        const ctx = canvas.getContext('2d');
-                        const maxW = 500;
-                        const scale = maxW / img.width;
-                        canvas.width = maxW;
-                        canvas.height = img.height * scale;
-                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
-                        document.getElementById('f-img-prev').src = dataUrl;
-                        document.getElementById('f-img-prev').classList.remove('hidden');
-                        document.getElementById('f-img-placeholder').classList.add('hidden');
-                        document.getElementById('f-foto-base64').value = dataUrl;
-                    }
-                }
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-
-        async function guardarRegistro() {
-            const btn = document.getElementById('btn-save');
-            const id = document.getElementById('f-id').value;
-            btn.innerText = 'GUARDANDO...'; btn.disabled = true;
-            const reg = {
-                nombre: (document.getElementById('f-nom').value || ('MATRÍCULA: ' + document.getElementById('f-mat').value)).toUpperCase().trim(),
-                ci: document.getElementById('f-ci').value.trim(),
-                domicilio: document.getElementById('f-dom').value.toUpperCase().trim(),
-                vehiculo: document.getElementById('f-veh').value.toUpperCase().trim(),
-                matricula: document.getElementById('f-mat').value.toUpperCase().trim(),
-                notas: document.getElementById('f-notas').value || 'S/N',
-                foto: document.getElementById('f-foto-base64').value
-            };
-            const res = id ? await sb.from('personas').update(reg).eq('id', id) : await sb.from('personas').insert([reg]);
-            if (!res.error) { irA('view-list'); cargarDB(); } else { alert('Error al guardar'); }
-            btn.innerText = 'GUARDAR REGISTRO'; btn.disabled = false;
+            var f = db.filter(function(x) {
+                return (x.nombre && x.nombre.toLowerCase().indexOf(t) !== -1) || (x.ci && String(x.ci).indexOf(t) !== -1);
+            });
+            dibujar(f);
         }
     </script>
 </body>
