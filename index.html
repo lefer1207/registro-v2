@@ -731,7 +731,26 @@ function verPersona(idx) {
     h += '</div></div>';
   }
 
-  if (p[8]) h += '<div class="detail-section"><h3>Vinculos</h3><div class="detail-notes">'+esc(p[8])+'</div></div>';
+  if (p[8]) {
+    var txtVinculos = esc(p[8]);
+    // Convertir nombres existentes en la base a links clicables
+    var nombresUnicos = {};
+    for (var idxB = 0; idxB < D.length; idxB++) {
+      var nomCompleto = D[idxB][0].trim();
+      if (nomCompleto && nomCompleto.length > 3 && txtVinculos.includes(nomCompleto) && !nombresUnicos[nomCompleto]) {
+        nombresUnicos[nomCompleto] = idxB;
+      }
+    }
+    // Reemplazar los nombres completos (del mas largo al mas corto para evitar reemplazos parciales)
+    var nombresLista = Object.keys(nombresUnicos).sort(function(a,b){return b.length-a.length;});
+    for (var ni = 0; ni < nombresLista.length; ni++) {
+      var nom = nombresLista[ni];
+      var idxB = nombresUnicos[nom];
+      var reemplazo = '<span style="color:var(--secondary);font-weight:700;cursor:pointer;text-decoration:underline;" onclick="verPersona('+idxB+')">'+nom+'</span>';
+      txtVinculos = txtVinculos.split(nom).join(reemplazo);
+    }
+    h += '<div class="detail-section"><h3>Vinculos</h3><div class="detail-notes">'+txtVinculos+'</div></div>';
+  }
   if (p[9]) h += '<div class="detail-section"><h3>Antecedentes</h3><div class="detail-notes">'+esc(p[9])+'</div></div>';
   if (p[10] && p[10].length) h += '<div class="detail-section"><h3>Notas</h3><div class="detail-notes">'+esc(p[10].join(' / '))+'</div></div>';
 
