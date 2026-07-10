@@ -458,16 +458,7 @@ function iniciales(n) { return n.split(' ').slice(0,2).map(function(w){return w[
 // ============================================================
 // ENTRADA
 // ============================================================
-function entrar() {
-  if (document.getElementById('pin-input').value === '3268') {
-    document.getElementById('pin-screen').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
-    cargarDatos();
-    renderPersonas();
-  } else if (document.getElementById('pin-input').value.length >= 4) {
-    showToast('PIN incorrecto'); document.getElementById('pin-input').value = '';
-  }
-}
+
 
 // ============================================================
 // DATOS
