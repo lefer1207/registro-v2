@@ -424,7 +424,7 @@
   </div>
 </main>
 
-<button class="fab" id="fabBtn" onclick="onFabClick()" style="display:none;">+</button>
+<button class="fab" id="fabBtn" onclick="onFabClick()">+</button>
 </div>
 
 <script>
@@ -906,6 +906,6 @@ function guardarMatricula() {
 function esc(s) { if (!s) return ''; return String(s).replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 
-window.onload = function() { cargarDatos(); renderPersonas(); };</script>
+window.onload = function() { cargarDatos(); showTab("personas"); };</script>
 </body>
 </html>
