@@ -411,8 +411,9 @@
     </div>
     <div class="form-section">
       <h3>Vehiculos</h3>
-      <div class="form-group"><input type="text" id="fpVeh1" placeholder="Vehiculo (marca/modelo/patente)"></div>
-      <div class="form-group"><input type="text" id="fpVeh2" placeholder="Vehiculo"></div>
+      <div class="form-group"><input type="text" id="fpVeh1" placeholder="Vehiculo 1 (marca/modelo/patente)"></div>
+      <div class="form-group"><input type="text" id="fpVeh2" placeholder="Vehiculo 2"></div>
+      <div class="form-group"><input type="text" id="fpVeh3" placeholder="Vehiculo 3"></div>
     </div>
     <div class="form-section">
       <h3>Vinculos</h3>
@@ -776,6 +777,7 @@ function abrirFormPersona(idx) {
     document.getElementById('fpTel2').value = p[6]||'';
     document.getElementById('fpVeh1').value = (p[7]&&p[7][0])||'';
     document.getElementById('fpVeh2').value = (p[7]&&p[7][1])||'';
+    document.getElementById('fpVeh3').value = (p[7]&&p[7][2])||'';
     document.getElementById('fpVinc').value = p[8]||'';
     document.getElementById('fpAnt').value = p[9]||'';
     document.getElementById('fpNotas').value = (p[10]&&p[10].length) ? p[10].join(' / ') : '';
@@ -791,7 +793,7 @@ function abrirFormPersona(idx) {
     document.getElementById('formPersonaTitulo').textContent = 'Nueva Persona';
     document.getElementById('fpIdx').value = '';
     document.getElementById('fpId').value = '';
-    ['fpNombre','fpCI','fpFN','fpDir','fpAlias','fpTel1','fpTel2','fpVeh1','fpVeh2','fpVinc','fpAnt','fpNotas'].forEach(function(id){ document.getElementById(id).value = ''; });
+    ['fpNombre','fpCI','fpFN','fpDir','fpAlias','fpTel1','fpTel2','fpVeh1','fpVeh2','fpVeh3','fpVinc','fpAnt','fpNotas'].forEach(function(id){ document.getElementById(id).value = ''; });
     document.getElementById('photoPreviewContainer').innerHTML = '<div style="font-size:2rem;margin-bottom:6px">📷</div><div>Tocar para agregar foto</div>';
   }
   showView('view-form-persona');
@@ -823,9 +825,11 @@ function guardarPersona() {
 
   var veh1 = document.getElementById('fpVeh1').value.trim();
   var veh2 = document.getElementById('fpVeh2').value.trim();
+  var veh3 = document.getElementById('fpVeh3').value.trim();
   var vehs = [];
   if (veh1) vehs.push(veh1);
   if (veh2) vehs.push(veh2);
+  if (veh3) vehs.push(veh3);
 
   var notaTxt = document.getElementById('fpNotas').value.trim();
   var antTxt = document.getElementById('fpAnt').value.trim();
