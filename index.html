@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-<title>REGISTRO PRO v2.56</title>
 <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="pragma" content="no-cache">
 <meta http-equiv="expires" content="0">
+<title>REGISTRO PRO v2.57</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,sans-serif;background:#111827;color:#fff;min-height:100vh}
@@ -64,15 +64,14 @@ header h2{font-style:italic}
 <p style="color:#60a5fa;font-size:9px;font-weight:bold;letter-spacing:2px">SISTEMA DE GESTION POLICIAL</p>
 <input type="password" id="pin" placeholder="PIN" inputmode="numeric">
 <button onclick="go()">INGRESAR</button>
-<p style="opacity:0.15;font-size:9px;margin-top:40px">v2.56 - CACHE BUSTED</p>
-<p id="verCheck" style="color:#4ade80;font-size:8px;margin-top:5px;opacity:0.5">verifica: 09072021-09</p>
+<p style="opacity:0.15;font-size:9px;margin-top:40px">v2.57 - BUSQUEDA TOTAL</p>
 </div>
 
 <div id="app">
 <header>
 <h2>REGISTRO <span style="color:#3b82f6">PRO</span></h2>
 <small id="ct" style="color:#4ade80;font-size:10px;font-weight:bold">CARGANDO...</small>
-<input type="text" id="bus" placeholder="Buscar nombre o CI..." oninput="ft()">
+<input type="text" id="bus" placeholder="Buscar nombre, CI, patente, vehiculo..." oninput="ft()">
 </header>
 <div id="lt"></div>
 <button class="fab" id="fab-matricula" onclick="abrirModalMatricula()">&#x1f697;</button>
@@ -168,25 +167,12 @@ function rn(items){
 
 function ft(){
  var q=document.getElementById('bus').value.toLowerCase().trim();
+ if(!q){rn(D);return;}
  var r=[];
  for(var i=0;i<D.length;i++){
   var p=D[i];
-  // Buscar en nombre
-  if(p[0].toLowerCase().includes(q)){r.push(p);continue;}
-  // Buscar en CI
-  if(p[1].includes(q)){r.push(p);continue;}
-  // Buscar en vehiculos/matriculas
-  if(p[6]&&p[6].length){
-   var match=false;
-   for(var v=0;v<p[6].length;v++){if(p[6][v].toLowerCase().includes(q)){match=true;break;}}
-   if(match){r.push(p);continue;}
-  }
-  // Buscar en notas
-  if(p[7]&&p[7].length){
-   var match=false;
-   for(var v=0;v<p[7].length;v++){if(p[7][v].toLowerCase().includes(q)){match=true;break;}}
-   if(match){r.push(p);continue;}
-  }
+  var text = (p[0]+' '+p[1]+' '+p[2]+' '+p[3]+' '+p[4]+' '+p[5]+' '+(p[6]?p[6].join(' '):'')+' '+(p[7]?p[7].join(' '):'')).toLowerCase();
+  if(text.includes(q)) r.push(p);
  }
  rn(r);
 }
@@ -325,11 +311,9 @@ function guardarMatricula(){
  if(!pat&&!veh){alert('Ingrese al menos la patente');return;}
  var item=veh?veh+' - '+pat:pat;
  if(!isNaN(idx)){
-  // Asignar a persona existente
   if(!D[idx][6])D[idx][6]=[];
   D[idx][6].push(item);
  }else{
-  // Crear entrada solo de matricula
   D.push(['(MATRICULA) '+pat, pat, '', '', '', '', [item], [], ""]);
  }
  guardarAdicionales();
