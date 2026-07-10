@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-<title>REGISTRO PRO v2.54</title>
+<title>REGISTRO PRO v2.55</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,sans-serif;background:#111827;color:#fff;min-height:100vh}
@@ -15,7 +15,7 @@ body{font-family:-apple-system,sans-serif;background:#111827;color:#fff;min-heig
 header{position:sticky;top:0;background:#111827;padding:15px;border-bottom:1px solid #1f2937;z-index:10}
 header h2{font-style:italic}
 #bus{width:100%;padding:12px;border-radius:10px;border:1px solid #374151;background:#1f2937;color:#fff;font-size:15px;margin-top:10px;outline:none}
-#lt{padding:15px;padding-bottom:80px}
+#lt{padding:15px;padding-bottom:100px}
 .card{background:#fff;color:#000;padding:12px;border-radius:12px;margin-bottom:10px;display:flex;align-items:center;cursor:pointer;position:relative}
 .card:active{transform:scale(0.98)}
 .foto-mini{width:42px;height:42px;border-radius:10px;margin-right:12px;background:#e5e7eb;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:20px}
@@ -23,9 +23,10 @@ header h2{font-style:italic}
 .nm{font-weight:800;text-transform:uppercase;font-size:13px}
 .sub{color:#2563eb;font-weight:700;font-size:10px;letter-spacing:1px;margin-top:3px}
 .badge{background:#dc2626;color:#fff;border-radius:5px;padding:2px 6px;font-size:8px;font-weight:bold;margin-left:8px}
-#fab{position:fixed;bottom:25px;right:25px;width:60px;height:60px;border-radius:50%;background:#2563eb;color:#fff;border:none;font-size:30px;cursor:pointer;z-index:50;box-shadow:0 4px 15px rgba(37,99,235,0.5)}
-#fab:active{transform:scale(0.9)}
-
+.fab{position:fixed;width:60px;height:60px;border-radius:50%;border:none;font-size:24px;cursor:pointer;z-index:50;box-shadow:0 4px 15px rgba(0,0,0,0.4)}
+.fab:active{transform:scale(0.9)}
+#fab-persona{bottom:25px;right:25px;background:#2563eb;color:#fff;font-size:30px}
+#fab-matricula{bottom:95px;right:25px;background:#fbbf24;color:#000}
 #ficha{display:none;position:fixed;inset:0;background:#111827;z-index:200;overflow-y:auto}
 #ficha .top{position:sticky;top:0;background:#111827;padding:15px;border-bottom:1px solid #1f2937;display:flex;align-items:center;z-index:10}
 #ficha .top button{background:none;border:none;color:#60a5fa;font-size:24px;cursor:pointer;margin-right:15px;padding:5px}
@@ -38,30 +39,31 @@ header h2{font-style:italic}
 .vehiculo-item{background:#374151;border-radius:6px;padding:6px 10px;margin:3px 5px 3px 0;display:inline-block;font-size:12px;color:#fbbf24}
 .foto-grande{width:100%;max-height:200px;object-fit:cover;border-radius:10px;margin-bottom:10px;background:#374151}
 .foto-grande-placeholder{width:100%;height:150px;background:#374151;border-radius:10px;margin-bottom:10px;display:flex;align-items:center;justify-content:center;color:#6b7280;font-size:14px}
-
-#modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:300;overflow-y:auto;padding:20px}
-#modal .form-card{background:#1f2937;border-radius:15px;padding:20px;max-width:400px;margin:40px auto}
-#modal h3{font-style:italic;margin-bottom:15px;color:#60a5fa}
-#modal input,#modal textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #374151;background:#111827;color:#fff;font-size:14px;margin-bottom:10px;outline:none}
-#modal input:focus,#modal textarea:focus{border-color:#3b82f6}
-#modal textarea{resize:vertical;min-height:50px;font-family:inherit}
-#modal .btn-row{display:flex;gap:10px;margin-top:5px}
-#modal .btn-row button{flex:1;padding:12px;border-radius:10px;border:none;font-weight:bold;font-size:15px;cursor:pointer}
-#modal .btn-primary{background:#2563eb;color:#fff}
-#modal .btn-secondary{background:#374151;color:#fff}
-#modal .btn-danger{background:#dc2626;color:#fff}
-#modal .btn-photo{background:#374151;color:#fff;width:100%;padding:12px;border-radius:10px;border:1px dashed #6b7280;cursor:pointer;margin-bottom:10px;font-size:14px;text-align:center}
-#modal .preview-foto{width:100%;max-height:150px;object-fit:cover;border-radius:8px;margin-bottom:10px}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:300;overflow-y:auto;padding:20px}
+.modal-card{background:#1f2937;border-radius:15px;padding:20px;max-width:400px;margin:40px auto}
+.modal-card h3{font-style:italic;margin-bottom:15px;color:#60a5fa}
+.modal-card input,.modal-card textarea,.modal-card select{width:100%;padding:12px;border-radius:10px;border:1px solid #374151;background:#111827;color:#fff;font-size:14px;margin-bottom:10px;outline:none}
+.modal-card input:focus,.modal-card textarea:focus{border-color:#3b82f6}
+.modal-card select option{background:#111827}
+.modal-card textarea{resize:vertical;min-height:50px;font-family:inherit}
+.btn-row{display:flex;gap:10px;margin-top:5px}
+.btn-row button{flex:1;padding:12px;border-radius:10px;border:none;font-weight:bold;font-size:15px;cursor:pointer}
+.btn-primary{background:#2563eb;color:#fff}
+.btn-secondary{background:#374151;color:#fff}
+.btn-photo{background:#374151;color:#fff;width:100%;padding:12px;border-radius:10px;border:1px dashed #6b7280;cursor:pointer;margin-bottom:10px;font-size:14px;text-align:center}
+.preview-foto{width:100%;max-height:150px;object-fit:cover;border-radius:8px;margin-bottom:10px;display:none}
 </style>
 </head>
 <body>
+
 <div id="ls">
 <h1>REGISTRO <span style="color:#3b82f6">PRO</span></h1>
 <p style="color:#60a5fa;font-size:9px;font-weight:bold;letter-spacing:2px">SISTEMA DE GESTION POLICIAL</p>
 <input type="password" id="pin" placeholder="PIN" inputmode="numeric">
 <button onclick="go()">INGRESAR</button>
-<p style="opacity:0.15;font-size:9px;margin-top:40px">v2.54 - FOTOS Y ALTAS</p>
+<p style="opacity:0.15;font-size:9px;margin-top:40px">v2.55 - PERSONAS Y MATRICULAS</p>
 </div>
+
 <div id="app">
 <header>
 <h2>REGISTRO <span style="color:#3b82f6">PRO</span></h2>
@@ -69,7 +71,8 @@ header h2{font-style:italic}
 <input type="text" id="bus" placeholder="Buscar nombre o CI..." oninput="ft()">
 </header>
 <div id="lt"></div>
-<button id="fab" onclick="abrirModal()">+</button>
+<button class="fab" id="fab-matricula" onclick="abrirModalMatricula()">&#x1f697;</button>
+<button class="fab" id="fab-persona" onclick="abrirModalPersona()">+</button>
 </div>
 
 <div id="ficha">
@@ -81,24 +84,37 @@ header h2{font-style:italic}
 <div class="body" id="fichaBody"></div>
 </div>
 
-<div id="modal">
-<div class="form-card">
-<h3 id="modalTitulo">NUEVA PERSONA</h3>
+<div class="modal-overlay" id="modalPersona">
+<div class="modal-card">
+<h3>NUEVA PERSONA</h3>
 <button class="btn-photo" onclick="document.getElementById('fotoInput').click()">&#x1f4f7; TOMAR / SELECCIONAR FOTO</button>
 <input type="file" id="fotoInput" accept="image/*" capture="environment" style="display:none" onchange="previsualizarFoto(event)">
-<img id="previewFoto" class="preview-foto" style="display:none">
+<img class="preview-foto" id="previewFoto">
 <input type="text" id="fNombre" placeholder="Nombre completo">
 <input type="text" id="fCI" placeholder="CI" inputmode="numeric">
 <input type="text" id="fFN" placeholder="Fecha de nacimiento">
 <input type="text" id="fDir" placeholder="Direccion">
 <input type="text" id="fTel" placeholder="Telefono" inputmode="numeric">
 <input type="text" id="fOcu" placeholder="Ocupacion">
-<input type="text" id="fPat" placeholder="Patente / Matricula">
-<input type="text" id="fVeh" placeholder="Vehiculo (marca/modelo)">
 <textarea id="fNotas" placeholder="Notas / Familiares"></textarea>
 <div class="btn-row">
-<button class="btn-secondary" onclick="cerrarModal()">CANCELAR</button>
+<button class="btn-secondary" onclick="cerrarModalPersona()">CANCELAR</button>
 <button class="btn-primary" onclick="guardarPersona()">GUARDAR</button>
+</div>
+</div>
+</div>
+
+<div class="modal-overlay" id="modalMatricula">
+<div class="modal-card">
+<h3>AGREGAR MATRICULA</h3>
+<select id="mPersona">
+<option value="">-- SELECCIONE PERSONA --</option>
+</select>
+<input type="text" id="mPatente" placeholder="Patente / Matricula">
+<input type="text" id="mVehiculo" placeholder="Vehiculo (marca/modelo)">
+<div class="btn-row">
+<button class="btn-secondary" onclick="cerrarModalMatricula()">CANCELAR</button>
+<button class="btn-primary" onclick="guardarMatricula()">AGREGAR</button>
 </div>
 </div>
 </div>
@@ -110,15 +126,15 @@ var fotoActual = "";
 var editandoIdx = -1;
 
 function cargarDatos(){
- var guardados = localStorage.getItem('rp_adicionales');
- var adics = guardados ? JSON.parse(guardados) : [];
- D = BASE.concat(adics);
+ var g = localStorage.getItem('rp_adicionales');
+ var a = g ? JSON.parse(g) : [];
+ D = BASE.concat(a);
  document.getElementById('ct').textContent = D.length + ' REGISTROS';
 }
 
 function guardarAdicionales(){
- var adics = D.slice(BASE.length);
- localStorage.setItem('rp_adicionales', JSON.stringify(adics));
+ var a = D.slice(BASE.length);
+ localStorage.setItem('rp_adicionales', JSON.stringify(a));
  document.getElementById('ct').textContent = D.length + ' REGISTROS';
 }
 
@@ -140,8 +156,8 @@ function rn(items){
  var h='';
  for(var idx=0;idx<items.length;idx++){
   var p=items[idx];
-  var fotoHtml = '<div class="foto-mini">'+(p[8]?'<img src="'+esc(p[8])+'">':'&#x1f464;')+'</div>';
-  h+='<div class="card" onclick="abrir('+idx+')">'+fotoHtml+'<div><div class="nm">'+esc(p[0])+(idx>=BASE.length?' <span class="badge">NUEVO</span>':'')+'</div><div class="sub">CI '+(esc(p[1])||'---')+'</div></div></div>';
+  var f='<div class="foto-mini">'+(p[8]?'<img src="'+esc(p[8])+'">':'&#x1f464;')+'</div>';
+  h+='<div class="card" onclick="abrir('+idx+')">'+f+'<div><div class="nm">'+esc(p[0])+(idx>=BASE.length?' <span class="badge">NUEVO</span>':'')+'</div><div class="sub">CI '+(esc(p[1])||'---')+'</div></div></div>';
  }
  l.innerHTML=h;
 }
@@ -158,11 +174,11 @@ function ft(){
 
 function abrir(idx){
  var p=D[idx];
- editandoIdx = idx;
- var body=document.getElementById('fichaBody');
+ editandoIdx=idx;
+ var b=document.getElementById('fichaBody');
  var h='';
  if(p[8]){h+='<img class="foto-grande" src="'+esc(p[8])+'">';}else{h+='<div class="foto-grande-placeholder">&#x1f464; SIN FOTO</div>';}
- h+='<div style="margin-bottom:15px"><button class="btn-photo" onclick="camFicha()" style="background:#374151;color:#fff;border:none;border-radius:10px;padding:10px;width:100%;cursor:pointer;font-size:13px">&#x1f4f7; CAMBIAR FOTO</button></div>';
+ h+='<div style="margin-bottom:15px"><button onclick="camFicha()" style="background:#374151;color:#fff;border:none;border-radius:10px;padding:10px;width:100%;cursor:pointer;font-size:13px">&#x1f4f7; CAMBIAR FOTO</button></div>';
  h+='<div class="campo"><label>Nombre Completo</label><span>'+esc(p[0])+'</span></div>';
  h+='<div class="campo"><label>CI</label><span>'+(esc(p[1])||'---')+'</span></div>';
  h+='<div class="campo"><label>Fecha de Nacimiento</label><span>'+(esc(p[2])||'---')+'</span></div>';
@@ -178,35 +194,28 @@ function abrir(idx){
  if(p[7]&&p[7].length){
   h+='<div class="campo"><label>Notas / Familiares</label><span>'+esc(p[7].join(' / '))+'</span></div>';
  }
- h+='<div class="btn-row" style="margin-top:20px;gap:10px">';
- h+='<button class="btn-secondary" onclick="editFicha()" style="flex:1;padding:12px;border-radius:10px;border:none;font-weight:bold;font-size:14px;cursor:pointer">&#x270f; EDITAR</button>';
- h+='<button class="btn-photo" onclick="agMatricula()" style="flex:1;padding:12px;border-radius:10px;border:none;font-weight:bold;font-size:14px;cursor:pointer;background:#fbbf24;color:#000">&#x1f697; + MATRICULA</button>';
+ h+='<div class="btn-row" style="margin-top:20px">';
+ h+='<button onclick="editFicha()" style="flex:1;padding:12px;border-radius:10px;border:none;font-weight:bold;font-size:14px;cursor:pointer;background:#374151;color:#fff">&#x270f; EDITAR</button>';
  h+='</div>';
- body.innerHTML=h;
+ b.innerHTML=h;
  document.getElementById('ficha').style.display='block';
 }
 
 function cerrarFicha(){
  document.getElementById('ficha').style.display='none';
- editandoIdx = -1;
+ editandoIdx=-1;
 }
 
 function camFicha(){
- var inp = document.createElement('input');
+ var inp=document.createElement('input');
  inp.type='file';
  inp.accept='image/*';
  inp.capture='environment';
- inp.onchange = function(e){
-  var file = e.target.files[0];
-  if(!file)return;
-  var reader = new FileReader();
-  reader.onload = function(ev){
-   D[editandoIdx][8] = ev.target.result;
-   guardarAdicionales();
-   abrir(editandoIdx);
-   rn(D);
-  };
-  reader.readAsDataURL(file);
+ inp.onchange=function(e){
+  var f=e.target.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(ev){D[editandoIdx][8]=ev.target.result;guardarAdicionales();abrir(editandoIdx);rn(D);};
+  r.readAsDataURL(f);
  };
  inp.click();
 }
@@ -221,116 +230,90 @@ function eliminarPersona(){
  rn(D);
 }
 
-function abrirModal(persona){
- document.getElementById('modal').style.display='block';
- document.getElementById('modalTitulo').textContent = persona ? 'EDITAR PERSONA' : 'NUEVA PERSONA';
- document.getElementById('fNombre').value = persona ? persona[0] : '';
- document.getElementById('fCI').value = persona ? persona[1] : '';
- document.getElementById('fFN').value = persona ? persona[2] : '';
- document.getElementById('fDir').value = persona ? persona[3] : '';
- document.getElementById('fTel').value = persona ? persona[4] : '';
- document.getElementById('fOcu').value = persona ? persona[5] : '';
- document.getElementById('fPat').value = '';
- document.getElementById('fVeh').value = '';
- document.getElementById('fNotas').value = '';
- fotoActual = persona ? persona[8]||'' : '';
- if(fotoActual){
-  document.getElementById('previewFoto').src=fotoActual;
-  document.getElementById('previewFoto').style.display='block';
- }else{
-  document.getElementById('previewFoto').style.display='none';
- }
+function abrirModalPersona(p){
+ document.getElementById('modalPersona').style.display='block';
+ document.getElementById('fNombre').value=p?p[0]:'';
+ document.getElementById('fCI').value=p?p[1]:'';
+ document.getElementById('fFN').value=p?p[2]:'';
+ document.getElementById('fDir').value=p?p[3]:'';
+ document.getElementById('fTel').value=p?p[4]:'';
+ document.getElementById('fOcu').value=p?p[5]:'';
+ document.getElementById('fNotas').value='';
+ fotoActual=p?p[8]||'':'';
+ var pf=document.getElementById('previewFoto');
+ if(fotoActual){pf.src=fotoActual;pf.style.display='block';}else{pf.style.display='none';}
 }
 
-function cerrarModal(){
- document.getElementById('modal').style.display='none';
- editandoIdx = -1;
+function cerrarModalPersona(){
+ document.getElementById('modalPersona').style.display='none';
+ editandoIdx=-1;
 }
 
 function previsualizarFoto(e){
- var file = e.target.files[0];
- if(!file)return;
- var reader = new FileReader();
- reader.onload = function(ev){
-  fotoActual = ev.target.result;
-  document.getElementById('previewFoto').src = fotoActual;
-  document.getElementById('previewFoto').style.display='block';
- };
- reader.readAsDataURL(file);
+ var f=e.target.files[0];if(!f)return;
+ var r=new FileReader();
+ r.onload=function(ev){fotoActual=ev.target.result;var pf=document.getElementById('previewFoto');pf.src=fotoActual;pf.style.display='block';};
+ r.readAsDataURL(f);
 }
 
 function guardarPersona(){
- var nom = document.getElementById('fNombre').value.trim();
- var ci = document.getElementById('fCI').value.trim();
- if(!nom && !ci){alert('Ingrese al menos el nombre');return;}
-
- var pat = document.getElementById('fPat').value.trim();
- var veh = document.getElementById('fVeh').value.trim();
- var vehs = [];
- if(pat && veh) vehs.push(veh + ' - ' + pat);
- else if(pat) vehs.push(pat);
- else if(veh) vehs.push(veh);
-
- var notas = document.getElementById('fNotas').value.trim();
- 
- if(editandoIdx >= 0 && editandoIdx < D.length){
-  // Editando existente
-  D[editandoIdx][0] = nom || D[editandoIdx][0];
-  D[editandoIdx][1] = ci || D[editandoIdx][1];
-  D[editandoIdx][2] = document.getElementById('fFN').value.trim() || D[editandoIdx][2];
-  D[editandoIdx][3] = document.getElementById('fDir').value.trim() || D[editandoIdx][3];
-  D[editandoIdx][4] = document.getElementById('fTel').value.trim() || D[editandoIdx][4];
-  D[editandoIdx][5] = document.getElementById('fOcu').value.trim() || D[editandoIdx][5];
-  if(fotoActual) D[editandoIdx][8] = fotoActual;
-  if(vehs.length) D[editandoIdx][6] = D[editandoIdx][6].concat(vehs);
-  if(notas) D[editandoIdx][7] = D[editandoIdx][7].concat([notas]);
+ var nom=document.getElementById('fNombre').value.trim();
+ var ci=document.getElementById('fCI').value.trim();
+ if(!nom&&!ci){alert('Ingrese al menos el nombre');return;}
+ if(editandoIdx>=0&&editandoIdx<D.length){
+  D[editandoIdx][0]=nom||D[editandoIdx][0];
+  D[editandoIdx][1]=ci||D[editandoIdx][1];
+  D[editandoIdx][2]=document.getElementById('fFN').value.trim()||D[editandoIdx][2];
+  D[editandoIdx][3]=document.getElementById('fDir').value.trim()||D[editandoIdx][3];
+  D[editandoIdx][4]=document.getElementById('fTel').value.trim()||D[editandoIdx][4];
+  D[editandoIdx][5]=document.getElementById('fOcu').value.trim()||D[editandoIdx][5];
+  if(fotoActual)D[editandoIdx][8]=fotoActual;
+  var nt=document.getElementById('fNotas').value.trim();
+  if(nt)D[editandoIdx][7]=D[editandoIdx][7].concat([nt]);
   guardarAdicionales();
-  cerrarModal();
+  cerrarModalPersona();
   abrir(editandoIdx);
   rn(D);
  }else{
-  // Nueva persona
-  var persona = [
-   nom||'SIN NOMBRE',
-   ci,
-   document.getElementById('fFN').value.trim(),
-   document.getElementById('fDir').value.trim(),
-   document.getElementById('fTel').value.trim(),
-   document.getElementById('fOcu').value.trim(),
-   vehs,
-   notas ? [notas] : [],
-   fotoActual||""
-  ];
-  D.push(persona);
+  D.push([nom||'SIN NOMBRE',ci,document.getElementById('fFN').value.trim(),document.getElementById('fDir').value.trim(),document.getElementById('fTel').value.trim(),document.getElementById('fOcu').value.trim(),[],document.getElementById('fNotas').value.trim()?[document.getElementById('fNotas').value.trim()]:[],fotoActual||""]);
   guardarAdicionales();
-  cerrarModal();
+  cerrarModalPersona();
   rn(D);
  }
 }
 
-function editFicha(){
- if(editandoIdx<0)return;
- abrirModal(D[editandoIdx]);
+function editFicha(){if(editandoIdx<0)return;abrirModalPersona(D[editandoIdx]);}
+
+function abrirModalMatricula(){
+ var sel=document.getElementById('mPersona');
+ sel.innerHTML='<option value="">-- SELECCIONE PERSONA --</option>';
+ for(var i=0;i<D.length;i++){
+  var o=document.createElement('option');
+  o.value=i;o.textContent=D[i][0]+' - CI '+(D[i][1]||'---');
+  sel.appendChild(o);
+ }
+ document.getElementById('mPatente').value='';
+ document.getElementById('mVehiculo').value='';
+ document.getElementById('modalMatricula').style.display='block';
 }
 
-function agMatricula(){
- if(editandoIdx<0)return;
- var p = D[editandoIdx];
- var pat = prompt('Ingrese matricula/patente:');
- if(!pat||!pat.trim())return;
- var veh = prompt('Ingrese vehiculo (opcional):');
- var item = veh ? veh.trim()+' - '+pat.trim() : pat.trim();
- if(!p[6]) p[6]=[];
- p[6].push(item);
+function cerrarModalMatricula(){document.getElementById('modalMatricula').style.display='none';}
+
+function guardarMatricula(){
+ var idx=parseInt(document.getElementById('mPersona').value);
+ if(isNaN(idx)){alert('Seleccione una persona');return;}
+ var pat=document.getElementById('mPatente').value.trim();
+ var veh=document.getElementById('mVehiculo').value.trim();
+ if(!pat&&!veh){alert('Ingrese al menos la patente');return;}
+ var item=veh?veh+' - '+pat:pat;
+ if(!D[idx][6])D[idx][6]=[];
+ D[idx][6].push(item);
  guardarAdicionales();
- abrir(editandoIdx);
+ cerrarModalMatricula();
  rn(D);
 }
 
-function esc(s){
- if(!s)return'';
- return String(s).replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
+function esc(s){if(!s)return'';return String(s).replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 </script>
 </body>
 </html>
