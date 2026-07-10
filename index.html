@@ -423,10 +423,7 @@
       <h3>Notas / Antecedentes</h3>
       <div class="form-group"><textarea id="fpAnt" placeholder="Antecedentes penales / policiales"></textarea></div>
     </div>
-    <div class="form-section">
-      <h3>Notas</h3>
-      <div class="form-group"><textarea id="fpNotas" placeholder="Notas adicionales"></textarea></div>
-    </div>
+    
     <input type="hidden" id="fpId">
     <input type="hidden" id="fpIdx">
     <div class="form-actions">
@@ -818,7 +815,7 @@ function abrirFormPersona(idx) {
     document.getElementById('formPersonaTitulo').textContent = 'Nueva Persona';
     document.getElementById('fpIdx').value = '';
     document.getElementById('fpId').value = '';
-    ['fpNombre','fpCI','fpFN','fpDir','fpAlias','fpTel1','fpTel2','fpVeh1','fpVeh2','fpVeh3','fpVinc','fpAnt','fpNotas'].forEach(function(id){ document.getElementById(id).value = ''; });
+    ['fpNombre','fpCI','fpFN','fpDir','fpAlias','fpTel1','fpTel2','fpVeh1','fpVeh2','fpVeh3','fpVinc','fpAnt'].forEach(function(id){ document.getElementById(id).value = ''; });
     document.getElementById('photoPreviewContainer').innerHTML = '<div style="font-size:2rem;margin-bottom:6px">📷</div><div>Tocar para agregar foto</div>';
   }
   showView('view-form-persona');
