@@ -167,7 +167,22 @@ function ft(){
  var r=[];
  for(var i=0;i<D.length;i++){
   var p=D[i];
-  if(p[0].toLowerCase().includes(q)||p[1].includes(q)) r.push(p);
+  // Buscar en nombre
+  if(p[0].toLowerCase().includes(q)){r.push(p);continue;}
+  // Buscar en CI
+  if(p[1].includes(q)){r.push(p);continue;}
+  // Buscar en vehiculos/matriculas
+  if(p[6]&&p[6].length){
+   var match=false;
+   for(var v=0;v<p[6].length;v++){if(p[6][v].toLowerCase().includes(q)){match=true;break;}}
+   if(match){r.push(p);continue;}
+  }
+  // Buscar en notas
+  if(p[7]&&p[7].length){
+   var match=false;
+   for(var v=0;v<p[7].length;v++){if(p[7][v].toLowerCase().includes(q)){match=true;break;}}
+   if(match){r.push(p);continue;}
+  }
  }
  rn(r);
 }
@@ -311,8 +326,7 @@ function guardarMatricula(){
   D[idx][6].push(item);
  }else{
   // Crear entrada solo de matricula
-  var nom = 'MATRICULA - ' + item;
-  D.push([nom, pat, '', '', '', '', [item], [], ""]);
+  D.push(['(MATRICULA) '+pat, pat, '', '', '', '', [item], [], ""]);
  }
  guardarAdicionales();
  cerrarModalMatricula();
