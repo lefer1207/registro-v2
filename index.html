@@ -47,7 +47,7 @@
       font-weight: bold; font-size: 16px; cursor: pointer;
     }
 
-    #app { display: none; }
+    #app { display: block; }
 
     header {
       background: var(--primary);
@@ -315,15 +315,6 @@
   </style>
 </head>
 <body>
-
-<div id="pin-screen">
-  <h1>🛡️</h1>
-  <h1 style="color:#fff;font-size:1.8rem;">Registro Policial</h1>
-  <p style="color:var(--accent);font-size:0.7rem;letter-spacing:3px;text-transform:uppercase;margin-bottom:30px;">Sistema de Gestion</p>
-  <input type="password" id="pin-input" placeholder="PIN" inputmode="numeric" maxlength="4" onkeydown="if(event.key==='Enter')entrar()">
-  <button onclick="entrar()">INGRESAR</button>
-  <p style="opacity:0.2;color:#fff;font-size:0.6rem;margin-top:40px;">v3.1 LOCAL</p>
-</div>
 
 <div id="app">
 <div class="loader-overlay hidden" id="loader"><div class="spinner"></div></div>
