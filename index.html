@@ -6,7 +6,7 @@
 <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="pragma" content="no-cache">
 <meta http-equiv="expires" content="0">
-<title>REGISTRO PRO v2.57</title>
+<title>REGISTRO PRO v2.58</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,sans-serif;background:#111827;color:#fff;min-height:100vh}
@@ -64,7 +64,7 @@ header h2{font-style:italic}
 <p style="color:#60a5fa;font-size:9px;font-weight:bold;letter-spacing:2px">SISTEMA DE GESTION POLICIAL</p>
 <input type="password" id="pin" placeholder="PIN" inputmode="numeric">
 <button onclick="go()">INGRESAR</button>
-<p style="opacity:0.15;font-size:9px;margin-top:40px">v2.57 - BUSQUEDA TOTAL</p>
+<p style="opacity:0.15;font-size:9px;margin-top:40px">v2.58 - INDICES CORREGIDOS</p>
 </div>
 
 <div id="app">
@@ -127,6 +127,7 @@ var BASE = [["Baccino Comta", "", "", "", "", "", ["Madre Alisson Penabades Bacc
 var D = [];
 var fotoActual = "";
 var editandoIdx = -1;
+var ultimosIndices = [];
 
 function cargarDatos(){
  var g = localStorage.getItem('rp_adicionales');
@@ -159,8 +160,9 @@ function rn(items){
  var h='';
  for(var idx=0;idx<items.length;idx++){
   var p=items[idx];
+  var idxReal = ultimosIndices.length ? ultimosIndices[idx] : idx;
   var f='<div class="foto-mini">'+(p[8]?'<img src="'+esc(p[8])+'">':'&#x1f464;')+'</div>';
-  h+='<div class="card" onclick="abrir('+idx+')">'+f+'<div><div class="nm">'+esc(p[0])+(idx>=BASE.length?' <span class="badge">NUEVO</span>':'')+'</div><div class="sub">CI '+(esc(p[1])||'---')+'</div></div></div>';
+  h+='<div class="card" onclick="abrir('+idxReal+')">'+f+'<div><div class="nm">'+esc(p[0])+(idxReal>=BASE.length?' <span class="badge">NUEVO</span>':'')+'</div><div class="sub">CI '+(esc(p[1])||'---')+'</div></div></div>';
  }
  l.innerHTML=h;
 }
@@ -169,10 +171,11 @@ function ft(){
  var q=document.getElementById('bus').value.toLowerCase().trim();
  if(!q){rn(D);return;}
  var r=[];
+ ultimosIndices = [];
  for(var i=0;i<D.length;i++){
   var p=D[i];
   var text = (p[0]+' '+p[1]+' '+p[2]+' '+p[3]+' '+p[4]+' '+p[5]+' '+(p[6]?p[6].join(' '):'')+' '+(p[7]?p[7].join(' '):'')).toLowerCase();
-  if(text.includes(q)) r.push(p);
+  if(text.includes(q)){r.push(p);ultimosIndices.push(i);}
  }
  rn(r);
 }
