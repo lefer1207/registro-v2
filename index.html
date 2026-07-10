@@ -749,10 +749,7 @@ function verPersona(idx) {
     h += '<div class="detail-section"><h3>Vinculos</h3><div class="detail-notes">'+txtVinculos+'</div></div>';
   }
   if (p[9]) h += '<div class="detail-section"><h3>Antecedentes</h3><div class="detail-notes">'+esc(p[9])+'</div></div>';
-  if (p[10] && p[10].length) h += '<div class="detail-section"><h3>Notas</h3><div class="detail-notes">'+esc(p[10].join(" / "))+'</div></div>';
-    }
-    h += '<div class="detail-section"><h3>Antecedentes</h3><div class="detail-notes">'+esc(txtNotas.join("\n\n"))+'</div></div>';
-  }
+  if (p[10] && p[10].length) h += '<div class="detail-section"><h3>Notas</h3><div class="detail-notes">'+esc(p[10].join(' / '))+'</div></div>';
 
   h += '<div class="form-actions" style="margin-top:24px;">';
   h += '<button class="btn btn-ghost" onclick="editarPersona()">✏️ Editar</button>';
@@ -798,7 +795,7 @@ function abrirFormPersona(idx) {
     document.getElementById('fpVeh2').value = (p[7]&&p[7][1])||'';
     document.getElementById('fpVeh3').value = (p[7]&&p[7][2])||'';
     document.getElementById('fpVinc').value = p[8]||'';
-    document.getElementById('fpAnt').value = p[9]||'';
+    document.getElementById('fpAnt','fpNotas').value = p[9]||'';
     document.getElementById('fpNotas').value = (p[10]&&p[10].length) ? p[10].join(' / ') : '';
     fotoActual = p[11]||'';
     var pf = document.getElementById('photoPreviewContainer');
@@ -851,7 +848,7 @@ function guardarPersona() {
   if (veh3) vehs.push(veh3);
 
   var notaTxt = document.getElementById('fpNotas').value.trim();
-  var antTxt = document.getElementById('fpAnt').value.trim();
+  var antTxt = document.getElementById('fpAnt','fpNotas').value.trim();
   var vincTxt = document.getElementById('fpVinc').value.trim();
 
   if (editandoIdx >= 0 && editandoIdx < D.length) {
