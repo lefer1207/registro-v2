@@ -420,7 +420,7 @@
       <div class="form-group"><input type="text" id="fpVinc" placeholder="Vinculos familiares / relacionados"></div>
     </div>
     <div class="form-section">
-      <h3>Antecedentes</h3>
+      <h3>Notas / Antecedentes</h3>
       <div class="form-group"><textarea id="fpAnt" placeholder="Antecedentes penales / policiales"></textarea></div>
     </div>
     <div class="form-section">
@@ -751,8 +751,14 @@ function verPersona(idx) {
     }
     h += '<div class="detail-section"><h3>Vinculos</h3><div class="detail-notes">'+txtVinculos+'</div></div>';
   }
-  if (p[9]) h += '<div class="detail-section"><h3>Notas / Antecedentes</h3><div class="detail-notes">'+esc(p[9])+'</div></div>';
-  if (p[10] && p[10].length) h += '<div class="detail-section"><h3>Notas</h3><div class="detail-notes">'+esc(p[10].join(' / '))+'</div></div>';
+  if (p[9] || (p[10] && p[10].length)) {
+    var txtNotas = [];
+    if (p[9]) txtNotas.push(p[9]);
+    if (p[10] && p[10].length) {
+      for (var ni=0; ni<p[10].length; ni++) { txtNotas.push(p[10][ni]); }
+    }
+    h += '<div class="detail-section"><h3>Notas / Antecedentes</h3><div class="detail-notes">'+esc(txtNotas.join("\n\n"))+'</div></div>';
+  }
 
   h += '<div class="form-actions" style="margin-top:24px;">';
   h += '<button class="btn btn-ghost" onclick="editarPersona()">✏️ Editar</button>';
