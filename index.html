@@ -869,7 +869,10 @@ function abrirFormVehiculo() {
   var h = '<div class="detail-section"><h3>Agregar Matricula</h3></div>';
   h += '<div class="form-group"><label>Persona</label><select id="fvPersona"><option value="">-- SOLO MATRICULA --</option>';
   for (var i = 0; i < D.length; i++) {
-    h += '<option value="'+i+'">'+esc(D[i][0])+' - CI '+(esc(D[i][1])||'---')+'</option>';
+    var p = D[i];
+    var label = esc(p[0])+' - CI '+(esc(p[1])||'---');
+    if (p[7] && p[7].length) { label += ' ['+esc(p[7].join(', '))+']'; }
+    h += '<option value="'+i+'">'+label+'</option>';
   }
   h += '</select></div>';
   h += '<div class="form-group"><label>Patente / Matricula</label><input type="text" id="fvPatente" placeholder="Ej: RBA 1111"></div>';
