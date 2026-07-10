@@ -108,7 +108,7 @@ header h2{font-style:italic}
 <div class="modal-card">
 <h3>AGREGAR MATRICULA</h3>
 <select id="mPersona">
-<option value="">-- SELECCIONE PERSONA --</option>
+<option value="">-- SIN PERSONA (SOLO MATRICULA) --</option>
 </select>
 <input type="text" id="mPatente" placeholder="Patente / Matricula">
 <input type="text" id="mVehiculo" placeholder="Vehiculo (marca/modelo)">
@@ -286,7 +286,7 @@ function editFicha(){if(editandoIdx<0)return;abrirModalPersona(D[editandoIdx]);}
 
 function abrirModalMatricula(){
  var sel=document.getElementById('mPersona');
- sel.innerHTML='<option value="">-- SELECCIONE PERSONA --</option>';
+ sel.innerHTML='<option value="">-- SIN PERSONA (SOLO MATRICULA) --</option>';
  for(var i=0;i<D.length;i++){
   var o=document.createElement('option');
   o.value=i;o.textContent=D[i][0]+' - CI '+(D[i][1]||'---');
@@ -301,13 +301,19 @@ function cerrarModalMatricula(){document.getElementById('modalMatricula').style.
 
 function guardarMatricula(){
  var idx=parseInt(document.getElementById('mPersona').value);
- if(isNaN(idx)){alert('Seleccione una persona');return;}
  var pat=document.getElementById('mPatente').value.trim();
  var veh=document.getElementById('mVehiculo').value.trim();
  if(!pat&&!veh){alert('Ingrese al menos la patente');return;}
  var item=veh?veh+' - '+pat:pat;
- if(!D[idx][6])D[idx][6]=[];
- D[idx][6].push(item);
+ if(!isNaN(idx)){
+  // Asignar a persona existente
+  if(!D[idx][6])D[idx][6]=[];
+  D[idx][6].push(item);
+ }else{
+  // Crear entrada solo de matricula
+  var nom = 'MATRICULA - ' + item;
+  D.push([nom, pat, '', '', '', '', [item], [], ""]);
+ }
  guardarAdicionales();
  cerrarModalMatricula();
  rn(D);
