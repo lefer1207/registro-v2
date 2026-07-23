@@ -995,8 +995,7 @@ function cerrarEditor() {
 
 function confirmarCrop() {
   var container = document.getElementById('cropContainer');
-  var img = document.getElementById('cropImg');
-  if (!container || !img) return;
+  if (!container) return;
 
   var cw = container.offsetWidth;
   var ch = container.offsetHeight;
@@ -1007,20 +1006,26 @@ function confirmarCrop() {
     canvas.width = 300; canvas.height = 300;
     var ctx = canvas.getContext('2d');
 
-    // Calculate source crop based on zoom and offset
-    var scale = tempImg.width / img.naturalWidth;
-    var dispW = cw / cropZoom;
-    var dispH = ch / cropZoom;
-    var cx = (cw/2 - cropOffsetX) / cropZoom;
-    var cy = (ch/2 - cropOffsetY) / cropZoom;
-    var sx = cx - dispW/2;
-    var sy = cy - dispH/2;
+    var zoom = cropZoom;
+    var ox = cropOffsetX;
+    var oy = cropOffsetY;
+
+    // The image is centered in the container and scaled by zoom.
+    // The visible area center in original image coordinates:
+    var centerX = tempImg.width / 2 - ox / zoom;
+    var centerY = tempImg.height / 2 - oy / zoom;
+
+    // The visible area size in original image coordinates:
+    var sw = cw / zoom;
+    var sh = ch / zoom;
+    var sx = centerX - sw / 2;
+    var sy = centerY - sh / 2;
 
     // Clamp to image bounds
-    sx = Math.max(0, Math.min(sx, tempImg.width - dispW));
-    sy = Math.max(0, Math.min(sy, tempImg.height - dispH));
-    var sw = Math.min(dispW, tempImg.width - sx);
-    var sh = Math.min(dispH, tempImg.height - sy);
+    sx = Math.max(0, Math.min(sx, tempImg.width - sw));
+    sy = Math.max(0, Math.min(sy, tempImg.height - sh));
+    sw = Math.min(sw, tempImg.width - sx);
+    sh = Math.min(sh, tempImg.height - sy);
 
     ctx.drawImage(tempImg, sx, sy, sw, sh, 0, 0, 300, 300);
     fotoActual = canvas.toDataURL('image/jpeg', 0.8);
