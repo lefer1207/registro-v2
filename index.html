@@ -386,6 +386,9 @@
   <button onclick="showTab('vehiculos')" id="tab-vehiculos">
     <span class="icon">🚗</span>Matrículas
   </button>
+  <button onclick="showTab('libreta')" id="tab-libreta">
+    <span class="icon">📓</span>Libreta
+  </button>
   <button onclick="showTab('respaldo')" id="tab-respaldo">
     <span class="icon">💾</span>Respaldo
   </button>
@@ -421,6 +424,18 @@
       <input type="file" id="importFileInput" accept=".json" onchange="importarDatos(event)" style="display:none">
       <div id="respaldoStatus" style="margin-top:12px;font-size:.85rem;color:var(--muted);"></div>
     </div>
+  </div>
+
+  <!-- LIBRETA -->
+  <div class="view" id="view-libreta">
+    <div style="padding:12px;display:flex;gap:8px;margin-bottom:4px;">
+      <input type="text" id="libretaTitulo" placeholder="Título (opcional)" style="flex:1;padding:10px;border-radius:8px;border:1px solid #555;background:var(--card);color:var(--text);font-size:.9rem;">
+      <button onclick="agregarNotaLibreta()" style="padding:10px 16px;border:none;border-radius:8px;background:var(--primary);color:white;font-size:1.2rem;cursor:pointer;">➕</button>
+    </div>
+    <div style="padding:0 12px 12px;">
+      <textarea id="libretaContenido" placeholder="Escribí tu anotación..." style="width:100%;padding:10px;border-radius:8px;border:1px solid #555;background:var(--card);color:var(--text);font-size:.9rem;resize:vertical;min-height:70px;box-sizing:border-box;font-family:inherit;"></textarea>
+    </div>
+    <div id="libretaLista" style="padding:0 12px 12px;"></div>
   </div>
 
   <!-- DETALLE PERSONA -->
@@ -555,6 +570,75 @@ function guardarAdicionales() {
 }
 
 // ============================================================
+// LIBRETA DE ANOTACIONES
+// ============================================================
+var L = [];
+
+function cargarLibreta() {
+  var g = localStorage.getItem('rp_libreta');
+  L = g ? JSON.parse(g) : [];
+}
+
+function guardarLibreta() {
+  localStorage.setItem('rp_libreta', JSON.stringify(L));
+}
+
+function renderLibreta() {
+  var el = document.getElementById('libretaLista');
+  if (!el) return;
+  if (L.length === 0) {
+    el.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:.9rem;">📓 Sin anotaciones todavía.<br>Escribí algo abajo y tocá ➕</div>';
+    return;
+  }
+  var h = '';
+  for (var i = L.length - 1; i >= 0; i--) {
+    var n = L[i];
+    var titulo = n.titulo ? '<div style="font-weight:600;font-size:.95rem;margin-bottom:4px;">'+esc(n.titulo)+'</div>' : '';
+    h += '<div style="background:var(--card);border-radius:10px;padding:12px;margin-bottom:10px;border:1px solid var(--border);">'+
+      '<div style="font-size:.7rem;color:var(--muted);margin-bottom:4px;">'+esc(n.fecha)+'</div>'+
+      titulo+
+      '<div style="font-size:.85rem;white-space:pre-wrap;word-break:break-word;">'+esc(n.contenido)+'</div>'+
+      '<div style="display:flex;gap:8px;margin-top:8px;">'+
+        '<button onclick="editarNotaLibreta('+i+')" style="flex:1;padding:6px;border:none;border-radius:6px;background:#444;color:white;cursor:pointer;font-size:.8rem;">✏️ Editar</button>'+
+        '<button onclick="eliminarNotaLibreta('+i+')" style="flex:1;padding:6px;border:none;border-radius:6px;background:#a33;color:white;cursor:pointer;font-size:.8rem;">🗑️ Borrar</button>'+
+      '</div></div>';
+  }
+  el.innerHTML = h;
+}
+
+function agregarNotaLibreta() {
+  var titulo = document.getElementById('libretaTitulo').value.trim();
+  var contenido = document.getElementById('libretaContenido').value.trim();
+  if (!contenido) { alert('Escribí algo en la nota'); return; }
+  var hoy = new Date();
+  var fecha = hoy.getDate().toString().padStart(2,'0')+'/'+(hoy.getMonth()+1).toString().padStart(2,'0')+'/'+hoy.getFullYear();
+  L.push({ titulo: titulo, contenido: contenido, fecha: fecha, id: Date.now() });
+  guardarLibreta();
+  document.getElementById('libretaTitulo').value = '';
+  document.getElementById('libretaContenido').value = '';
+  renderLibreta();
+}
+
+function eliminarNotaLibreta(idx) {
+  if (!confirm('¿Borrar esta anotación?')) return;
+  L.splice(idx, 1);
+  guardarLibreta();
+  renderLibreta();
+}
+
+function editarNotaLibreta(idx) {
+  var n = L[idx];
+  var nuevoTitulo = prompt('Título:', n.titulo);
+  if (nuevoTitulo === null) return;
+  var nuevoContenido = prompt('Contenido:', n.contenido);
+  if (nuevoContenido === null) return;
+  n.titulo = nuevoTitulo.trim();
+  n.contenido = nuevoContenido.trim();
+  guardarLibreta();
+  renderLibreta();
+}
+
+// ============================================================
 // NAVEGACION
 // ============================================================
 function showTab(tab) {
@@ -567,6 +651,7 @@ function showTab(tab) {
   window.scrollTo(0,0);
   if (tab === 'personas') { personasPage = 0; renderPersonas(); }
   if (tab === 'vehiculos') { vehiculosPage = 0; renderVehiculos(); }
+  if (tab === 'libreta') { cargarLibreta(); renderLibreta(); document.getElementById('fabBtn').style.display = 'none'; }
   if (tab === 'respaldo') { document.getElementById('fabBtn').style.display = 'none'; }
 }
 
@@ -1248,7 +1333,7 @@ function guardarMatricula() {
 function esc(s) { if (!s) return ''; return String(s).replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 
-window.onload = function() { cargarDatos(); showTab("personas"); };
+window.onload = function() { cargarDatos(); cargarLibreta(); showTab("personas"); };
 
 var vincSeleccionados = [];
 
@@ -1337,7 +1422,8 @@ document.addEventListener('click', function(e) {
 });
 
 function exportarDatos() {
-  var dataStr = JSON.stringify(D, null, 2);
+  var exportData = { personas: D, libreta: L };
+  var dataStr = JSON.stringify(exportData, null, 2);
   var blob = new Blob([dataStr], {type: 'application/json'});
   var url = URL.createObjectURL(blob);
   var a = document.createElement('a');
@@ -1360,12 +1446,21 @@ function importarDatos(event) {
   reader.onload = function(e) {
     try {
       var data = JSON.parse(e.target.result);
-      if (!Array.isArray(data)) throw new Error('Formato inválido');
-      D = data;
+      // Nuevo formato: {personas: [...], libreta: [...]}
+      if (data && data.personas && Array.isArray(data.personas)) {
+        D = data.personas;
+        L = data.libreta || [];
+        guardarLibreta();
+      } else if (Array.isArray(data)) {
+        // Formato antiguo (solo array de personas)
+        D = data;
+      } else {
+        throw new Error('Formato inválido');
+      }
       guardarDatos();
       cargarDatos();
       showTab('personas');
-      document.getElementById('respaldoStatus').textContent = '✅ Datos importados correctamente (' + data.length + ' registros)';
+      document.getElementById('respaldoStatus').textContent = '✅ Datos importados correctamente (' + D.length + ' registros)';
       setTimeout(function(){ document.getElementById('respaldoStatus').textContent = ''; }, 4000);
     } catch(err) {
       document.getElementById('respaldoStatus').textContent = '❌ Error: el archivo no es válido';
@@ -1376,6 +1471,6 @@ function importarDatos(event) {
 }
 
 </script>
-  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v68</div>
+  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v69</div>
 </body>
 </html>
