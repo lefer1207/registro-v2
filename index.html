@@ -375,7 +375,10 @@
     
     
 
-    .avatar-txt { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #f0f2f5; font-size: 1.5rem; }
+    
+    .detail-avatar 
+
+    .avatar-txt { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #f0f2f5; font-size: 1.5rem; line-height: 1; }
     .detail-avatar .avatar-txt { font-size: 3rem; }
 </style>
 </head>
@@ -1662,7 +1665,7 @@ function importar8k() {
     btn.textContent = '⚡ IMPORTAR LOS 8000 REGISTROS';
     return;
   }
-  var url = 'https://raw.githubusercontent.com/lefer1207/registro-v2/main/respaldov8_compacto.json';
+  var url = 'https://raw.githubusercontent.com/lefer1207/registro-v100/main/respaldov100_compacto.json';
   fetch(url)
     .then(function(r) { return r.json(); })
     .then(function(data) {
@@ -1787,7 +1790,7 @@ function importarFotos() {
     return;
   }
   var totalChunks = 19;
-  var baseUrl = 'https://raw.githubusercontent.com/lefer1207/registro-v2/main/';
+  var baseUrl = 'https://raw.githubusercontent.com/lefer1207/registro-v100/main/';
   var fotos = [];
   var descargados = 0;
   
