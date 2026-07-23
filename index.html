@@ -738,7 +738,7 @@ function verPersona(idx) {
   if (p[10] && p[10].length) h += '<div class="detail-section"><h3>Notas</h3><div class="detail-notes">'+esc(p[10].join(' / '))+'</div></div>';
 
   h += '<div class="form-actions" style="margin-top:24px;">';
-  h += '<button class="btn btn-ghost" onclick="editarPersona()">✏️ Editar</button>';
+  h += '<button class="btn btn-ghost" onclick="abrirFormPersona(editandoIdx); return false;">✏️ Editar</button>';
   if (editandoIdx >= BASE.length) {
     h += '<button class="btn btn-danger" onclick="eliminarPersona()">🗑️ Eliminar</button>';
   }
