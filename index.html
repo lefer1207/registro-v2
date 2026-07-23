@@ -1613,13 +1613,28 @@ function importar8k() {
       for (var i = 0; i < nuevos.length; i++) {
         var n = nuevos[i];
         var ciNuevo = (n[1] || '').trim();
+        var nombreNuevo = (n[0] || '').trim().toLowerCase();
         var encontrado = false;
         for (var j = 0; j < D.length; j++) {
           var ciExistente = (D[j][1] || '').trim();
+          var coincide = false;
           if (ciNuevo && ciExistente && ciNuevo === ciExistente) {
+            coincide = true;
+          } else if (!ciNuevo && D[j][0].trim().toLowerCase() === nombreNuevo) {
+            coincide = true;
+          }
+          if (coincide) {
+            // Actualizar campos vacíos, y SIEMPRE actualizar vínculo (pos 8) y notas (pos 10)
             for (var k = 0; k < n.length; k++) {
-              if (n[k] && (!D[j][k] || (k === 11 && !D[j][k]))) {
-                D[j][k] = n[k];
+              if (n[k]) {
+                if (k === 8 || k === 10) {
+                  // Vínculo y notas: siempre actualizar si hay datos nuevos
+                  if (JSON.stringify(n[k]) !== JSON.stringify(D[j][k])) {
+                    D[j][k] = n[k];
+                  }
+                } else if (!D[j][k] || (k === 11 && !D[j][k])) {
+                  D[j][k] = n[k];
+                }
               }
             }
             actualizados++;
@@ -1675,6 +1690,6 @@ function importar8k() {
 }
 
 </script>
-  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v77</div>
+  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v78</div>
 </body>
 </html>
