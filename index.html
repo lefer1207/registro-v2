@@ -559,9 +559,16 @@ function renderPersonas(q) {
       var nombre = (p[0]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
       var ci = (p[1]||'').toLowerCase();
       
+      var vehs = (p[7]||[]);
       var matchAll = words.length > 0;
       for(var w=0; w<words.length; w++) {
-        if(!nombre.includes(words[w]) && !ci.includes(words[w])) { matchAll = false; break; }
+        var found = nombre.includes(words[w]) || ci.includes(words[w]);
+        if (!found) {
+          for(var v=0; v<vehs.length; v++) {
+            if ((vehs[v]||'').toLowerCase().includes(words[w])) { found = true; break; }
+          }
+        }
+        if(!found) { matchAll = false; break; }
       }
       
       if (matchAll) {
@@ -721,9 +728,16 @@ function buscarGlobal() {
       var nombre = (p[0]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
       var ci = (p[1]||'').toLowerCase();
       
+      var vehs = (p[7]||[]);
       var matchAll = words.length > 0;
       for(var w=0; w<words.length; w++) {
-        if(!nombre.includes(words[w]) && !ci.includes(words[w])) { matchAll = false; break; }
+        var found = nombre.includes(words[w]) || ci.includes(words[w]);
+        if (!found) {
+          for(var v=0; v<vehs.length; v++) {
+            if ((vehs[v]||'').toLowerCase().includes(words[w])) { found = true; break; }
+          }
+        }
+        if(!found) { matchAll = false; break; }
       }
       
       if (matchAll) {
@@ -1132,6 +1146,6 @@ document.addEventListener('click', function(e) {
 });
 
 </script>
-  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v55</div>
+  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v56</div>
 </body>
 </html>
