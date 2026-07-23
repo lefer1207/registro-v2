@@ -435,6 +435,9 @@
     <div style="padding:0 12px 12px;">
       <textarea id="libretaContenido" placeholder="Escribí tu anotación..." style="width:100%;padding:10px;border-radius:8px;border:1px solid #555;background:var(--card);color:var(--text);font-size:.9rem;resize:vertical;min-height:70px;box-sizing:border-box;font-family:inherit;"></textarea>
     </div>
+    <div class="search-bar" style="padding:0 12px 6px;">
+      <input type="search" id="libretaSearch" placeholder="🔍 Buscar en anotaciones..." oninput="renderLibreta()" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid #555;background:var(--card);color:var(--text);font-size:.85rem;box-sizing:border-box;">
+    </div>
     <div id="libretaLista" style="padding:0 12px 12px;"></div>
   </div>
 
@@ -586,13 +589,17 @@ function guardarLibreta() {
 function renderLibreta() {
   var el = document.getElementById('libretaLista');
   if (!el) return;
+  var q = (document.getElementById('libretaSearch').value || '').trim().toLowerCase();
   if (L.length === 0) {
     el.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:.9rem;">📓 Sin anotaciones todavía.<br>Escribí algo abajo y tocá ➕</div>';
     return;
   }
   var h = '';
+  var cant = 0;
   for (var i = L.length - 1; i >= 0; i--) {
     var n = L[i];
+    if (q && ((n.titulo||'').toLowerCase().indexOf(q)===-1) && ((n.contenido||'').toLowerCase().indexOf(q)===-1) && ((n.fecha||'').toLowerCase().indexOf(q)===-1)) continue;
+    cant++;
     var titulo = n.titulo ? '<div style="font-weight:600;font-size:.95rem;margin-bottom:4px;">'+esc(n.titulo)+'</div>' : '';
     h += '<div style="background:var(--card);border-radius:10px;padding:12px;margin-bottom:10px;border:1px solid var(--border);">'+
       '<div style="font-size:.7rem;color:var(--muted);margin-bottom:4px;">'+esc(n.fecha)+'</div>'+
@@ -603,7 +610,11 @@ function renderLibreta() {
         '<button onclick="eliminarNotaLibreta('+i+')" style="flex:1;padding:6px;border:none;border-radius:6px;background:#a33;color:white;cursor:pointer;font-size:.8rem;">🗑️ Borrar</button>'+
       '</div></div>';
   }
-  el.innerHTML = h;
+  if (q && cant === 0) {
+    el.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:.9rem;">🔍 Sin resultados para "<b>'+esc(q)+'</b>"</div>';
+  } else {
+    el.innerHTML = h;
+  }
 }
 
 function agregarNotaLibreta() {
@@ -1471,6 +1482,6 @@ function importarDatos(event) {
 }
 
 </script>
-  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v69</div>
+  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v70</div>
 </body>
 </html>
