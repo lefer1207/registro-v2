@@ -551,11 +551,41 @@ function renderPersonas(q) {
   ultimosIndicesPersonas = [];
   if (q) {
     q = q.toLowerCase();
+    var directMatches = [];
     for (var i = 0; i < D.length; i++) {
       var p = D[i];
       var nombre = (p[0]||'').toLowerCase();
       var ci = (p[1]||'').toLowerCase();
-      if (nombre.includes(q) || ci.includes(q)) { ultimosIndicesPersonas.push(i); items.push(p); }
+      if (nombre.includes(q) || ci.includes(q)) {
+        directMatches.push(i);
+        items.push(p);
+      }
+    }
+    // Add vinculados of matched personas
+    var added = {};
+    for (var d = 0; d < directMatches.length; d++) { added[directMatches[d]] = true; }
+    for (var d = 0; d < directMatches.length; d++) {
+      var idx = directMatches[d];
+      var vincStr = (D[idx][8]||'');
+      if (!vincStr) continue;
+      var vincNames = vincStr.split(',').map(function(s){ return s.trim(); }).filter(function(s){ return s; });
+      for (var v = 0; v < vincNames.length; v++) {
+        for (var i = 0; i < D.length; i++) {
+          if (D[i][0].trim() === vincNames[v] && !added[i]) {
+            items.push(D[i]);
+            added[i] = true;
+          }
+        }
+      }
+    }
+    // Rebuild ultimosIndicesPersonas
+    for (var i = 0; i < items.length; i++) {
+      for (var j = 0; j < D.length; j++) {
+        if (D[j] === items[i]) {
+          ultimosIndicesPersonas.push(j);
+          break;
+        }
+      }
     }
   }
   var from = personasPage * PAGE_SIZE;
@@ -675,11 +705,35 @@ function buscarGlobal() {
     if (!q) { res.innerHTML = ''; return; }
     q = q.toLowerCase();
     var personasEncontradas = [];
+    var vinculadosAgregados = {};
     for (var i = 0; i < D.length; i++) {
       var p = D[i];
       var nombre = (p[0]||'').toLowerCase();
       var ci = (p[1]||'').toLowerCase();
-      if (nombre.includes(q) || ci.includes(q)) personasEncontradas.push({idx:i, p:p});
+      if (nombre.includes(q) || ci.includes(q)) {
+        personasEncontradas.push({idx:i, p:p});
+        vinculadosAgregados[i] = true;
+      }
+    }
+    // Add vinculados of matched personas
+    var extra = [];
+    for (var a = 0; a < personasEncontradas.length; a++) {
+      var idx = personasEncontradas[a].idx;
+      var vincStr = (D[idx][8]||'');
+      if (!vincStr) continue;
+      var vincNames = vincStr.split(',').map(function(s){ return s.trim(); }).filter(function(s){ return s; });
+      for (var v = 0; v < vincNames.length; v++) {
+        for (var i = 0; i < D.length; i++) {
+          if (D[i][0].trim() === vincNames[v] && !vinculadosAgregados[i]) {
+            extra.push({idx:i, p:D[i]});
+            vinculadosAgregados[i] = true;
+          }
+        }
+      }
+    }
+    // Add vinculados after direct matches
+    for (var e = 0; e < extra.length; e++) {
+      personasEncontradas.push(extra[e]);
     }
     var html = '';
     if (personasEncontradas.length) {
@@ -1062,6 +1116,6 @@ document.addEventListener('click', function(e) {
 });
 
 </script>
-  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v53</div>
+  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v54</div>
 </body>
 </html>
