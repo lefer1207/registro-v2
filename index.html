@@ -976,60 +976,43 @@ function renderCropModal() {
   var old = document.getElementById('cropOverlay'); if(old) old.remove();
   var overlay = document.createElement('div');
   overlay.id = 'cropOverlay'; overlay.className = 'crop-overlay';
-  overlay.innerHTML = '<div style="color:#fff;margin-bottom:15px;font-family:sans-serif;">Ajustar Foto</div>' +
+  overlay.innerHTML = '<div style="color:#fff;margin-bottom:15px;font-family:sans-serif;font-size:1.1rem;font-weight:bold;">Ajustar Foto</div>' +
     '<div class="crop-container" id="cropContainer">' +
-    '<img id="cropImg" src="'+cropImgData+'" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale('+cropZoom+') translate('+cropOffsetX+'px,'+cropOffsetY+'px);max-width:none;cursor:move;">' +
+    '<img id="cropImg" src="'+cropImgData+'" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale('+cropZoom+') translate('+cropOffsetX+'px,'+cropOffsetY+'px);max-width:none;cursor:move;user-select:none;">' +
     '<div class="crop-frame"></div></div>' +
     '<div class="crop-controls">' +
+    '<button class="crop-cancel" onclick="cropZoomOut()" style="width:44px;height:44px;border-radius:50%;border:1px solid #555;background:#333;color:white;font-size:1.5rem;cursor:pointer;">\u2212</button>' +
     '<button class="crop-cancel" onclick="cerrarEditor()">CANCELAR</button>' +
     '<button class="crop-confirm" onclick="confirmarCrop()">APLICAR</button>' +
+    '<button class="crop-confirm" onclick="cropZoomIn()" style="width:44px;height:44px;border-radius:50%;border:1px solid #555;background:#333;color:white;font-size:1.5rem;cursor:pointer;">+</button>' +
     '</div>' +
-    '<div style="color:#888;margin-top:15px;font-size:0.8rem;">Arrastra para mover la imagen</div>';
-  document.body.appendChild(overlay);
-  return; // Stop here to avoid executing original code
-}
-function original_renderCropModal() {
-  var old = document.getElementById('cropOverlay');
-  if(old) old.remove();
-  var overlay = document.createElement('div');
-  overlay.className = 'crop-overlay';
-  overlay.id = 'cropOverlay';
-  overlay.innerHTML = '<div style="color:white;margin-bottom:15px;font-weight:bold;">Ajustar Foto</div>' +
-    '<div class="crop-container" id="cropContainer" style="background:#111;">' +
-    '<img id="cropImg" src="'+cropImgData+'" style="transform:translate(-50%,-50%) scale('+cropZoom+') translate('+cropOffsetX+'px,'+cropOffsetY+'px); transition:none;">' +
-    '<div class="crop-frame"></div></div>' +
-    '<div class="crop-controls">' +
-    '<button class="crop-zoom" onclick="cropZoomIn()">+</button>' +
-    '<button class="crop-cancel" onclick="cerrarEditor()">✕</button>' +
-    '<button class="crop-confirm" onclick="confirmarCrop()">✓ APLICAR</button>' +
-    '<button class="crop-zoom" onclick="cropZoomOut()">−</button>' +
-    '</div>' +
-    '<div style="color:#888;font-size:0.8rem;margin-top:15px;">Arrastra para mover • +/- para zoom</div>';
+    '<div style="color:#888;margin-top:15px;font-size:0.8rem;font-family:sans-serif;">Arrastra la foto para encuadrar \u2022 +/- para zoom</div>';
   document.body.appendChild(overlay);
 
-  // Drag to move image
   var img = document.getElementById('cropImg');
-  img.addEventListener('mousedown', iniciarDrag);
-  img.addEventListener('touchstart', iniciarDragTouch, {passive:false});
-  document.addEventListener('mousemove', moverDrag);
-  document.addEventListener('mouseup', pararDrag);
-  document.addEventListener('touchmove', moverDragTouch, {passive:false});
-  document.addEventListener('touchend', pararDrag);
+  img.addEventListener('mousedown', function(e) {
+    cropDragging = true; cropDragStartX = e.clientX - cropOffsetX; cropDragStartY = e.clientY - cropOffsetY; e.preventDefault();
+  });
+  img.addEventListener('touchstart', function(e) {
+    e.preventDefault(); var t = e.touches[0]; cropDragging = true; cropDragStartX = t.clientX - cropOffsetX; cropDragStartY = t.clientY - cropOffsetY;
+  }, {passive:false});
+  document.addEventListener('mousemove', function(e) {
+    if(!cropDragging) return; cropOffsetX = e.clientX - cropDragStartX; cropOffsetY = e.clientY - cropDragStartY; updateCropPos();
+  });
+  document.addEventListener('touchmove', function(e) {
+    if(!cropDragging) return; e.preventDefault(); var t = e.touches[0]; cropOffsetX = t.clientX - cropDragStartX; cropOffsetY = t.clientY - cropDragStartY; updateCropPos();
+  }, {passive:false});
+  document.addEventListener('mouseup', function() { cropDragging = false; });
+  document.addEventListener('touchend', function() { cropDragging = false; });
 }
 
-function iniciarDrag(e) { cropDragging = true; cropDragStartX = e.clientX - cropOffsetX; cropDragStartY = e.clientY - cropOffsetY; }
-function iniciarDragTouch(e) { e.preventDefault(); var t = e.touches[0]; cropDragging = true; cropDragStartX = t.clientX - cropOffsetX; cropDragStartY = t.clientY - cropOffsetY; }
-function moverDrag(e) { if(!cropDragging) return; cropOffsetX = e.clientX - cropDragStartX; cropOffsetY = e.clientY - cropDragStartY; actualizarPosicion(); }
-function moverDragTouch(e) { if(!cropDragging) return; e.preventDefault(); var t = e.touches[0]; cropOffsetX = t.clientX - cropDragStartX; cropOffsetY = t.clientY - cropDragStartY; actualizarPosicion(); }
-function pararDrag() { cropDragging = false; }
-
-function actualizarPosicion() {
+function updateCropPos() {
   var img = document.getElementById('cropImg');
   if(img) img.style.transform = 'translate(-50%,-50%) scale('+cropZoom+') translate('+cropOffsetX+'px,'+cropOffsetY+'px)';
 }
 
-function cropZoomIn() { cropZoom = Math.min(cropZoom + 0.2, 4); actualizarPosicion(); }
-function cropZoomOut() { cropZoom = Math.max(cropZoom - 0.2, 0.5); actualizarPosicion(); }
+function cropZoomIn() { cropZoom = Math.min(cropZoom + 0.2, 4); updateCropPos(); }
+function cropZoomOut() { cropZoom = Math.max(cropZoom - 0.2, 0.5); updateCropPos(); }
 
 function cerrarEditor() {
   var el = document.getElementById('cropOverlay');
@@ -1284,6 +1267,6 @@ document.addEventListener('click', function(e) {
 });
 
 </script>
-  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v59</div>
+  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v60</div>
 </body>
 </html>
