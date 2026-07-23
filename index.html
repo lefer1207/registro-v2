@@ -861,7 +861,7 @@ function renderPersonas(q) {
   for (var idx = 0; idx < pageItems.length; idx++) {
     var p = pageItems[idx];
     var idxReal = ultimosIndicesPersonas.length ? ultimosIndicesPersonas[from + idx] : (from + idx);
-    var f = '<div class="avatar">'+(p[11]?'<img src="'+esc(p[11])+'">':'<div class="avatar-init">'+iniciales(p[0])+'</div>')+'</div>';
+    var f = '<div class="avatar">'+(p[11] && p[11].startsWith('data:image') && p[11].length>100?'<img src="'+esc(p[11])+'">':'<div class="avatar-txt">👤</div>')+'</div>';
     var badge = idxReal >= BASE.length ? '<span class="badge-new">NUEVO</span>' : '';
     h += '<div class="card" onclick="verPersona('+idxReal+')">'+f+'<div class="card-info"><div class="card-name">'+esc(p[0])+badge+'</div><div class="card-sub">CI '+(esc(p[1])||'---')+' '+(p[4]?'• '+esc(p[4]):'')+'</div></div><div class="card-arrow">›</div></div>';
   }
@@ -1020,7 +1020,7 @@ function buscarGlobal() {
       html += '<div style="font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin:8px 0 6px;">Personas</div>';
       for (var i = 0; i < Math.min(personasEncontradas.length, 30); i++) {
         var pe = personasEncontradas[i];
-        var f = '<div class="avatar">'+(pe.p[11]?'<img src="'+esc(pe.p[11])+'">':'<div class="avatar-init">'+iniciales(pe.p[0])+'</div>')+'</div>';
+        var f = '<div class="avatar">'+(pe.p[11] && pe.p[11].startsWith('data:image') && pe.p[11].length>100?'<img src="'+esc(pe.p[11])+'">':'<div class="avatar-txt">👤</div>')+'</div>';
         html += '<div class="card" onclick="verPersona('+pe.idx+')">'+f+'<div class="card-info"><div class="card-name">'+esc(pe.p[0])+'</div><div class="card-sub">CI '+(esc(pe.p[1])||'---')+'</div></div><div class="card-arrow">›</div></div>';
       }
     }
@@ -1051,7 +1051,7 @@ function verPersona(idx) {
 
   var h = '';
   h += '<div class="detail-header">';
-  h += '<div class="detail-avatar">'+(p[11]?'<img src="'+esc(p[11])+'">':'<div class="avatar-init">'+iniciales(p[0])+'</div>')+'</div>';
+  h += '<div class="detail-avatar">'+(p[11] && p[11].startsWith('data:image') && p[11].length>100?'<img src="'+esc(p[11])+'">':'<div class="avatar-txt">👤</div>')+'</div>';
   h += '<div><div class="detail-name">'+esc(p[0])+'</div>'+(p[1]?'<div class="detail-ci">CI: '+esc(p[1])+'</div>':'')+'</div>';
   h += '</div>';
 
@@ -1668,7 +1668,7 @@ function importar8k() {
     btn.textContent = '⚡ IMPORTAR LOS 8000 REGISTROS';
     return;
   }
-  var url = 'https://raw.githubusercontent.com/lefer1207/registro-v102/main/respaldov102_compacto.json';
+  var url = 'https://raw.githubusercontent.com/lefer1207/registro-v103/main/respaldov103_compacto.json';
   fetch(url)
     .then(function(r) { return r.json(); })
     .then(function(data) {
@@ -1793,7 +1793,7 @@ function importarFotos() {
     return;
   }
   var totalChunks = 19;
-  var baseUrl = 'https://raw.githubusercontent.com/lefer1207/registro-v102/main/';
+  var baseUrl = 'https://raw.githubusercontent.com/lefer1207/registro-v103/main/';
   var fotos = [];
   var descargados = 0;
   
@@ -1874,6 +1874,6 @@ function importarFotos() {
 }
 
 </script>
-  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v102</div>
+  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v103</div>
 </body>
 </html>
