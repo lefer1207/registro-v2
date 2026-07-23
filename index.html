@@ -608,11 +608,18 @@ function renderPersonas(q) {
       var p = D[i];
       var nombre = (p[0]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
       var ci = (p[1]||'').toLowerCase();
+      var fec = (p[2]||'').toLowerCase();
+      var dir = (p[3]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+      var alias = (p[4]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+      var tel = (p[5]||'').toLowerCase();
+      var notas = (p[6]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+      var antec = (p[9]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+      var notasArr = (p[10]||[]).join(' ').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
       
       var vehs = (p[7]||[]);
       var matchAll = words.length > 0;
       for(var w=0; w<words.length; w++) {
-        var found = nombre.includes(words[w]) || ci.includes(words[w]);
+        var found = nombre.includes(words[w]) || ci.includes(words[w]) || fec.includes(words[w]) || dir.includes(words[w]) || alias.includes(words[w]) || tel.includes(words[w]) || notas.includes(words[w]) || antec.includes(words[w]) || notasArr.includes(words[w]);
         if (!found) {
           for(var v=0; v<vehs.length; v++) {
             if ((vehs[v]||'').toLowerCase().includes(words[w])) { found = true; break; }
@@ -777,11 +784,18 @@ function buscarGlobal() {
       var p = D[i];
       var nombre = (p[0]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
       var ci = (p[1]||'').toLowerCase();
+      var fec = (p[2]||'').toLowerCase();
+      var dir = (p[3]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+      var alias = (p[4]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+      var tel = (p[5]||'').toLowerCase();
+      var notas = (p[6]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+      var antec = (p[9]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+      var notasArr = (p[10]||[]).join(' ').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
       
       var vehs = (p[7]||[]);
       var matchAll = words.length > 0;
       for(var w=0; w<words.length; w++) {
-        var found = nombre.includes(words[w]) || ci.includes(words[w]);
+        var found = nombre.includes(words[w]) || ci.includes(words[w]) || fec.includes(words[w]) || dir.includes(words[w]) || alias.includes(words[w]) || tel.includes(words[w]) || notas.includes(words[w]) || antec.includes(words[w]) || notasArr.includes(words[w]);
         if (!found) {
           for(var v=0; v<vehs.length; v++) {
             if ((vehs[v]||'').toLowerCase().includes(words[w])) { found = true; break; }
@@ -1295,6 +1309,6 @@ document.addEventListener('click', function(e) {
 });
 
 </script>
-  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v63</div>
+  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v64</div>
 </body>
 </html>
