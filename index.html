@@ -245,6 +245,9 @@
     .card-name { font-weight: 700; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .card-sub { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
     .card-arrow { color: var(--muted); font-size: 1.1rem; }
+    .card-actions { display:flex; align-items:center; gap:4px; }
+    .btn-del-card { background:none; border:none; font-size:1rem; cursor:pointer; padding:4px; border-radius:4px; opacity:0.5; transition:opacity .2s; }
+    .btn-del-card:hover { opacity:1; background:rgba(255,60,60,0.15); }
     .badge-new { background: var(--danger); color: #fff; border-radius: 4px; padding: 1px 6px; font-size: 0.6rem; font-weight: bold; margin-left: 6px; vertical-align: middle; }
     .vehicle-card { border-left: 4px solid var(--accent); }
     .vehicle-plate { font-size: 1.05rem; font-weight: 800; letter-spacing: 2px; color: var(--primary); }
@@ -850,7 +853,7 @@ function renderPersonas(q) {
     var idxReal = ultimosIndicesPersonas.length ? ultimosIndicesPersonas[from + idx] : (from + idx);
     var f = '<div class="avatar">'+(p[11]?'<img src="'+esc(p[11])+'">':iniciales(p[0]))+'</div>';
     var badge = idxReal >= BASE.length ? '<span class="badge-new">NUEVO</span>' : '';
-    h += '<div class="card" onclick="verPersona('+idxReal+')">'+f+'<div class="card-info"><div class="card-name">'+esc(p[0])+badge+'</div><div class="card-sub">CI '+(esc(p[1])||'---')+' '+(p[4]?'• '+esc(p[4]):'')+'</div></div><div class="card-arrow">›</div></div>';
+    h += '<div class="card" onclick="verPersona('+idxReal+')">'+f+'<div class="card-info"><div class="card-name">'+esc(p[0])+badge+'</div><div class="card-sub">CI '+(esc(p[1])||'---')+' '+(p[4]?'• '+esc(p[4]):'')+'</div></div><div class="card-actions"><button class="btn-del-card" onclick="event.stopPropagation();eliminarPersonaLista('+idxReal+')" title="Eliminar">🗑️</button><span class="card-arrow">›</span></div></div>';
   }
   lista.innerHTML = h;
 
@@ -1091,6 +1094,16 @@ function verPersona(idx) {
 }
 
 function editarPersona() { abrirFormPersona(editandoIdx); }
+
+function eliminarPersonaLista(idx) {
+  if (idx < BASE.length) { showToast('No se puede eliminar un registro base'); return; }
+  var nombre = D[idx][0];
+  if (!confirm('🗑️ Eliminar a ' + nombre + '?')) return;
+  D.splice(idx, 1);
+  guardarAdicionales();
+  renderPersonas(document.getElementById('searchPersonas').value);
+  showToast('✅ ' + nombre + ' eliminado');
+}
 
 function eliminarPersona() {
   if (editandoIdx < 0 || editandoIdx < BASE.length) { showToast('No se puede eliminar un registro base'); return; }
@@ -1854,6 +1867,6 @@ function importarFotos() {
 }
 
 </script>
-  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v82</div>
+  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v83</div>
 </body>
 </html>
