@@ -8,6 +8,29 @@
   <meta http-equiv="expires" content="0">
   <title>Registro Policial</title>
   <style>
+    /* ESTILOS DE FOTOS CUADRADAS 1:1 */
+    .person-item img {
+      width: 60px !important;
+      height: 60px !important;
+      object-fit: cover !important;
+      border-radius: 4px !important;
+    }
+    .profile-header img {
+      width: 120px !important;
+      height: 120px !important;
+      object-fit: cover !important;
+      border-radius: 8px !important;
+      border: 2px solid var(--border);
+    }
+    #photoPreviewContainer img {
+      width: 200px !important;
+      height: 200px !important;
+      object-fit: cover !important;
+      border-radius: 8px !important;
+      margin: 0 auto;
+      display: block;
+    }
+
     .crop-overlay {
       position: fixed !important; top: 0 !important; left: 0 !important;
       width: 100% !important; height: 100% !important;
@@ -97,7 +120,7 @@
       width: 40px; height: 40px;
       border: 4px solid rgba(255,255,255,0.4);
       border-top-color: var(--accent);
-      border-radius: 50%;
+      border-radius: 8px;
       animation: spin 0.7s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -180,7 +203,7 @@
       position: fixed;
       bottom: 72px; right: 18px;
       width: 52px; height: 52px;
-      border-radius: 50%;
+      border-radius: 8px;
       background: var(--accent);
       color: #fff;
       border: none;
@@ -208,7 +231,7 @@
     .card:active { transform: scale(0.98); }
     .avatar {
       width: 46px; height: 46px;
-      border-radius: 50%;
+      border-radius: 8px;
       background: var(--secondary);
       color: #fff;
       display: flex; align-items: center; justify-content: center;
@@ -236,7 +259,7 @@
     .detail-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
     .detail-avatar {
       width: 72px; height: 72px;
-      border-radius: 50%;
+      border-radius: 8px;
       background: var(--secondary);
       color: #fff;
       display: flex; align-items: center; justify-content: center;
@@ -291,7 +314,7 @@
       cursor: pointer; color: var(--muted); font-size: 0.88rem;
       margin-bottom: 10px;
     }
-    .photo-preview { width: 100%; max-height: 180px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; }
+    .photo-preview { width: 200px !important; height: 200px !important; object-fit: cover !important; border-radius: 8px; margin: 0 auto 10px auto; display: block; }
     #photoInput { display: none; }
 
     .empty-state { text-align: center; padding: 50px 20px; color: var(--muted); }
@@ -1272,6 +1295,6 @@ document.addEventListener('click', function(e) {
 });
 
 </script>
-  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v62</div>
+  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v63</div>
 </body>
 </html>
