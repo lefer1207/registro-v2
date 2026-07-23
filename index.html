@@ -553,8 +553,9 @@ function renderPersonas(q) {
     q = q.toLowerCase();
     for (var i = 0; i < D.length; i++) {
       var p = D[i];
-      var text = (p[0]+' '+p[1]+' '+p[2]+' '+p[3]+' '+p[4]+' '+p[5]+' '+p[6]+' '+(p[7]?p[7].join(' '):'')+' '+p[8]+' '+p[9]+' '+(p[10]?p[10].join(' '):'')).toLowerCase();
-      if (text.includes(q)) { ultimosIndicesPersonas.push(i); items.push(p); }
+      var nombre = (p[0]||'').toLowerCase();
+      var ci = (p[1]||'').toLowerCase();
+      if (nombre.includes(q) || ci.includes(q)) { ultimosIndicesPersonas.push(i); items.push(p); }
     }
   }
   var from = personasPage * PAGE_SIZE;
@@ -1061,6 +1062,6 @@ document.addEventListener('click', function(e) {
 });
 
 </script>
-  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v52</div>
+  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v53</div>
 </body>
 </html>
