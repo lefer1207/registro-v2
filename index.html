@@ -1484,7 +1484,7 @@ function importarDatos(event) {
               p.telefono || '',
               p.telefono2 || '',
               vehs,
-              p.vinculo || '',
+              (p.vinculo || '').replace(/\|/g, ', '),
               ant,
               nts,
               p.foto || ''
@@ -1524,9 +1524,37 @@ function importarDatos(event) {
         }
       }
       guardarAdicionales();
+      // === RESOLVER VÍNCULOS BIDIRECCIONALES ===
+      var linksCreados = 0;
+      for (var i = 0; i < D.length; i++) {
+        var vincText = (D[i][8] || '').trim();
+        if (!vincText) continue;
+        var vincNames = vincText.split(/\s*[,|]\s*/).filter(function(v){ return v; });
+        for (var v = 0; v < vincNames.length; v++) {
+          var nombreBuscado = vincNames[v].trim();
+          if (!nombreBuscado || nombreBuscado === D[i][0]) continue;
+          for (var j = 0; j < D.length; j++) {
+            if (i === j) continue;
+            if (D[j][0].trim().toLowerCase() === nombreBuscado.toLowerCase()) {
+              // Agregar el nombre actual a los vínculos del encontrado
+              var vincDestino = D[j][8] || '';
+              var destNames = vincDestino.split(/\s*[,|]\s*/).map(function(x){ return x.trim().toLowerCase(); });
+              if (destNames.indexOf(D[i][0].trim().toLowerCase()) === -1) {
+                if (vincDestino) vincDestino += ', ';
+                vincDestino += D[i][0].trim();
+                D[j][8] = vincDestino;
+                linksCreados++;
+              }
+              break;
+            }
+          }
+        }
+      }
+      if (linksCreados > 0) guardarAdicionales();
       cargarDatos();
       showTab('personas');
-      document.getElementById('respaldoStatus').textContent = '✅ Importación completada: ' + agregados + ' agregados, ' + actualizados + ' actualizados (Total: ' + D.length + ')';
+      var msgExtra = linksCreados > 0 ? (' + ' + linksCreados + ' vínculos resueltos') : '';
+      document.getElementById('respaldoStatus').textContent = '✅ Importación: ' + agregados + ' agregados, ' + actualizados + ' actualizados' + msgExtra + ' (Total: ' + D.length + ')';
       setTimeout(function(){ document.getElementById('respaldoStatus').textContent = ''; }, 5000);
     } catch(err) {
       document.getElementById('respaldoStatus').textContent = '❌ Error: el archivo no es válido';
