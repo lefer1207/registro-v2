@@ -1449,7 +1449,7 @@ function exportarDatos() {
 function importarDatos(event) {
   var file = event.target.files[0];
   if (!file) return;
-  if (!confirm('⚠️ ¿Estás seguro? Se reemplazarán TODOS los datos actuales por los del archivo. Esta acción no se puede deshacer.')) {
+  if (!confirm('⚠️ Se AGREGARÁN los registros del archivo a los existentes. Los duplicados (misma CI) se actualizarán. ¿Querés continuar?')) {
     event.target.value = '';
     return;
   }
@@ -1457,22 +1457,77 @@ function importarDatos(event) {
   reader.onload = function(e) {
     try {
       var data = JSON.parse(e.target.result);
-      // Nuevo formato: {personas: [...], libreta: [...]}
+      var nuevos = [];
+      // Formato nuevo: {personas: [...], libreta: [...]}
       if (data && data.personas && Array.isArray(data.personas)) {
-        D = data.personas;
+        nuevos = data.personas;
         L = data.libreta || [];
         guardarLibreta();
       } else if (Array.isArray(data)) {
-        // Formato antiguo (solo array de personas)
-        D = data;
+        // Si el primer elemento es un objeto (formato Supabase), convertirlo
+        if (data.length > 0 && typeof data[0] === 'object' && !Array.isArray(data[0])) {
+          nuevos = [];
+          for (var i = 0; i < data.length; i++) {
+            var p = data[i];
+            if (!p || !p.nombre) continue;
+            var vehs = [];
+            if (p.vehiculo1) vehs.push(p.vehiculo1);
+            if (p.vehiculo2) vehs.push(p.vehiculo2);
+            var ant = p.antecedentes || '';
+            var nts = p.notas ? [p.notas] : [];
+            nuevos.push([
+              p.nombre || 'SIN NOMBRE',
+              p.ci || '',
+              p.fecha_nac || '',
+              p.domicilio || '',
+              p.alias || '',
+              p.telefono || '',
+              p.telefono2 || '',
+              vehs,
+              p.vinculo || '',
+              ant,
+              nts,
+              p.foto || ''
+            ]);
+          }
+        } else {
+          // Formato antiguo de arrays
+          nuevos = data;
+        }
       } else {
         throw new Error('Formato inválido');
       }
-      guardarDatos();
+      // Agregar sin sobrescribir los existentes
+      var agregados = 0;
+      var actualizados = 0;
+      for (var i = 0; i < nuevos.length; i++) {
+        var n = nuevos[i];
+        var ciNuevo = (n[1] || '').trim();
+        var encontrado = false;
+        for (var j = 0; j < D.length; j++) {
+          var ciExistente = (D[j][1] || '').trim();
+          if (ciNuevo && ciExistente && ciNuevo === ciExistente) {
+            // Actualizar datos si el existente tiene campos vacíos
+            for (var k = 0; k < n.length; k++) {
+              if (n[k] && (!D[j][k] || (k === 11 && !D[j][k]))) {
+                D[j][k] = n[k];
+              }
+            }
+            actualizados++;
+            encontrado = true;
+            break;
+          }
+        }
+        if (!encontrado) {
+          D.push(n);
+          agregados++;
+        }
+      }
+      guardarAdicionales();
       cargarDatos();
       showTab('personas');
-      document.getElementById('respaldoStatus').textContent = '✅ Datos importados correctamente (' + D.length + ' registros)';
-      setTimeout(function(){ document.getElementById('respaldoStatus').textContent = ''; }, 4000);
+      document.getElementById('respaldoStatus').textContent = '✅ Importación completada: ' + agregados + ' agregados, ' + actualizados + ' actualizados (Total: ' + D.length + ')';
+      setTimeout(function(){ document.getElementById('respaldoStatus').textContent = ''; }, 5000);
     } catch(err) {
       document.getElementById('respaldoStatus').textContent = '❌ Error: el archivo no es válido';
     }
