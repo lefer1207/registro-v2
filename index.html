@@ -1345,7 +1345,7 @@ function guardarMatricula() {
 function esc(s) { if (!s) return ''; return String(s).replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 
-window.onload = function() { cargarDatos(); cargarLibreta(); showTab("personas"); if(D.length < 5000) document.getElementById('btnImportar8k').style.display='block'; };
+window.onload = function() { cargarDatos(); cargarLibreta(); showTab("personas"); };
 
 var vincSeleccionados = [];
 
@@ -1447,22 +1447,6 @@ function exportarDatos() {
   setTimeout(function(){ document.getElementById('respaldoStatus').textContent = ''; }, 3000);
 }
 
-function importar8k() {
-  if (!confirm('Se importarán los 8000 registros procesados (sin fotos por el peso). ¿Continuar?')) return;
-  mostrarLoader();
-  fetch('https://lefer1207.github.io/registro-v2/respaldo_8000.json')
-    .then(r => r.json())
-    .then(data => {
-      procesarImportacion(data);
-      ocultarLoader();
-      document.getElementById('btnImportar8k').style.display = 'none';
-    })
-    .catch(err => {
-      ocultarLoader();
-      alert('Error al descargar el respaldo: ' + err);
-    });
-}
-
 function importarDatos(event) {
   var file = event.target.files[0];
   if (!file) return;
@@ -1474,17 +1458,6 @@ function importarDatos(event) {
   reader.onload = function(e) {
     try {
       var data = JSON.parse(e.target.result);
-      procesarImportacion(data);
-    } catch(err) {
-      document.getElementById('respaldoStatus').textContent = '❌ Error: el archivo no es válido';
-    }
-  };
-  reader.readAsText(file);
-  event.target.value = '';
-}
-
-function procesarImportacion(data) {
-  try {
       var nuevos = [];
       // Formato nuevo: {personas: [...], libreta: [...]}
       if (data && data.personas && Array.isArray(data.personas)) {
@@ -1592,7 +1565,116 @@ function procesarImportacion(data) {
   event.target.value = '';
 }
 
+// Botón mágico: importa los 8000 registros compactos desde GitHub
+function importar8k() {
+  var btn = document.getElementById('btnImportar8k');
+  btn.disabled = true;
+  btn.textContent = '⏳ Descargando registros...';
+  document.getElementById('respaldoStatus').textContent = '⏳ Descargando archivo compacto...';
+  if (!confirm('⚠️ Se importarán ~1000 personas únicas desde el respaldo. ¿Querés continuar?')) {
+    btn.disabled = false;
+    btn.textContent = '⚡ IMPORTAR LOS 8000 REGISTROS';
+    return;
+  }
+  var url = 'https://raw.githubusercontent.com/lefer1207/registro-v2/main/respaldov8_compacto.json';
+  fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (!Array.isArray(data)) throw new Error('Formato incorrecto');
+      document.getElementById('respaldoStatus').textContent = '📦 ' + data.length + ' registros descargados. Importando...';
+      var nuevos = [];
+      for (var i = 0; i < data.length; i++) {
+        var p = data[i];
+        if (!p || !p.nombre) continue;
+        var nombre = p.nombre.trim();
+        if (!nombre || nombre === '(Sin nombre)' || nombre === 'SIN NOMBRE') continue;
+        var vehs = [];
+        if (p.vehiculo1) vehs.push(p.vehiculo1);
+        if (p.vehiculo2) vehs.push(p.vehiculo2);
+        var ant = p.antecedentes || '';
+        var nts = p.notas ? [p.notas] : [];
+        nuevos.push([
+          nombre,
+          (p.ci || '').toString().trim(),
+          p.fecha_nac || '',
+          p.domicilio || '',
+          p.alias || '',
+          p.telefono || '',
+          p.telefono2 || '',
+          vehs,
+          (p.vinculo || '').replace(/\|/g, ', '),
+          ant,
+          nts,
+          p.foto || ''
+        ]);
+      }
+      // Agregar o actualizar en D
+      var agregados = 0, actualizados = 0;
+      for (var i = 0; i < nuevos.length; i++) {
+        var n = nuevos[i];
+        var ciNuevo = (n[1] || '').trim();
+        var encontrado = false;
+        for (var j = 0; j < D.length; j++) {
+          var ciExistente = (D[j][1] || '').trim();
+          if (ciNuevo && ciExistente && ciNuevo === ciExistente) {
+            for (var k = 0; k < n.length; k++) {
+              if (n[k] && (!D[j][k] || (k === 11 && !D[j][k]))) {
+                D[j][k] = n[k];
+              }
+            }
+            actualizados++;
+            encontrado = true;
+            break;
+          }
+        }
+        if (!encontrado) {
+          D.push(n);
+          agregados++;
+        }
+      }
+      guardarAdicionales();
+      // Resolver vínculos bidireccionales
+      var linksCreados = 0;
+      for (var i = 0; i < D.length; i++) {
+        var vincText = (D[i][8] || '').trim();
+        if (!vincText) continue;
+        var vincNames = vincText.split(/\s*[,|]\s*/).filter(function(v){ return v; });
+        for (var v = 0; v < vincNames.length; v++) {
+          var nombreBuscado = vincNames[v].trim();
+          if (!nombreBuscado || nombreBuscado === D[i][0]) continue;
+          for (var j = 0; j < D.length; j++) {
+            if (i === j) continue;
+            if (D[j][0].trim().toLowerCase() === nombreBuscado.toLowerCase()) {
+              var vincDestino = D[j][8] || '';
+              var destNames = vincDestino.split(/\s*[,|]\s*/).map(function(x){ return x.trim().toLowerCase(); });
+              if (destNames.indexOf(D[i][0].trim().toLowerCase()) === -1) {
+                if (vincDestino) vincDestino += ', ';
+                vincDestino += D[i][0].trim();
+                D[j][8] = vincDestino;
+                linksCreados++;
+              }
+              break;
+            }
+          }
+        }
+      }
+      if (linksCreados > 0) guardarAdicionales();
+      cargarDatos();
+      showTab('personas');
+      btn.disabled = false;
+      btn.textContent = '⚡ IMPORTAR LOS 8000 REGISTROS';
+      var msgExtra = linksCreados > 0 ? (' + ' + linksCreados + ' vínculos') : '';
+      document.getElementById('respaldoStatus').textContent = '✅ ' + agregados + ' nuevos, ' + actualizados + ' actualizados' + msgExtra + ' (Total: ' + D.length + ')';
+      setTimeout(function(){ document.getElementById('respaldoStatus').textContent = ''; }, 8000);
+    })
+    .catch(function(err) {
+      btn.disabled = false;
+      btn.textContent = '⚡ IMPORTAR LOS 8000 REGISTROS';
+      document.getElementById('respaldoStatus').textContent = '❌ Error al descargar: ' + err.message;
+    });
+}
+
 </script>
-  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v70</div>
+  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v76</div>
 </body>
 </html>
