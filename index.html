@@ -317,6 +317,10 @@
     .vinc-suggestions .dropdown-item { padding:10px 12px; border-bottom:1px solid var(--border); cursor:pointer; font-size:0.9rem; }
     .vinc-suggestions .dropdown-item:last-child { border-bottom:none; }
     .vinc-suggestions .dropdown-item:active { background:var(--secondary); color:#fff; }
+    .vinc-tags { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+    .vinc-tag { display:inline-flex; align-items:center; gap:4px; padding:4px 10px; border-radius:16px; font-size:0.82rem; font-weight:600; background:var(--secondary); color:#fff; }
+    .vinc-tag .remove { cursor:pointer; font-size:0.9rem; margin-left:2px; opacity:0.8; }
+    .vinc-tag .remove:active { opacity:1; }
   </style>
 </head>
 <body>
@@ -413,7 +417,14 @@
     </div>
     <div class="form-section">
       <h3>Vinculos</h3>
-      <div class="form-group"><div class="vinc-suggestions"><input type="text" id="fpVinc" placeholder="Vinculos familiares / relacionados" oninput="buscarVinculos()" autocomplete="off"><div class="dropdown" id="vincDropdown"></div></div></div>
+      <div class="form-group">
+        <div class="vinc-suggestions">
+          <input type="text" id="fpVincSearch" placeholder="Buscar persona..." oninput="buscarVinculos()" autocomplete="off">
+          <div class="dropdown" id="vincDropdown"></div>
+        </div>
+        <div class="vinc-tags" id="vincTagsContainer"></div>
+        <input type="hidden" id="fpVinc" value="">
+      </div>
     </div>
     <div class="form-section">
       <h3>Antecedentes</h3>
@@ -789,7 +800,20 @@ function abrirFormPersona(idx) {
     document.getElementById('fpVeh1').value = (p[7]&&p[7][0])||'';
     document.getElementById('fpVeh2').value = (p[7]&&p[7][1])||'';
     document.getElementById('fpVeh3').value = (p[7]&&p[7][2])||'';
-    document.getElementById('fpVinc').value = p[8]||'';
+    vincSeleccionados = [];
+    if (p[8]) {
+      var nombres = p[8].split(',').map(function(s){ return s.trim(); }).filter(function(s){ return s; });
+      for (var n = 0; n < nombres.length; n++) {
+        for (var i = 0; i < D.length; i++) {
+          if (D[i][0].trim() === nombres[n]) {
+            vincSeleccionados.push({idx: i, nombre: D[i][0].trim()});
+            break;
+          }
+        }
+      }
+    }
+    renderVincTags();
+    document.getElementById('fpVinc').value = vincSeleccionados.map(function(v){ return v.nombre; }).join(', ');
     document.getElementById('fpAnt').value = p[9]||'';
     document.getElementById('fpNotas').value = (p[10]&&p[10].length) ? p[10].join(' / ') : '';
     fotoActual = p[11]||'';
@@ -804,6 +828,7 @@ function abrirFormPersona(idx) {
     document.getElementById('formPersonaTitulo').textContent = 'Nueva Persona';
     document.getElementById('fpIdx').value = '';
     document.getElementById('fpId').value = '';
+    vincSeleccionados = []; renderVincTags();
     ['fpNombre','fpCI','fpFN','fpDir','fpAlias','fpTel1','fpTel2','fpVeh1','fpVeh2','fpVeh3','fpVinc','fpAnt','fpNotas'].forEach(function(id){ document.getElementById(id).value = ''; });
     document.getElementById('photoPreviewContainer').innerHTML = '<div style="font-size:2rem;margin-bottom:6px">📷</div><div>Tocar para agregar foto</div>';
   }
@@ -844,35 +869,86 @@ function guardarPersona() {
 
   var notaTxt = document.getElementById('fpNotas').value.trim();
   var antTxt = document.getElementById('fpAnt').value.trim();
-  var vincTxt = document.getElementById('fpVinc').value.trim();
+  var vincTxt = vincSeleccionados.map(function(v){ return v.nombre; }).join(', ');
+
+  // Save old vinculados for bidirectional comparison (only for edits)
+  var oldVincTxt = '';
+  if (editandoIdx >= 0 && editandoIdx < D.length) {
+    oldVincTxt = D[editandoIdx][8] || '';
+  }
+
+  var currentIdx;
 
   if (editandoIdx >= 0 && editandoIdx < D.length) {
-    if (nom) D[editandoIdx][0] = nom;
-    if (ci) D[editandoIdx][1] = ci;
-    D[editandoIdx][2] = document.getElementById('fpFN').value.trim();
-    D[editandoIdx][3] = document.getElementById('fpDir').value.trim();
-    D[editandoIdx][4] = document.getElementById('fpAlias').value.trim();
-    D[editandoIdx][5] = document.getElementById('fpTel1').value.trim();
-    D[editandoIdx][6] = document.getElementById('fpTel2').value.trim();
-    D[editandoIdx][7] = vehs;
-    D[editandoIdx][8] = vincTxt;
-    D[editandoIdx][9] = antTxt;
-    D[editandoIdx][10] = notaTxt ? [notaTxt] : [];
-    if (fotoActual) D[editandoIdx][11] = fotoActual;
-    guardarAdicionales();
-    showToast('✅ Guardado');
-    editandoIdx = -1;
-    goBack();
-    renderPersonas();
+    currentIdx = editandoIdx;
+    if (nom) D[currentIdx][0] = nom;
+    if (ci) D[currentIdx][1] = ci;
+    D[currentIdx][2] = document.getElementById('fpFN').value.trim();
+    D[currentIdx][3] = document.getElementById('fpDir').value.trim();
+    D[currentIdx][4] = document.getElementById('fpAlias').value.trim();
+    D[currentIdx][5] = document.getElementById('fpTel1').value.trim();
+    D[currentIdx][6] = document.getElementById('fpTel2').value.trim();
+    D[currentIdx][7] = vehs;
+    D[currentIdx][8] = vincTxt;
+    D[currentIdx][9] = antTxt;
+    D[currentIdx][10] = notaTxt ? [notaTxt] : [];
+    if (fotoActual) D[currentIdx][11] = fotoActual;
   } else {
     if (!nom) nom = 'SIN NOMBRE';
     D.push([nom, ci, document.getElementById('fpFN').value.trim(), document.getElementById('fpDir').value.trim(), document.getElementById('fpAlias').value.trim(), document.getElementById('fpTel1').value.trim(), document.getElementById('fpTel2').value.trim(), vehs, vincTxt, antTxt, notaTxt?[notaTxt]:[], fotoActual||'']);
-    guardarAdicionales();
-    editandoIdx = -1;
-    showToast('✅ Guardado');
-    goBack();
-    renderPersonas();
+    currentIdx = D.length - 1;
   }
+
+  // === BIDIRECTIONAL LINKING ===
+  var currentName = D[currentIdx][0];
+  var newVincIdxs = vincSeleccionados.map(function(v){ return v.idx; });
+
+  // Get old vinculados indices
+  var oldVincIdxs = [];
+  if (oldVincTxt) {
+    var oldNombres = oldVincTxt.split(',').map(function(s){ return s.trim(); }).filter(function(s){ return s; });
+    for (var n = 0; n < oldNombres.length; n++) {
+      for (var i = 0; i < D.length; i++) {
+        if (D[i][0].trim() === oldNombres[n]) {
+          oldVincIdxs.push(i);
+          break;
+        }
+      }
+    }
+  }
+
+  // Remove currentName from vinculados that were removed
+  for (var o = 0; o < oldVincIdxs.length; o++) {
+    var oIdx = oldVincIdxs[o];
+    if (oIdx === currentIdx) continue;
+    if (newVincIdxs.indexOf(oIdx) === -1) {
+      var otherVinculos = D[oIdx][8] || '';
+      var otherList = otherVinculos.split(',').map(function(s){ return s.trim(); }).filter(function(s){ return s; });
+      var filtered = [];
+      for (var f = 0; f < otherList.length; f++) {
+        if (otherList[f] !== currentName) filtered.push(otherList[f]);
+      }
+      D[oIdx][8] = filtered.join(', ');
+    }
+  }
+
+  // Add currentName to new vinculados
+  for (var n = 0; n < newVincIdxs.length; n++) {
+    var oIdx = newVincIdxs[n];
+    if (oIdx === currentIdx) continue;
+    var otherVinculos = D[oIdx][8] || '';
+    var otherList = otherVinculos.split(',').map(function(s){ return s.trim(); }).filter(function(s){ return s; });
+    if (otherList.indexOf(currentName) === -1) {
+      otherList.push(currentName);
+      D[oIdx][8] = otherList.join(', ');
+    }
+  }
+
+  guardarAdicionales();
+  showToast('✅ Guardado');
+  editandoIdx = -1;
+  goBack();
+  renderPersonas();
 }
 
 // ============================================================
@@ -921,8 +997,22 @@ function esc(s) { if (!s) return ''; return String(s).replace(/</g,'&lt;').repla
 
 window.onload = function() { cargarDatos(); showTab("personas"); };
 
+var vincSeleccionados = [];
+
+function renderVincTags() {
+  var container = document.getElementById('vincTagsContainer');
+  if (!container) return;
+  var html = '';
+  for (var v = 0; v < vincSeleccionados.length; v++) {
+    var nom = esc(vincSeleccionados[v].nombre);
+    html += '<span class="vinc-tag">' + nom + '<span class="remove" onclick="eliminarVincTag(' + v + ')">✕</span></span>';
+  }
+  container.innerHTML = html;
+  document.getElementById('fpVinc').value = vincSeleccionados.map(function(v){ return v.nombre; }).join(', ');
+}
+
 function buscarVinculos() {
-  var input = document.getElementById('fpVinc');
+  var input = document.getElementById('fpVincSearch');
   var val = input.value.trim().toLowerCase();
   var dropdown = document.getElementById('vincDropdown');
   if (!val || val.length < 2) { dropdown.style.display = 'none'; return; }
@@ -930,7 +1020,11 @@ function buscarVinculos() {
   for (var i = 0; i < D.length; i++) {
     var nom = D[i][0].trim();
     if (nom.toLowerCase().includes(val)) {
-      results.push({idx: i, nom: nom});
+      var yaAgregado = false;
+      for (var v = 0; v < vincSeleccionados.length; v++) {
+        if (vincSeleccionados[v].idx === i) { yaAgregado = true; break; }
+      }
+      if (!yaAgregado) results.push({idx: i, nom: nom});
     }
   }
   results.sort(function(a,b){ return a.nom.length - b.nom.length; });
@@ -948,11 +1042,16 @@ function buscarVinculos() {
 
 function seleccionarVinculo(idx) {
   var nombre = D[idx][0].trim();
-  var input = document.getElementById('fpVinc');
-  var actual = input.value.trim();
-  input.value = actual ? actual + ', ' + nombre : nombre;
+  vincSeleccionados.push({idx: idx, nombre: nombre});
+  renderVincTags();
+  document.getElementById('fpVincSearch').value = '';
   document.getElementById('vincDropdown').style.display = 'none';
-  input.focus();
+  document.getElementById('fpVincSearch').focus();
+}
+
+function eliminarVincTag(pos) {
+  vincSeleccionados.splice(pos, 1);
+  renderVincTags();
 }
 
 document.addEventListener('click', function(e) {
@@ -961,6 +1060,6 @@ document.addEventListener('click', function(e) {
 });
 
 </script>
-  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v50</div>
+  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v51</div>
 </body>
 </html>
