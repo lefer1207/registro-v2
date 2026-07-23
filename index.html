@@ -853,7 +853,7 @@ function renderPersonas(q) {
     var idxReal = ultimosIndicesPersonas.length ? ultimosIndicesPersonas[from + idx] : (from + idx);
     var f = '<div class="avatar">'+(p[11]?'<img src="'+esc(p[11])+'">':iniciales(p[0]))+'</div>';
     var badge = idxReal >= BASE.length ? '<span class="badge-new">NUEVO</span>' : '';
-    h += '<div class="card" onclick="verPersona('+idxReal+')">'+f+'<div class="card-info"><div class="card-name">'+esc(p[0])+badge+'</div><div class="card-sub">CI '+(esc(p[1])||'---')+' '+(p[4]?'• '+esc(p[4]):'')+'</div></div><div class="card-actions"><button class="btn-del-card" onclick="event.stopPropagation();eliminarPersonaLista('+idxReal+')" title="Eliminar">🗑️</button><span class="card-arrow">›</span></div></div>';
+    h += '<div class="card" onclick="verPersona('+idxReal+')">'+f+'<div class="card-info"><div class="card-name">'+esc(p[0])+badge+'</div><div class="card-sub">CI '+(esc(p[1])||'---')+' '+(p[4]?'• '+esc(p[4]):'')+'</div></div><div class="card-arrow">›</div></div>';
   }
   lista.innerHTML = h;
 
@@ -1083,10 +1083,10 @@ function verPersona(idx) {
   if (p[9]) h += '<div class="detail-section"><h3>Antecedentes</h3><div class="detail-notes">'+esc(p[9])+'</div></div>';
   if (p[10] && p[10].length) h += '<div class="detail-section"><h3>Notas</h3><div class="detail-notes">'+esc(p[10].join(' / '))+'</div></div>';
 
-  h += '<div class="form-actions" style="margin-top:24px;">';
-  h += '<button class="btn btn-ghost" onclick="abrirFormPersona(editandoIdx); return false;">✏️ Editar</button>';
+  h += '<div class="form-actions" style="margin-top:24px; display:flex; gap:10px;">';
+  h += '<button class="btn btn-ghost" style="flex:1" onclick="abrirFormPersona(editandoIdx); return false;">✏️ Editar</button>';
   if (editandoIdx >= BASE.length) {
-    h += '<button class="btn btn-danger" onclick="eliminarPersona()">🗑️ Eliminar</button>';
+    h += '<button class="btn btn-danger" style="flex:1; background:#fee2e2; color:#dc2626; border:1px solid #fecaca;" onclick="eliminarPersona()">🗑️ Eliminar</button>';
   }
   h += '</div>';
 
@@ -1867,6 +1867,6 @@ function importarFotos() {
 }
 
 </script>
-  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v83</div>
+  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v84</div>
 </body>
 </html>
