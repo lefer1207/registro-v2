@@ -468,15 +468,19 @@ function iniciales(n) { return n.split(' ').slice(0,2).map(function(w){return w[
 // DATOS
 // ============================================================
 function cargarDatos() {
-  var g = localStorage.getItem('rp_adicionales');
-  var a = g ? JSON.parse(g) : [];
-  D = BASE.concat(a);
+  var full = localStorage.getItem('rp_todos');
+  if (full) {
+    D = JSON.parse(full);
+  } else {
+    var g = localStorage.getItem('rp_adicionales');
+    var a = g ? JSON.parse(g) : [];
+    D = BASE.concat(a);
+  }
   document.getElementById('headerCount').textContent = D.length + ' registros';
 }
 
 function guardarAdicionales() {
-  var a = D.slice(BASE.length);
-  localStorage.setItem('rp_adicionales', JSON.stringify(a));
+  localStorage.setItem('rp_todos', JSON.stringify(D));
   document.getElementById('headerCount').textContent = D.length + ' registros';
 }
 
@@ -911,6 +915,6 @@ function esc(s) { if (!s) return ''; return String(s).replace(/</g,'&lt;').repla
 
 
 window.onload = function() { cargarDatos(); showTab("personas"); };</script>
-  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v48</div>
+  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v49</div>
 </body>
 </html>
