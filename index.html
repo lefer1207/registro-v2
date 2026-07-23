@@ -389,6 +389,9 @@
   <button onclick="showTab('buscar')" id="tab-buscar">
     <span class="icon">🔍</span>Buscar
   </button>
+  <button onclick="showTab('respaldo')" id="tab-respaldo">
+    <span class="icon">💾</span>Respaldo
+  </button>
 </nav>
 
 <main>
@@ -418,6 +421,18 @@
     <div id="resultadosBusqueda"></div>
   </div>
 
+  <!-- RESPALDO -->
+  <div class="view" id="view-respaldo">
+    <div style="padding:20px;text-align:center;">
+      <h3 style="margin-bottom:20px;">💾 Respaldo de Datos</h3>
+      <p style="color:var(--muted);margin-bottom:20px;font-size:.85rem;">Exportá tus datos para guardarlos o pasarlos a otro dispositivo. También podés importar un respaldo anterior.</p>
+      <button onclick="exportarDatos()" style="width:100%;padding:14px;margin-bottom:12px;border:none;border-radius:10px;background:var(--primary);color:white;font-size:1rem;cursor:pointer;">📤 Exportar datos</button>
+      <button onclick="document.getElementById('importFileInput').click()" style="width:100%;padding:14px;margin-bottom:12px;border:none;border-radius:10px;background:#444;color:white;font-size:1rem;cursor:pointer;">📥 Importar datos</button>
+      <input type="file" id="importFileInput" accept=".json" onchange="importarDatos(event)" style="display:none">
+      <div id="respaldoStatus" style="margin-top:12px;font-size:.85rem;color:var(--muted);"></div>
+    </div>
+  </div>
+
   <!-- DETALLE PERSONA -->
   <div class="view" id="view-detalle-persona">
     <button class="back-btn" onclick="goBack()">← Volver</button>
@@ -436,7 +451,7 @@
     <h2 id="formPersonaTitulo" style="font-size:1.1rem;margin-bottom:16px;">Nueva Persona</h2>
     <div class="form-section">
       <h3>Foto</h3>
-      <div class="photo-upload-area" id="photoPreviewContainer" onclick="document.getElementById('photoInputGal').click()">
+      <div class="photo-upload-area" id="photoPreviewContainer" onclick="document.getElementById('photoInputCam').click()">
         <div style="text-align:center">
           <div style="font-size:2rem;margin-bottom:4px">📷</div>
           <div style="font-size:.8rem;color:var(--muted)">Tocar para agregar foto</div>
@@ -444,10 +459,8 @@
       </div>
       <div class="photo-btn-row">
         <button onclick="document.getElementById('photoInputCam').click()">📸 Cámara</button>
-        <button onclick="document.getElementById('photoInputGal').click()">🖼️ Galería</button>
       </div>
       <input type="file" id="photoInputCam" accept="image/*" capture="environment" onchange="handlePhoto(event)" style="display:none">
-      <input type="file" id="photoInputGal" accept="image/*" onchange="handlePhoto(event)" style="display:none">
     </div>
     <div class="form-section">
       <h3>Datos Personales</h3>
@@ -564,6 +577,7 @@ function showTab(tab) {
   if (tab === 'personas') { personasPage = 0; renderPersonas(); }
   if (tab === 'vehiculos') { vehiculosPage = 0; renderVehiculos(); }
   if (tab === 'buscar') { document.getElementById('resultadosBusqueda').innerHTML = ''; }
+  if (tab === 'respaldo') { document.getElementById('fabBtn').style.display = 'none'; }
 }
 
 function showView(id) {
@@ -1332,7 +1346,46 @@ document.addEventListener('click', function(e) {
   if (dd && !e.target.closest('.vinc-suggestions')) { dd.style.display = 'none'; }
 });
 
+function exportarDatos() {
+  var dataStr = JSON.stringify(D, null, 2);
+  var blob = new Blob([dataStr], {type: 'application/json'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'registro-personas-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  document.getElementById('respaldoStatus').textContent = '✅ Datos exportados correctamente';
+  setTimeout(function(){ document.getElementById('respaldoStatus').textContent = ''; }, 3000);
+}
+
+function importarDatos(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  if (!confirm('⚠️ ¿Estás seguro? Se reemplazarán TODOS los datos actuales por los del archivo. Esta acción no se puede deshacer.')) {
+    event.target.value = '';
+    return;
+  }
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var data = JSON.parse(e.target.result);
+      if (!Array.isArray(data)) throw new Error('Formato inválido');
+      D = data;
+      guardarDatos();
+      cargarDatos();
+      showTab('personas');
+      document.getElementById('respaldoStatus').textContent = '✅ Datos importados correctamente (' + data.length + ' registros)';
+      setTimeout(function(){ document.getElementById('respaldoStatus').textContent = ''; }, 4000);
+    } catch(err) {
+      document.getElementById('respaldoStatus').textContent = '❌ Error: el archivo no es válido';
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
 </script>
-  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v65</div>
+  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v66</div>
 </body>
 </html>
