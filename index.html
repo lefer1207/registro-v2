@@ -391,13 +391,18 @@
     <h2 id="formPersonaTitulo" style="font-size:1.1rem;margin-bottom:16px;">Nueva Persona</h2>
     <div class="form-section">
       <h3>Foto</h3>
-      <div class="photo-upload-area" onclick="document.getElementById('photoInput').click()">
-        <div id="photoPreviewContainer">
-          <div style="font-size:2rem;margin-bottom:6px">📷</div>
-          <div>Tocar para agregar foto</div>
+      <div class="photo-upload-area" id="photoPreviewContainer" onclick="document.getElementById('photoInputGal').click()">
+        <div style="text-align:center">
+          <div style="font-size:2rem;margin-bottom:4px">📷</div>
+          <div style="font-size:.8rem;color:var(--muted)">Tocar para agregar foto</div>
         </div>
       </div>
-      <input type="file" id="photoInput" accept="image/*" capture="environment" onchange="handlePhoto(event)">
+      <div class="photo-btn-row">
+        <button onclick="document.getElementById('photoInputCam').click()">📸 Cámara</button>
+        <button onclick="document.getElementById('photoInputGal').click()">🖼️ Galería</button>
+      </div>
+      <input type="file" id="photoInputCam" accept="image/*" capture="environment" onchange="handlePhoto(event)" style="display:none">
+      <input type="file" id="photoInputGal" accept="image/*" onchange="handlePhoto(event)" style="display:none">
     </div>
     <div class="form-section">
       <h3>Datos Personales</h3>
@@ -923,21 +928,106 @@ function abrirFormPersona(idx) {
 
 function handlePhoto(e) {
   var file = e.target.files[0]; if (!file) return;
+  e.target.value = '';
   var reader = new FileReader();
   reader.onload = function(ev) {
-    var img = new Image();
-    img.onload = function() {
-      var canvas = document.createElement('canvas');
-      var max = 300; var w=img.width, h=img.height;
-      if (w>h) { if(w>max){h=h*(max/w);w=max;} } else { if(h>max){w=w*(max/h);h=max;} }
-      canvas.width=w; canvas.height=h;
-      canvas.getContext('2d').drawImage(img,0,0,w,h);
-      fotoActual = canvas.toDataURL('image/jpeg',0.7);
-      document.getElementById('photoPreviewContainer').innerHTML = '<img src="'+fotoActual+'" class="photo-preview"><br><span style="font-size:.78rem;color:var(--muted)">Tocar para cambiar</span>';
-    };
-    img.src = ev.target.result;
+    abrirEditor(ev.target.result);
   };
   reader.readAsDataURL(file);
+}
+
+var cropImgData = '';
+var cropZoom = 1;
+var cropOffsetX = 0, cropOffsetY = 0;
+var cropDragStartX = 0, cropDragStartY = 0;
+var cropDragging = false;
+
+function abrirEditor(dataUrl) {
+  cropImgData = dataUrl;
+  cropZoom = 1;
+  cropOffsetX = 0; cropOffsetY = 0;
+  renderCropModal();
+}
+
+function renderCropModal() {
+  var overlay = document.createElement('div');
+  overlay.className = 'crop-overlay';
+  overlay.id = 'cropOverlay';
+  overlay.innerHTML = '<div class="crop-container" id="cropContainer">' +
+    '<img id="cropImg" src="'+cropImgData+'" style="transform:translate(-50%,-50%) scale('+cropZoom+') translate('+cropOffsetX+'px,'+cropOffsetY+'px)">' +
+    '<div class="crop-frame"></div></div>' +
+    '<div class="crop-controls">' +
+    '<button class="crop-zoom" onclick="cropZoomIn()">+</button>' +
+    '<button class="crop-cancel" onclick="cerrarEditor()">✕ Cancelar</button>' +
+    '<button class="crop-confirm" onclick="confirmarCrop()">✓ Aplicar</button>' +
+    '<button class="crop-zoom" onclick="cropZoomOut()">−</button>' +
+    '</div>';
+  document.body.appendChild(overlay);
+
+  // Drag to move image
+  var img = document.getElementById('cropImg');
+  img.addEventListener('mousedown', iniciarDrag);
+  img.addEventListener('touchstart', iniciarDragTouch, {passive:false});
+  document.addEventListener('mousemove', moverDrag);
+  document.addEventListener('mouseup', pararDrag);
+  document.addEventListener('touchmove', moverDragTouch, {passive:false});
+  document.addEventListener('touchend', pararDrag);
+}
+
+function iniciarDrag(e) { cropDragging = true; cropDragStartX = e.clientX - cropOffsetX; cropDragStartY = e.clientY - cropOffsetY; }
+function iniciarDragTouch(e) { e.preventDefault(); var t = e.touches[0]; cropDragging = true; cropDragStartX = t.clientX - cropOffsetX; cropDragStartY = t.clientY - cropOffsetY; }
+function moverDrag(e) { if(!cropDragging) return; cropOffsetX = e.clientX - cropDragStartX; cropOffsetY = e.clientY - cropDragStartY; actualizarPosicion(); }
+function moverDragTouch(e) { if(!cropDragging) return; e.preventDefault(); var t = e.touches[0]; cropOffsetX = t.clientX - cropDragStartX; cropOffsetY = t.clientY - cropDragStartY; actualizarPosicion(); }
+function pararDrag() { cropDragging = false; }
+
+function actualizarPosicion() {
+  var img = document.getElementById('cropImg');
+  if(img) img.style.transform = 'translate(-50%,-50%) scale('+cropZoom+') translate('+cropOffsetX+'px,'+cropOffsetY+'px)';
+}
+
+function cropZoomIn() { cropZoom = Math.min(cropZoom + 0.2, 4); actualizarPosicion(); }
+function cropZoomOut() { cropZoom = Math.max(cropZoom - 0.2, 0.5); actualizarPosicion(); }
+
+function cerrarEditor() {
+  var el = document.getElementById('cropOverlay');
+  if(el) el.remove();
+}
+
+function confirmarCrop() {
+  var container = document.getElementById('cropContainer');
+  var img = document.getElementById('cropImg');
+  if (!container || !img) return;
+
+  var cw = container.offsetWidth;
+  var ch = container.offsetHeight;
+
+  var tempImg = new Image();
+  tempImg.onload = function() {
+    var canvas = document.createElement('canvas');
+    canvas.width = 300; canvas.height = 300;
+    var ctx = canvas.getContext('2d');
+
+    // Calculate source crop based on zoom and offset
+    var scale = tempImg.width / img.naturalWidth;
+    var dispW = cw / cropZoom;
+    var dispH = ch / cropZoom;
+    var cx = (cw/2 - cropOffsetX) / cropZoom;
+    var cy = (ch/2 - cropOffsetY) / cropZoom;
+    var sx = cx - dispW/2;
+    var sy = cy - dispH/2;
+
+    // Clamp to image bounds
+    sx = Math.max(0, Math.min(sx, tempImg.width - dispW));
+    sy = Math.max(0, Math.min(sy, tempImg.height - dispH));
+    var sw = Math.min(dispW, tempImg.width - sx);
+    var sh = Math.min(dispH, tempImg.height - sy);
+
+    ctx.drawImage(tempImg, sx, sy, sw, sh, 0, 0, 300, 300);
+    fotoActual = canvas.toDataURL('image/jpeg', 0.8);
+    document.getElementById('photoPreviewContainer').innerHTML = '<img src="'+fotoActual+'">';
+    cerrarEditor();
+  };
+  tempImg.src = cropImgData;
 }
 
 function guardarPersona() {
@@ -1146,6 +1236,6 @@ document.addEventListener('click', function(e) {
 });
 
 </script>
-  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v56</div>
+  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v57</div>
 </body>
 </html>
