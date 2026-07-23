@@ -1802,24 +1802,39 @@ function importarFotos() {
   }
   
   function procesarFotos(data) {
-    document.getElementById('respaldoStatus').textContent = '📦 ' + data.length + ' registros descargados. Asignando fotos...';
+    document.getElementById('respaldoStatus').textContent = '📦 ' + data.length + ' fotos descargadas. Vinculando...';
     var asignadas = 0;
+    var yaTenian = 0;
+    
+    // Función para limpiar CI (solo números)
+    function soloNum(s) { return (s || '').toString().replace(/\D/g, ''); }
+
     for (var i = 0; i < data.length; i++) {
       var p = data[i];
       if (!p.foto || p.foto.length < 100) continue;
-      var ci = (p.ci || '').toString().trim();
-      var nombre = (p.nombre || '').trim();
+      
+      var ciJSON = soloNum(p.ci);
+      var nombreJSON = (p.nombre || '').trim().toLowerCase();
+      
+      var encontrado = false;
       for (var j = 0; j < D.length; j++) {
+        var ciDB = soloNum(D[j][1]);
+        var nombreDB = (D[j][0] || '').trim().toLowerCase();
+        
         var coincide = false;
-        if (ci && (D[j][1] || '').trim() === ci) {
+        if (ciJSON && ciDB && ciJSON === ciDB) {
           coincide = true;
-        } else if (!ci && D[j][0].trim().toLowerCase() === nombre.toLowerCase()) {
+        } else if (nombreJSON && nombreDB && nombreJSON === nombreDB) {
           coincide = true;
         }
+        
         if (coincide) {
-          if (!D[j][11]) {
+          encontrado = true;
+          if (!D[j][11] || D[j][11].length < 100) {
             D[j][11] = p.foto;
             asignadas++;
+          } else {
+            yaTenian++;
           }
           break;
         }
@@ -1829,14 +1844,16 @@ function importarFotos() {
     showTab('personas');
     btn.disabled = false;
     btn.textContent = '📸 IMPORTAR FOTOS';
-    document.getElementById('respaldoStatus').textContent = '✅ ' + asignadas + ' fotos asignadas (Total: ' + D.length + ' registros)';
-    setTimeout(function(){ document.getElementById('respaldoStatus').textContent = ''; }, 8000);
+    var txt = '✅ ' + asignadas + ' fotos nuevas asignadas.';
+    if (yaTenian > 0) txt += ' (' + yaTenian + ' ya tenían foto)';
+    document.getElementById('respaldoStatus').textContent = txt + ' (Total: ' + D.length + ' registros)';
+    setTimeout(function(){ document.getElementById('respaldoStatus').textContent = ''; }, 10000);
   }
   
   descargarChunk(1);
 }
 
 </script>
-  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v81</div>
+  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v82</div>
 </body>
 </html>
