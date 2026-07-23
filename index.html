@@ -312,6 +312,11 @@
     .relation-item:active { background: #f5f7fa; }
     .rel-name { flex: 1; font-weight: 600; font-size: 0.92rem; }
     .rel-type { font-size: 0.78rem; color: var(--muted); }
+    .vinc-suggestions { position:relative; width:100%; }
+    .vinc-suggestions .dropdown { position:absolute; top:100%; left:0; right:0; background:var(--card); border:1px solid var(--border); border-radius:8px; max-height:200px; overflow-y:auto; z-index:100; display:none; box-shadow:0 4px 12px rgba(0,0,0,0.15); }
+    .vinc-suggestions .dropdown-item { padding:10px 12px; border-bottom:1px solid var(--border); cursor:pointer; font-size:0.9rem; }
+    .vinc-suggestions .dropdown-item:last-child { border-bottom:none; }
+    .vinc-suggestions .dropdown-item:active { background:var(--secondary); color:#fff; }
   </style>
 </head>
 <body>
@@ -408,7 +413,7 @@
     </div>
     <div class="form-section">
       <h3>Vinculos</h3>
-      <div class="form-group"><input type="text" id="fpVinc" placeholder="Vinculos familiares / relacionados"></div>
+      <div class="form-group"><div class="vinc-suggestions"><input type="text" id="fpVinc" placeholder="Vinculos familiares / relacionados" oninput="buscarVinculos()" autocomplete="off"><div class="dropdown" id="vincDropdown"></div></div></div>
     </div>
     <div class="form-section">
       <h3>Antecedentes</h3>
@@ -914,7 +919,48 @@ function guardarMatricula() {
 function esc(s) { if (!s) return ''; return String(s).replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 
-window.onload = function() { cargarDatos(); showTab("personas"); };</script>
-  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v49</div>
+window.onload = function() { cargarDatos(); showTab("personas"); };
+
+function buscarVinculos() {
+  var input = document.getElementById('fpVinc');
+  var val = input.value.trim().toLowerCase();
+  var dropdown = document.getElementById('vincDropdown');
+  if (!val || val.length < 2) { dropdown.style.display = 'none'; return; }
+  var results = [];
+  for (var i = 0; i < D.length; i++) {
+    var nom = D[i][0].trim();
+    if (nom.toLowerCase().includes(val)) {
+      results.push({idx: i, nom: nom});
+    }
+  }
+  results.sort(function(a,b){ return a.nom.length - b.nom.length; });
+  results = results.slice(0, 15);
+  if (results.length === 0) { dropdown.style.display = 'none'; return; }
+  var html = '';
+  for (var r = 0; r < results.length; r++) {
+    var nom = esc(results[r].nom);
+    var ci = D[results[r].idx][1] ? ' (' + esc(D[results[r].idx][1]) + ')' : '';
+    html += '<div class="dropdown-item" onclick="seleccionarVinculo(' + results[r].idx + ')">' + nom + ci + '</div>';
+  }
+  dropdown.innerHTML = html;
+  dropdown.style.display = 'block';
+}
+
+function seleccionarVinculo(idx) {
+  var nombre = D[idx][0].trim();
+  var input = document.getElementById('fpVinc');
+  var actual = input.value.trim();
+  input.value = actual ? actual + ', ' + nombre : nombre;
+  document.getElementById('vincDropdown').style.display = 'none';
+  input.focus();
+}
+
+document.addEventListener('click', function(e) {
+  var dd = document.getElementById('vincDropdown');
+  if (dd && !e.target.closest('.vinc-suggestions')) { dd.style.display = 'none'; }
+});
+
+</script>
+  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v50</div>
 </body>
 </html>
