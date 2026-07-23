@@ -422,7 +422,7 @@
       <button onclick="exportarDatos()" style="width:100%;padding:14px;margin-bottom:12px;border:none;border-radius:10px;background:var(--primary);color:white;font-size:1rem;cursor:pointer;">📤 Exportar datos</button>
       <button onclick="document.getElementById('importFileInput').click()" style="width:100%;padding:14px;margin-bottom:12px;border:none;border-radius:10px;background:#444;color:white;font-size:1rem;cursor:pointer;">📥 Importar datos</button>
       <button id="btnImportar8k" onclick="importar8k()" style="width:100%;padding:14px;margin-bottom:12px;border:none;border-radius:10px;background:#27ae60;color:white;font-size:1rem;cursor:pointer;">⚡ IMPORTAR LOS 8000 REGISTROS</button>
-      <button id="btnImportarFotos" onclick="importarFotos()" style="width:100%;padding:14px;margin-bottom:12px;border:none;border-radius:10px;background:#8e44ad;color:white;font-size:1rem;cursor:pointer;">📸 IMPORTAR FOTOS (DESDE DRIVE)</button>
+      <button id="btnImportarFotos" onclick="importarFotos()" style="width:100%;padding:14px;margin-bottom:12px;border:none;border-radius:10px;background:#8e44ad;color:white;font-size:1rem;cursor:pointer;">📸 IMPORTAR FOTOS</button>
       <input type="file" id="importFileInput" accept=".json" onchange="importarDatos(event)" style="display:none">
       <div id="respaldoStatus" style="margin-top:12px;font-size:.85rem;color:var(--muted);"></div>
     </div>
@@ -1690,66 +1690,83 @@ function importar8k() {
     });
 }
 
-// Importar fotos desde el archivo completo de Drive (con 463 fotos)
+// Importar fotos desde los chunks de 10MB en GitHub (19 partes, ~185MB)
 function importarFotos() {
   var btn = document.getElementById('btnImportarFotos');
   btn.disabled = true;
-  btn.textContent = '⏳ Descargando fotos desde Drive...';
-  document.getElementById('respaldoStatus').textContent = '⏳ Descargando archivo completo (185MB)...';
+  btn.textContent = '⏳ Descargando fotos (0/19)...';
+  document.getElementById('respaldoStatus').textContent = '⏳ Descargando 463 fotos desde GitHub...';
   if (!confirm('⚠️ Se descargarán ~185MB para importar 463 fotos. ¿Querés continuar?')) {
     btn.disabled = false;
-    btn.textContent = '📸 IMPORTAR FOTOS (DESDE DRIVE)';
+    btn.textContent = '📸 IMPORTAR FOTOS';
     return;
   }
-  var url = 'https://drive.usercontent.google.com/download?id=1nx1zvbkHoOgcqJszsiHA5Vec6QtrZWPi&export=download&confirm=t';
-  fetch(url)
-    .then(function(r) {
-      if (!r.ok) throw new Error('Error HTTP ' + r.status);
-      return r.json();
-    })
-    .then(function(data) {
-      if (!Array.isArray(data)) throw new Error('Formato incorrecto');
-      document.getElementById('respaldoStatus').textContent = '📦 ' + data.length + ' registros descargados. Asignando fotos...';
-      var asignadas = 0;
-      for (var i = 0; i < data.length; i++) {
-        var p = data[i];
-        if (!p.foto || p.foto.length < 100) continue;
-        var ci = (p.ci || '').toString().trim();
-        var nombre = (p.nombre || '').trim();
-        // Buscar en D por CI primero, luego por nombre
-        for (var j = 0; j < D.length; j++) {
-          var coincide = false;
-          if (ci && (D[j][1] || '').trim() === ci) {
-            coincide = true;
-          } else if (!ci && D[j][0].trim().toLowerCase() === nombre.toLowerCase()) {
-            coincide = true;
+  var totalChunks = 19;
+  var baseUrl = 'https://raw.githubusercontent.com/lefer1207/registro-v2/main/';
+  var fotos = [];
+  var descargados = 0;
+  
+  function descargarChunk(i) {
+    var fname = 'fotos_chunk_' + i + 'of' + totalChunks + '.json';
+    btn.textContent = '⏳ Descargando fotos (' + i + '/' + totalChunks + ')...';
+    fetch(baseUrl + fname)
+      .then(function(r) {
+        if (!r.ok) throw new Error('Error ' + r.status + ' en ' + fname);
+        return r.json();
+      })
+      .then(function(chunk) {
+        fotos = fotos.concat(chunk);
+        descargados++;
+        if (descargados < totalChunks) {
+          descargarChunk(descargados + 1);
+        } else {
+          procesarFotos(fotos);
+        }
+      })
+      .catch(function(err) {
+        btn.disabled = false;
+        btn.textContent = '📸 IMPORTAR FOTOS';
+        document.getElementById('respaldoStatus').textContent = '❌ Error: ' + err.message;
+      });
+  }
+  
+  function procesarFotos(data) {
+    document.getElementById('respaldoStatus').textContent = '📦 ' + data.length + ' registros descargados. Asignando fotos...';
+    var asignadas = 0;
+    for (var i = 0; i < data.length; i++) {
+      var p = data[i];
+      if (!p.foto || p.foto.length < 100) continue;
+      var ci = (p.ci || '').toString().trim();
+      var nombre = (p.nombre || '').trim();
+      for (var j = 0; j < D.length; j++) {
+        var coincide = false;
+        if (ci && (D[j][1] || '').trim() === ci) {
+          coincide = true;
+        } else if (!ci && D[j][0].trim().toLowerCase() === nombre.toLowerCase()) {
+          coincide = true;
+        }
+        if (coincide) {
+          if (!D[j][11]) {
+            D[j][11] = p.foto;
+            asignadas++;
           }
-          if (coincide) {
-            // Asignar foto solo si no tiene una ya
-            if (!D[j][11]) {
-              D[j][11] = p.foto;
-              asignadas++;
-            }
-            break;
-          }
+          break;
         }
       }
-      guardarAdicionales();
-      cargarDatos();
-      showTab('personas');
-      btn.disabled = false;
-      btn.textContent = '📸 IMPORTAR FOTOS (DESDE DRIVE)';
-      document.getElementById('respaldoStatus').textContent = '✅ ' + asignadas + ' fotos asignadas (Total: ' + D.length + ' registros)';
-      setTimeout(function(){ document.getElementById('respaldoStatus').textContent = ''; }, 8000);
-    })
-    .catch(function(err) {
-      btn.disabled = false;
-      btn.textContent = '📸 IMPORTAR FOTOS (DESDE DRIVE)';
-      document.getElementById('respaldoStatus').textContent = '❌ Error: ' + err.message;
-    });
+    }
+    guardarAdicionales();
+    cargarDatos();
+    showTab('personas');
+    btn.disabled = false;
+    btn.textContent = '📸 IMPORTAR FOTOS';
+    document.getElementById('respaldoStatus').textContent = '✅ ' + asignadas + ' fotos asignadas (Total: ' + D.length + ' registros)';
+    setTimeout(function(){ document.getElementById('respaldoStatus').textContent = ''; }, 8000);
+  }
+  
+  descargarChunk(1);
 }
 
 </script>
-  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v79</div>
+  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v80</div>
 </body>
 </html>
