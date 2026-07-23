@@ -16,7 +16,6 @@
       align-items: center !important; justify-content: center !important;
     }
     .crop-container {
-      width: 300px !important; height: 300px !important;
       position: relative !important; overflow: hidden !important;
       border: 2px solid #fff !important; background: #111 !important;
     }
@@ -977,7 +976,7 @@ function renderCropModal() {
   var overlay = document.createElement('div');
   overlay.id = 'cropOverlay'; overlay.className = 'crop-overlay';
   overlay.innerHTML = '<div style="color:#fff;margin-bottom:15px;font-family:sans-serif;font-size:1.1rem;font-weight:bold;">Ajustar Foto</div>' +
-    '<div class="crop-container" id="cropContainer">' +
+    '<div class="crop-container" id="cropContainer" style="width:90vw;height:90vw;max-width:450px;max-height:450px;">' +
     '<img id="cropImg" src="'+cropImgData+'" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale('+cropZoom+') translate('+cropOffsetX+'px,'+cropOffsetY+'px);max-width:none;cursor:move;user-select:none;">' +
     '<div class="crop-frame"></div></div>' +
     '<div class="crop-controls">' +
@@ -986,7 +985,12 @@ function renderCropModal() {
     '<button class="crop-confirm" onclick="confirmarCrop()">APLICAR</button>' +
     '<button class="crop-confirm" onclick="cropZoomIn()" style="width:44px;height:44px;border-radius:50%;border:1px solid #555;background:#333;color:white;font-size:1.5rem;cursor:pointer;">+</button>' +
     '</div>' +
-    '<div style="color:#888;margin-top:15px;font-size:0.8rem;font-family:sans-serif;">Arrastra la foto para encuadrar \u2022 +/- para zoom</div>';
+    '<div style="margin-top:12px;width:80%;max-width:350px;display:flex;align-items:center;gap:8px;">' +
+    '<span style="color:#888;font-size:0.8rem;">0.1x</span>' +
+    '<input type="range" id="zoomSlider" min="0.1" max="20" step="0.1" value="'+cropZoom+'" style="flex:1;accent-color:#2ecc71;" oninput="cropZoomSet(this.value)">' +
+    '<span style="color:#888;font-size:0.8rem;">20x</span>' +
+    '</div>' +
+    '<div style="color:#888;margin-top:10px;font-size:0.8rem;font-family:sans-serif;">Arrastra la foto para encuadrar \u2022 slider para zoom libre</div>';
   document.body.appendChild(overlay);
 
   var img = document.getElementById('cropImg');
@@ -1011,8 +1015,9 @@ function updateCropPos() {
   if(img) img.style.transform = 'translate(-50%,-50%) scale('+cropZoom+') translate('+cropOffsetX+'px,'+cropOffsetY+'px)';
 }
 
-function cropZoomIn() { cropZoom = Math.min(cropZoom + 0.2, 4); updateCropPos(); }
-function cropZoomOut() { cropZoom = Math.max(cropZoom - 0.2, 0.5); updateCropPos(); }
+function cropZoomIn() { cropZoom = cropZoom + 0.2; updateCropPos(); var s = document.getElementById('zoomSlider'); if(s) s.value = cropZoom; }
+function cropZoomOut() { cropZoom = Math.max(cropZoom - 0.2, 0.1); updateCropPos(); var s = document.getElementById('zoomSlider'); if(s) s.value = cropZoom; }
+function cropZoomSet(val) { cropZoom = parseFloat(val); updateCropPos(); }
 
 function cerrarEditor() {
   var el = document.getElementById('cropOverlay');
@@ -1267,6 +1272,6 @@ document.addEventListener('click', function(e) {
 });
 
 </script>
-  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v60</div>
+  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v61</div>
 </body>
 </html>
