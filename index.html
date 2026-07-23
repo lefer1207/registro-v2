@@ -8,6 +8,29 @@
   <meta http-equiv="expires" content="0">
   <title>Registro Policial</title>
   <style>
+    .crop-overlay {
+      position: fixed !important; top: 0 !important; left: 0 !important;
+      width: 100% !important; height: 100% !important;
+      background: #000 !important; z-index: 99999 !important;
+      display: flex !important; flex-direction: column !important;
+      align-items: center !important; justify-content: center !important;
+    }
+    .crop-container {
+      width: 300px !important; height: 300px !important;
+      position: relative !important; overflow: hidden !important;
+      border: 2px solid #fff !important; background: #111 !important;
+    }
+    .crop-frame {
+      position: absolute !important; top: 0; left: 0; right: 0; bottom: 0;
+      box-shadow: 0 0 0 1000px rgba(0,0,0,0.5) !important;
+      pointer-events: none !important;
+    }
+    .crop-controls {
+      display: flex !important; gap: 10px !important; margin-top: 20px !important;
+    }
+    .crop-confirm { background: #2ecc71 !important; color: #fff !important; padding: 10px 20px !important; border: none !important; border-radius: 5px !important; font-weight: bold !important; }
+    .crop-cancel { background: #e74c3c !important; color: #fff !important; padding: 10px 20px !important; border: none !important; border-radius: 5px !important; font-weight: bold !important; }
+    
     :root {
       --primary: #1a3a5c;
       --secondary: #2c5f8a;
@@ -950,6 +973,22 @@ function abrirEditor(dataUrl) {
 }
 
 function renderCropModal() {
+  var old = document.getElementById('cropOverlay'); if(old) old.remove();
+  var overlay = document.createElement('div');
+  overlay.id = 'cropOverlay'; overlay.className = 'crop-overlay';
+  overlay.innerHTML = '<div style="color:#fff;margin-bottom:15px;font-family:sans-serif;">Ajustar Foto</div>' +
+    '<div class="crop-container" id="cropContainer">' +
+    '<img id="cropImg" src="'+cropImgData+'" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale('+cropZoom+') translate('+cropOffsetX+'px,'+cropOffsetY+'px);max-width:none;cursor:move;">' +
+    '<div class="crop-frame"></div></div>' +
+    '<div class="crop-controls">' +
+    '<button class="crop-cancel" onclick="cerrarEditor()">CANCELAR</button>' +
+    '<button class="crop-confirm" onclick="confirmarCrop()">APLICAR</button>' +
+    '</div>' +
+    '<div style="color:#888;margin-top:15px;font-size:0.8rem;">Arrastra para mover la imagen</div>';
+  document.body.appendChild(overlay);
+  return; // Stop here to avoid executing original code
+}
+function original_renderCropModal() {
   var old = document.getElementById('cropOverlay');
   if(old) old.remove();
   var overlay = document.createElement('div');
@@ -1245,6 +1284,6 @@ document.addEventListener('click', function(e) {
 });
 
 </script>
-  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v58</div>
+  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v59</div>
 </body>
 </html>
