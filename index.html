@@ -378,8 +378,11 @@
     
     .detail-avatar 
 
-    .avatar-txt { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #f0f2f5; font-size: 1.5rem; line-height: 1; }
-    .detail-avatar .avatar-txt { font-size: 3rem; }
+    
+    .detail-avatar 
+
+    .avatar-txt { width: 100%; height: 100%; display: flex !important; align-items: center; justify-content: center; background: #f0f2f5; font-size: 1.6rem !important; line-height: 1; }
+    .detail-avatar .avatar-txt { font-size: 3rem !important; }
 </style>
 </head>
 <body>
@@ -1665,7 +1668,7 @@ function importar8k() {
     btn.textContent = '⚡ IMPORTAR LOS 8000 REGISTROS';
     return;
   }
-  var url = 'https://raw.githubusercontent.com/lefer1207/registro-v100/main/respaldov100_compacto.json';
+  var url = 'https://raw.githubusercontent.com/lefer1207/registro-v101/main/respaldov101_compacto.json';
   fetch(url)
     .then(function(r) { return r.json(); })
     .then(function(data) {
@@ -1790,7 +1793,7 @@ function importarFotos() {
     return;
   }
   var totalChunks = 19;
-  var baseUrl = 'https://raw.githubusercontent.com/lefer1207/registro-v100/main/';
+  var baseUrl = 'https://raw.githubusercontent.com/lefer1207/registro-v101/main/';
   var fotos = [];
   var descargados = 0;
   
@@ -1871,6 +1874,6 @@ function importarFotos() {
 }
 
 </script>
-  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v100</div>
+  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v101</div>
 </body>
 </html>
