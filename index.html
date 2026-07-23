@@ -555,23 +555,86 @@ function iniciales(n) { return n.split(' ').slice(0,2).map(function(w){return w[
 
 
 // ============================================================
-// DATOS
+// DATOS - IndexedDB (permite almacenar ~185MB con fotos)
 // ============================================================
+var DB = null;
+var DB_READY = false;
+
+function abrirDB(callback) {
+  if (DB_READY) { if (callback) callback(); return; }
+  var req = indexedDB.open('RegistroPolicial', 1);
+  req.onupgradeneeded = function(e) {
+    var db = e.target.result;
+    if (!db.objectStoreNames.contains('datos')) {
+      db.createObjectStore('datos');
+    }
+  };
+  req.onsuccess = function(e) {
+    DB = e.target.result;
+    DB_READY = true;
+    if (callback) callback();
+  };
+  req.onerror = function(e) {
+    console.error('IndexedDB error:', e);
+    DB_READY = false;
+    if (callback) callback();
+  };
+}
+
+function guardarEnDB(clave, valor, callback) {
+  abrirDB(function() {
+    try {
+      var tx = DB.transaction('datos', 'readwrite');
+      tx.objectStore('datos').put(valor, clave);
+      if (callback) tx.oncomplete = callback;
+    } catch(e) {
+      console.error('Error guardando en DB:', e);
+      if (callback) callback();
+    }
+  });
+}
+
+function leerDeDB(clave, callback) {
+  abrirDB(function() {
+    try {
+      var tx = DB.transaction('datos', 'readonly');
+      var req = tx.objectStore('datos').get(clave);
+      req.onsuccess = function() { callback(req.result); };
+      req.onerror = function() { callback(null); };
+    } catch(e) {
+      console.error('Error leyendo de DB:', e);
+      callback(null);
+    }
+  });
+}
+
 function cargarDatos() {
-  var full = localStorage.getItem('rp_todos');
-  if (full) {
-    D = JSON.parse(full);
-  } else {
-    var g = localStorage.getItem('rp_adicionales');
-    var a = g ? JSON.parse(g) : [];
-    D = BASE.concat(a);
-  }
-  document.getElementById('headerCount').textContent = D.length + ' registros';
+  leerDeDB('rp_todos', function(valor) {
+    if (valor && Array.isArray(valor)) {
+      D = valor;
+      document.getElementById('headerCount').textContent = D.length + ' registros';
+      return;
+    }
+    var full = localStorage.getItem('rp_todos');
+    if (full) {
+      D = JSON.parse(full);
+    } else {
+      var g = localStorage.getItem('rp_adicionales');
+      var a = g ? JSON.parse(g) : [];
+      D = BASE.concat(a);
+    }
+    document.getElementById('headerCount').textContent = D.length + ' registros';
+    if (full) {
+      guardarEnDB('rp_todos', D);
+    }
+  });
 }
 
 function guardarAdicionales() {
-  localStorage.setItem('rp_todos', JSON.stringify(D));
   document.getElementById('headerCount').textContent = D.length + ' registros';
+  // Escribir en IndexedDB (async) y localStorage (si entra)
+  guardarEnDB('rp_todos', D);
+  try { localStorage.setItem('rp_todos', JSON.stringify(D)); } catch(e) {}
 }
 
 // ============================================================
@@ -580,12 +643,20 @@ function guardarAdicionales() {
 var L = [];
 
 function cargarLibreta() {
-  var g = localStorage.getItem('rp_libreta');
-  L = g ? JSON.parse(g) : [];
+  leerDeDB('rp_libreta', function(valor) {
+    if (valor && Array.isArray(valor)) {
+      L = valor;
+      return;
+    }
+    var g = localStorage.getItem('rp_libreta');
+    L = g ? JSON.parse(g) : [];
+    guardarEnDB('rp_libreta', L);
+  });
 }
 
 function guardarLibreta() {
-  localStorage.setItem('rp_libreta', JSON.stringify(L));
+  guardarEnDB('rp_libreta', L);
+  try { localStorage.setItem('rp_libreta', JSON.stringify(L)); } catch(e) {}
 }
 
 function renderLibreta() {
@@ -1755,7 +1826,6 @@ function importarFotos() {
       }
     }
     guardarAdicionales();
-    cargarDatos();
     showTab('personas');
     btn.disabled = false;
     btn.textContent = '📸 IMPORTAR FOTOS';
@@ -1767,6 +1837,6 @@ function importarFotos() {
 }
 
 </script>
-  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v80</div>
+  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v81</div>
 </body>
 </html>
