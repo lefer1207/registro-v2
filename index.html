@@ -386,9 +386,6 @@
   <button onclick="showTab('vehiculos')" id="tab-vehiculos">
     <span class="icon">🚗</span>Matrículas
   </button>
-  <button onclick="showTab('buscar')" id="tab-buscar">
-    <span class="icon">🔍</span>Buscar
-  </button>
   <button onclick="showTab('respaldo')" id="tab-respaldo">
     <span class="icon">💾</span>Respaldo
   </button>
@@ -414,13 +411,6 @@
   </div>
 
   <!-- BUSQUEDA GLOBAL -->
-  <div class="view" id="view-buscar">
-    <div class="search-bar">
-      <input type="search" id="searchGlobal" placeholder="Buscar en todo..." oninput="buscarGlobal()">
-    </div>
-    <div id="resultadosBusqueda"></div>
-  </div>
-
   <!-- RESPALDO -->
   <div class="view" id="view-respaldo">
     <div style="padding:20px;text-align:center;">
@@ -577,7 +567,6 @@ function showTab(tab) {
   window.scrollTo(0,0);
   if (tab === 'personas') { personasPage = 0; renderPersonas(); }
   if (tab === 'vehiculos') { vehiculosPage = 0; renderVehiculos(); }
-  if (tab === 'buscar') { document.getElementById('resultadosBusqueda').innerHTML = ''; }
   if (tab === 'respaldo') { document.getElementById('fabBtn').style.display = 'none'; }
 }
 
@@ -585,7 +574,7 @@ function showView(id) {
   document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('active'); });
   document.getElementById(id).classList.add('active');
   document.getElementById('fabBtn').style.display = 'none';
-  viewStack.push(currentTab === 'personas' ? 'view-personas' : (currentTab === 'vehiculos' ? 'view-vehiculos' : 'view-buscar'));
+  viewStack.push(currentTab === 'personas' ? 'view-personas' : 'view-vehiculos');
   window.scrollTo(0,0);
 }
 
@@ -1387,6 +1376,6 @@ function importarDatos(event) {
 }
 
 </script>
-  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v67</div>
+  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v68</div>
 </body>
 </html>
