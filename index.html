@@ -840,15 +840,15 @@ function guardarPersona() {
   if (editandoIdx >= 0 && editandoIdx < D.length) {
     if (nom) D[editandoIdx][0] = nom;
     if (ci) D[editandoIdx][1] = ci;
-    D[editandoIdx][2] = document.getElementById('fpFN').value.trim()||D[editandoIdx][2];
-    D[editandoIdx][3] = document.getElementById('fpDir').value.trim()||D[editandoIdx][3];
-    D[editandoIdx][4] = document.getElementById('fpAlias').value.trim()||D[editandoIdx][4];
-    D[editandoIdx][5] = document.getElementById('fpTel1').value.trim()||D[editandoIdx][5];
-    D[editandoIdx][6] = document.getElementById('fpTel2').value.trim()||D[editandoIdx][6];
+    D[editandoIdx][2] = document.getElementById('fpFN').value.trim();
+    D[editandoIdx][3] = document.getElementById('fpDir').value.trim();
+    D[editandoIdx][4] = document.getElementById('fpAlias').value.trim();
+    D[editandoIdx][5] = document.getElementById('fpTel1').value.trim();
+    D[editandoIdx][6] = document.getElementById('fpTel2').value.trim();
     D[editandoIdx][7] = vehs;
-    D[editandoIdx][8] = vincTxt||D[editandoIdx][8];
-    D[editandoIdx][9] = antTxt||D[editandoIdx][9];
-    if (notaTxt) D[editandoIdx][10] = [notaTxt];
+    D[editandoIdx][8] = vincTxt;
+    D[editandoIdx][9] = antTxt;
+    D[editandoIdx][10] = notaTxt ? [notaTxt] : [];
     if (fotoActual) D[editandoIdx][11] = fotoActual;
     guardarAdicionales();
     showToast('✅ Guardado');
