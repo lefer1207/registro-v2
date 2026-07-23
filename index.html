@@ -950,18 +950,22 @@ function abrirEditor(dataUrl) {
 }
 
 function renderCropModal() {
+  var old = document.getElementById('cropOverlay');
+  if(old) old.remove();
   var overlay = document.createElement('div');
   overlay.className = 'crop-overlay';
   overlay.id = 'cropOverlay';
-  overlay.innerHTML = '<div class="crop-container" id="cropContainer">' +
-    '<img id="cropImg" src="'+cropImgData+'" style="transform:translate(-50%,-50%) scale('+cropZoom+') translate('+cropOffsetX+'px,'+cropOffsetY+'px)">' +
+  overlay.innerHTML = '<div style="color:white;margin-bottom:15px;font-weight:bold;">Ajustar Foto</div>' +
+    '<div class="crop-container" id="cropContainer" style="background:#111;">' +
+    '<img id="cropImg" src="'+cropImgData+'" style="transform:translate(-50%,-50%) scale('+cropZoom+') translate('+cropOffsetX+'px,'+cropOffsetY+'px); transition:none;">' +
     '<div class="crop-frame"></div></div>' +
     '<div class="crop-controls">' +
     '<button class="crop-zoom" onclick="cropZoomIn()">+</button>' +
-    '<button class="crop-cancel" onclick="cerrarEditor()">✕ Cancelar</button>' +
-    '<button class="crop-confirm" onclick="confirmarCrop()">✓ Aplicar</button>' +
+    '<button class="crop-cancel" onclick="cerrarEditor()">✕</button>' +
+    '<button class="crop-confirm" onclick="confirmarCrop()">✓ APLICAR</button>' +
     '<button class="crop-zoom" onclick="cropZoomOut()">−</button>' +
-    '</div>';
+    '</div>' +
+    '<div style="color:#888;font-size:0.8rem;margin-top:15px;">Arrastra para mover • +/- para zoom</div>';
   document.body.appendChild(overlay);
 
   // Drag to move image
@@ -1241,6 +1245,6 @@ document.addEventListener('click', function(e) {
 });
 
 </script>
-  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v57</div>
+  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v58</div>
 </body>
 </html>
