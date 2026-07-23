@@ -547,6 +547,7 @@ function showToast(msg, duration) {
 }
 
 function iniciales(n) { return n.split(' ').slice(0,2).map(function(w){return w[0];}).join('').toUpperCase(); }
+var SILUETA = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAIAAAAiOjnJAAAEeklEQVR4nO3cTW4bMRAF4XGQY/n4PpCOkMUAigAbhqThI7ua9a2z4E9N0zAQf9xut0Ma7c/qBagnw1KEYSnCsBRhWIowLEUYliIMSxGGpQjDUoRhKcKwFGFYijAsRRiWIgxLEYalCMNShGEp4u/qBdT19fX1zD/7/PxMr4Tow/9McfdkSb+zs5Nhjenpu80L2zesUE/f7VnYjmFNS+rRbnntFdaSpB7tk9cuYS1P6tEOeW3xe6xSVR311pPQfGIVv8LGo6vzxCpe1UFY4dvahkW5M8o6X9XwKYReVbNnsdvEglZ1kFf+o1Zh0e+Gvv5HfcLqcSs9dnG0CavNfRxd9tIkLFXTIawen/ijBjvCh9XgDn5E3xc7LPrp/w69O3ZYKgscFvqDfhJ3j9SwuCf+KuhOqWGpOGRY0I/4bcT9IsNSfbywiJ/vdbhd88ISAiws3Ic7EGvvsLBEYViKIIXFegsSQCdACksghqUITFigVyCKcg6YsMRiWIowLEUYliIYYVF+Yp0DcRqMsIRjWIowLEUYliIMSxGGpQjDUoRhKcKwFGFYijAsRRiWIhhhNfvj+hchToMRlnAMSxGGpQjDUgQmLMRPrBNQzgETllgMSxGksCivQA7oBEhhCcSwFAELC/QWDMfaOywsUfDCYn24o+B2zQtLCMiwcJ/vRcT9IsNSfdSwiB/xe6A7pYZ1YE/8Jdw9gsNSZeywuB/0M9C7Y4d1wE//F/R94cM6+HfwXYMddQhLBTUJq8EnftdjL03COrrcR49dHJ3COvi3Ql//o1ZhHeS74a78Rx+32231GiIQf2X/1CypU7eJdUe5Lco6X9U2rINwZ/VX+La2T+Gjgs9i46ROnSfWXbVbrLaehC0m1t3y0bVDUqe9wjotyWufpE47hnWaltduSZ32DesuVNiePd0Z1n9DCtu8p7uiYS3/KZulYM1b/LpB81UMy3H1qoInVjEsNWBYiigXVsGpjlDt3MqFpR4MSxG1wqo2z1lKnV6tsNSGYSmiUFilJjlUnTMsFJY6MSxFVAmrzgynK3KSVcJSM4aliBJhFZnebVQ4zxJhqR/DUsT6sCrM7X6Wn+r6sNSSYSlicVjLJ3Zja8/WiaUIw1LEyrB8B9MWnrATSxGGpYhlYfkOzrHqnJ1YijAsRawJy3dwpiWn7cRShGEpYkFYvoPzzT9zJ5YiDEsRs8PyHVxl8sk7sRRhWIqYGpbv4Fozz9+JpQjDUsS8sHwHK5h2C04sRRiWIiaF5TtYx5y7cGIpwrAUMSMs38FqJtyIE0sRhqWIeFi+gzWl78WJpQjDUkQ2LN/ByqK348RShGEpIhiW72B9uTtyYinCsBSRCst3kCJ0U04sRRiWIiJh+Q6yJO7LiaUIw1LE+LB8B4mG35oTSxGGpYjBYfkOco29OyeWIgxLESPD8h2kG3iDTixFGJYihoXlO9jDqHt0YinCsBQxJizfwU6G3KYTSxGGpYgBYfkO9nP9Tp1YijAsRVwNy3ewq4s368RShGEp4lJYvoO9Xbnff/MaWjGTg7WJAAAAAElFTkSuQmCC';
 
 // ============================================================
 // ENTRADA
@@ -1037,7 +1038,7 @@ function verPersona(idx) {
 
   var h = '';
   h += '<div class="detail-header">';
-  h += '<div class="detail-avatar">'+(p[11]?'<img src="'+esc(p[11])+'">':'<img src="'+SILUETA+'">')+'</div>';
+  h += '<div class="detail-avatar">'+(p[11]?'<img src="'+esc(p[11])+'">':'<div class="avatar-init">'+iniciales(p[0])+'</div>')+'</div>';
   h += '<div><div class="detail-name">'+esc(p[0])+'</div>'+(p[1]?'<div class="detail-ci">CI: '+esc(p[1])+'</div>':'')+'</div>';
   h += '</div>';
 
@@ -1860,6 +1861,6 @@ function importarFotos() {
 }
 
 </script>
-  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v93</div>
+  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v94</div>
 </body>
 </html>
