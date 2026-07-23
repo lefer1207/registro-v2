@@ -421,6 +421,7 @@
       <p style="color:var(--muted);margin-bottom:20px;font-size:.85rem;">Exportá tus datos para guardarlos o pasarlos a otro dispositivo. También podés importar un respaldo anterior.</p>
       <button onclick="exportarDatos()" style="width:100%;padding:14px;margin-bottom:12px;border:none;border-radius:10px;background:var(--primary);color:white;font-size:1rem;cursor:pointer;">📤 Exportar datos</button>
       <button onclick="document.getElementById('importFileInput').click()" style="width:100%;padding:14px;margin-bottom:12px;border:none;border-radius:10px;background:#444;color:white;font-size:1rem;cursor:pointer;">📥 Importar datos</button>
+      <button id="btnImportar8k" onclick="importar8k()" style="width:100%;padding:14px;margin-bottom:12px;border:none;border-radius:10px;background:#27ae60;color:white;font-size:1rem;cursor:pointer;display:none;">⚡ IMPORTAR LOS 8000 REGISTROS</button>
       <input type="file" id="importFileInput" accept=".json" onchange="importarDatos(event)" style="display:none">
       <div id="respaldoStatus" style="margin-top:12px;font-size:.85rem;color:var(--muted);"></div>
     </div>
@@ -1344,7 +1345,7 @@ function guardarMatricula() {
 function esc(s) { if (!s) return ''; return String(s).replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 
-window.onload = function() { cargarDatos(); cargarLibreta(); showTab("personas"); };
+window.onload = function() { cargarDatos(); cargarLibreta(); showTab("personas"); if(D.length < 5000) document.getElementById('btnImportar8k').style.display='block'; };
 
 var vincSeleccionados = [];
 
@@ -1446,6 +1447,22 @@ function exportarDatos() {
   setTimeout(function(){ document.getElementById('respaldoStatus').textContent = ''; }, 3000);
 }
 
+function importar8k() {
+  if (!confirm('Se importarán los 8000 registros procesados (sin fotos por el peso). ¿Continuar?')) return;
+  mostrarLoader();
+  fetch('https://lefer1207.github.io/registro-v2/respaldo_8000.json')
+    .then(r => r.json())
+    .then(data => {
+      procesarImportacion(data);
+      ocultarLoader();
+      document.getElementById('btnImportar8k').style.display = 'none';
+    })
+    .catch(err => {
+      ocultarLoader();
+      alert('Error al descargar el respaldo: ' + err);
+    });
+}
+
 function importarDatos(event) {
   var file = event.target.files[0];
   if (!file) return;
@@ -1457,6 +1474,17 @@ function importarDatos(event) {
   reader.onload = function(e) {
     try {
       var data = JSON.parse(e.target.result);
+      procesarImportacion(data);
+    } catch(err) {
+      document.getElementById('respaldoStatus').textContent = '❌ Error: el archivo no es válido';
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function procesarImportacion(data) {
+  try {
       var nuevos = [];
       // Formato nuevo: {personas: [...], libreta: [...]}
       if (data && data.personas && Array.isArray(data.personas)) {
