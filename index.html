@@ -421,7 +421,7 @@
       <p style="color:var(--muted);margin-bottom:20px;font-size:.85rem;">Exportá tus datos para guardarlos o pasarlos a otro dispositivo. También podés importar un respaldo anterior.</p>
       <button onclick="exportarDatos()" style="width:100%;padding:14px;margin-bottom:12px;border:none;border-radius:10px;background:var(--primary);color:white;font-size:1rem;cursor:pointer;">📤 Exportar datos</button>
       <button onclick="document.getElementById('importFileInput').click()" style="width:100%;padding:14px;margin-bottom:12px;border:none;border-radius:10px;background:#444;color:white;font-size:1rem;cursor:pointer;">📥 Importar datos</button>
-      <button id="btnImportar8k" onclick="importar8k()" style="width:100%;padding:14px;margin-bottom:12px;border:none;border-radius:10px;background:#27ae60;color:white;font-size:1rem;cursor:pointer;display:none;">⚡ IMPORTAR LOS 8000 REGISTROS</button>
+      <button id="btnImportar8k" onclick="importar8k()" style="width:100%;padding:14px;margin-bottom:12px;border:none;border-radius:10px;background:#27ae60;color:white;font-size:1rem;cursor:pointer;">⚡ IMPORTAR LOS 8000 REGISTROS</button>
       <input type="file" id="importFileInput" accept=".json" onchange="importarDatos(event)" style="display:none">
       <div id="respaldoStatus" style="margin-top:12px;font-size:.85rem;color:var(--muted);"></div>
     </div>
@@ -1675,6 +1675,6 @@ function importar8k() {
 }
 
 </script>
-  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v76</div>
+  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v77</div>
 </body>
 </html>
