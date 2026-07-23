@@ -464,14 +464,10 @@
     <h2 id="formPersonaTitulo" style="font-size:1.1rem;margin-bottom:16px;">Nueva Persona</h2>
     <div class="form-section">
       <h3>Foto</h3>
-      <div class="photo-upload-area" id="photoPreviewContainer" onclick="document.getElementById('photoInputGal').click()">
+      <div class="photo-upload-area" id="photoPreviewContainer" onclick="document.getElementById('photoInputCam').click()">
         <div style="text-align:center">
-          <div style="font-size:2rem;margin-bottom:4px">📷</div>
           <div style="font-size:.8rem;color:var(--muted)">Tocar para agregar foto</div>
         </div>
-      </div>
-      <div class="photo-btn-row">
-        <button onclick="document.getElementById('photoInputCam').click()">📸 Cámara</button>
       </div>
       <input type="file" id="photoInputCam" accept="image/*" capture="environment" onchange="handlePhoto(event)" style="display:none">
       <input type="file" id="photoInputGal" accept="image/*" onchange="handlePhoto(event)" style="display:none">
@@ -1154,7 +1150,7 @@ function abrirFormPersona(idx) {
     if (fotoActual) {
       pf.innerHTML = '<img src="'+esc(fotoActual)+'" class="photo-preview"><br><span style="font-size:.78rem;color:var(--muted)">Tocar para cambiar</span>';
     } else {
-      pf.innerHTML = '<div style="font-size:2rem;margin-bottom:6px">📷</div><div>Tocar para agregar foto</div>';
+      pf.innerHTML = '<div style="font-size:.8rem;color:var(--muted)">Tocar para agregar foto</div>';
     }
   } else {
     editandoIdx = -1;
@@ -1163,7 +1159,7 @@ function abrirFormPersona(idx) {
     document.getElementById('fpId').value = '';
     vincSeleccionados = []; renderVincTags();
     ['fpNombre','fpCI','fpFN','fpDir','fpAlias','fpTel1','fpTel2','fpVeh1','fpVeh2','fpVeh3','fpVinc','fpAnt','fpNotas'].forEach(function(id){ document.getElementById(id).value = ''; });
-    document.getElementById('photoPreviewContainer').innerHTML = '<div style="font-size:2rem;margin-bottom:6px">📷</div><div>Tocar para agregar foto</div>';
+    document.getElementById('photoPreviewContainer').innerHTML = '<div style="font-size:.8rem;color:var(--muted)">Tocar para agregar foto</div>';
   }
   showView('view-form-persona');
 }
@@ -1864,6 +1860,6 @@ function importarFotos() {
 }
 
 </script>
-  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v85</div>
+  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v86</div>
 </body>
 </html>
