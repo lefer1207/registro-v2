@@ -740,13 +740,7 @@ function agregarNotaLibreta() {
   document.getElementById('libretaContenido').value = '';
   renderLibreta();
 }
-  var hoy = new Date();
-  var fecha = hoy.getDate().toString().padStart(2,'0')+'/'+(hoy.getMonth()+1).toString().padStart(2,'0')+'/'+hoy.getFullYear();
-  L.push({ titulo: titulo, contenido: contenido, fecha: fecha, id: Date.now() });
-  guardarLibreta();
-  document.getElementById('libretaTitulo').value = '';
-  document.getElementById('libretaContenido').value = '';
-  renderLibreta();
+
 }
 
 function eliminarNotaLibreta(idx) {
