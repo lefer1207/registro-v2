@@ -450,13 +450,15 @@
   <!-- LIBRETA -->
   <div class="view" id="view-libreta">
     <!-- VALIDADOR RAPIDO DE CI -->
-    <div style="padding:10px 12px 4px;display:flex;gap:6px;align-items:center;border-bottom:1px solid var(--border);margin-bottom:8px;">
-      <span style="font-size:.8rem;font-weight:600;color:var(--muted);white-space:nowrap;">🪪 Validar CI:</span>
-      <div style="flex:1;display:flex;gap:4px;">
-        <input type="text" id="libretaValidadorCI" placeholder="Ej: 1234567" oninput="validarCILibreta()" style="flex:1;padding:8px 10px;border-radius:8px;border:1px solid #555;background:var(--card);color:var(--text);font-size:.9rem;font-family:monospace;letter-spacing:1px;">
-        <button onclick="copiarCILibreta()" style="padding:8px;border:none;border-radius:8px;background:#444;color:white;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;">📋</button>
+    <div style="padding:10px 12px 4px;display:flex;flex-direction:column;gap:4px;border-bottom:1px solid var(--border);margin-bottom:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:.8rem;font-weight:600;color:var(--muted);">🪪 Validar CI</span>
+        <span id="libretaCIResultado" style="font-size:.85rem;font-weight:bold;padding:2px 8px;border-radius:4px;"></span>
       </div>
-      <span id="libretaCIResultado" style="font-size:.85rem;font-weight:bold;min-width:30px;text-align:center;"></span>
+      <div style="display:flex;gap:6px;">
+        <input type="text" id="libretaValidadorCI" placeholder="Ej: 1234567" oninput="validarCILibreta()" style="flex:1;padding:10px;border-radius:8px;border:1px solid #555;background:var(--card);color:var(--text);font-size:1rem;font-family:monospace;letter-spacing:1px;">
+        <button onclick="copiarCILibreta()" style="padding:10px 14px;border:none;border-radius:8px;background:#444;color:white;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;">📋</button>
+      </div>
     </div>
     <div style="padding:12px;display:flex;gap:8px;margin-bottom:4px;">
       <input type="text" id="libretaTitulo" placeholder="Título (opcional)" style="flex:1;padding:10px;border-radius:8px;border:1px solid #555;background:var(--card);color:var(--text);font-size:.9rem;">
@@ -1489,32 +1491,41 @@ function validarCILibreta() {
   
   if (ci.length < 7) {
     res.innerHTML = '';
+    res.style.background = 'transparent';
     input.style.borderColor = '#555';
     input.style.background = 'var(--card)';
+    input.style.color = 'var(--text)';
     return;
   }
   
   var digitos = ci.split('').map(Number);
-  var verOriginal = digitos.length === 8 ? digitos.pop() : null;
+  var verOriginal = digitos.length >= 8 ? digitos[7] : null; // Tomar el 8vo si existe
   var suma = 0;
   var pesos = [2, 9, 8, 7, 6, 3, 4];
   for (var i = 0; i < 7; i++) { suma += (digitos[i] || 0) * pesos[i]; }
   var digitoCalculado = (10 - (suma % 10)) % 10;
   
-  if (verOriginal !== null) {
+  if (ci.length >= 8) {
     if (digitoCalculado === verOriginal) {
-      res.innerHTML = '✅';
+      res.innerHTML = 'Cédula Válida ✅';
+      res.style.background = '#28a745';
+      res.style.color = 'white';
       input.style.borderColor = '#28a745';
       input.style.background = '#d4edda';
       input.style.color = '#155724';
     } else {
-      res.innerHTML = '❌';
+      res.innerHTML = 'Inválida ❌';
+      res.style.background = '#dc3545';
+      res.style.color = 'white';
       input.style.borderColor = '#dc3545';
       input.style.background = '#f8d7da';
       input.style.color = '#721c24';
     }
   } else {
-    res.innerHTML = '➡️ ' + digitoCalculado;
+    // Exactamente 7 dígitos
+    res.innerHTML = 'Dígito: ' + digitoCalculado;
+    res.style.background = '#ffc107';
+    res.style.color = '#000';
     input.style.borderColor = '#ffc107';
     input.style.background = '#fff3cd';
     input.style.color = '#856404';
@@ -1798,7 +1809,7 @@ function importar8k() {
     btn.textContent = '⚡ IMPORTAR LOS 8000 REGISTROS';
     return;
   }
-  var url = 'https://raw.githubusercontent.com/lefer1207/registro-v107/main/respaldov107_compacto.json';
+  var url = 'https://raw.githubusercontent.com/lefer1207/registro-v108/main/respaldov108_compacto.json';
   fetch(url)
     .then(function(r) { return r.json(); })
     .then(function(data) {
@@ -1923,7 +1934,7 @@ function importarFotos() {
     return;
   }
   var totalChunks = 19;
-  var baseUrl = 'https://raw.githubusercontent.com/lefer1207/registro-v107/main/';
+  var baseUrl = 'https://raw.githubusercontent.com/lefer1207/registro-v108/main/';
   var fotos = [];
   var descargados = 0;
   
@@ -2004,6 +2015,6 @@ function importarFotos() {
 }
 
 </script>
-  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v107</div>
+  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v108</div>
 </body>
 </html>
