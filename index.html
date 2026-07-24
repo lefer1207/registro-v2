@@ -1221,9 +1221,16 @@ var cropDragging = false;
 
 function abrirEditor(dataUrl) {
   cropImgData = dataUrl;
-  cropZoom = 1;
-  cropOffsetX = 0; cropOffsetY = 0;
-  renderCropModal();
+  var tempImg = new Image();
+  tempImg.onload = function() {
+    var cw = 350;
+    var zoomH = cw / tempImg.width;
+    var zoomV = cw / tempImg.height;
+    cropZoom = Math.min(zoomH, zoomV) * 0.9; 
+    cropOffsetX = 0; cropOffsetY = 0;
+    renderCropModal();
+  };
+  tempImg.src = dataUrl;
 }
 
 function renderCropModal() {
@@ -1232,7 +1239,7 @@ function renderCropModal() {
   overlay.id = 'cropOverlay'; overlay.className = 'crop-overlay';
   overlay.innerHTML = '<div style="color:#fff;margin-bottom:15px;font-family:sans-serif;font-size:1.1rem;font-weight:bold;">Ajustar Foto</div>' +
     '<div class="crop-container" id="cropContainer" style="width:90vw;height:90vw;max-width:450px;max-height:450px;">' +
-    '<img id="cropImg" src="'+cropImgData+'" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale('+cropZoom+') translate('+cropOffsetX+'px,'+cropOffsetY+'px);max-width:none;cursor:move;user-select:none;">' +
+    '<img id="cropImg" src="'+cropImgData+'" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) translate('+cropOffsetX+'px,'+cropOffsetY+'px) scale('+cropZoom+');max-width:none;cursor:move;user-select:none;">' +
     '<div class="crop-frame"></div></div>' +
     '<div class="crop-controls">' +
     '<button class="crop-cancel" onclick="cropZoomOut()" style="width:44px;height:44px;border-radius:50%;border:1px solid #555;background:#333;color:white;font-size:1.5rem;cursor:pointer;">\u2212</button>' +
@@ -1282,42 +1289,25 @@ function cerrarEditor() {
 function confirmarCrop() {
   var container = document.getElementById('cropContainer');
   if (!container) return;
-
   var cw = container.offsetWidth;
-  var ch = container.offsetHeight;
-
   var tempImg = new Image();
   tempImg.onload = function() {
     var canvas = document.createElement('canvas');
-    canvas.width = 300; canvas.height = 300;
+    canvas.width = 400; canvas.height = 400;
     var ctx = canvas.getContext('2d');
-
-    var zoom = cropZoom;
-    var ox = cropOffsetX;
-    var oy = cropOffsetY;
-
-    // The image is centered in the container and scaled by zoom.
-    // The visible area center in original image coordinates:
-    var centerX = tempImg.width / 2 - ox / zoom;
-    var centerY = tempImg.height / 2 - oy / zoom;
-
-    // The visible area size in original image coordinates:
-    var sw = cw / zoom;
-    var sh = ch / zoom;
-    var sx = centerX - sw / 2;
-    var sy = centerY - sh / 2;
-
-    // Clamp to image bounds
-    sx = Math.max(0, Math.min(sx, tempImg.width - sw));
-    sy = Math.max(0, Math.min(sy, tempImg.height - sh));
-    sw = Math.min(sw, tempImg.width - sx);
-    sh = Math.min(sh, tempImg.height - sy);
-
-    ctx.drawImage(tempImg, sx, sy, sw, sh, 0, 0, 300, 300);
-    fotoActual = canvas.toDataURL('image/jpeg', 0.8);
-    document.getElementById('photoPreviewContainer').innerHTML = '<img src="'+fotoActual+'">';
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0,0,400,400);
+    ctx.translate(200, 200);
+    var f = 400 / cw;
+    ctx.translate(cropOffsetX * f, cropOffsetY * f);
+    ctx.scale(cropZoom * f, cropZoom * f);
+    ctx.drawImage(tempImg, -tempImg.width / 2, -tempImg.height / 2);
+    fotoActual = canvas.toDataURL('image/jpeg', 0.85);
+    document.getElementById('photoPreviewContainer').innerHTML = '<img src="'+fotoActual+'" class="photo-preview">';
     cerrarEditor();
   };
+  tempImg.src = cropImgData;
+};
   tempImg.src = cropImgData;
 }
 
@@ -1596,7 +1586,7 @@ function exportarRespaldo() {
   leerDeDB('rp_todos', function(personas) {
     leerDeDB('rp_libreta', function(libreta) {
       var respaldo = {
-        version: 'v113',
+        version: 'v114',
         fecha: new Date().toISOString(),
         personas: personas || [],
         libreta: libreta || [],
@@ -1879,7 +1869,7 @@ function importar8k() {
     btn.textContent = '⚡ IMPORTAR LOS 8000 REGISTROS';
     return;
   }
-  var url = 'https://raw.githubusercontent.com/lefer1207/registro-v113/main/respaldov113_compacto.json';
+  var url = 'https://raw.githubusercontent.com/lefer1207/registro-v114/main/respaldov114_compacto.json';
   fetch(url)
     .then(function(r) { return r.json(); })
     .then(function(data) {
@@ -2004,7 +1994,7 @@ function importarFotos() {
     return;
   }
   var totalChunks = 19;
-  var baseUrl = 'https://raw.githubusercontent.com/lefer1207/registro-v113/main/';
+  var baseUrl = 'https://raw.githubusercontent.com/lefer1207/registro-v114/main/';
   var fotos = [];
   var descargados = 0;
   
@@ -2085,6 +2075,6 @@ function importarFotos() {
 }
 
 </script>
-  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v113</div>
+  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v114</div>
 </body>
 </html>
