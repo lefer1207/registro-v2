@@ -1305,11 +1305,7 @@ function confirmarCrop() {
     fotoActual = canvas.toDataURL('image/jpeg', 0.85);
     document.getElementById('photoPreviewContainer').innerHTML = '<img src="'+fotoActual+'" class="photo-preview">';
     cerrarEditor();
-  };
-  tempImg.src = cropImgData;
-};
-  tempImg.src = cropImgData;
-}
+  }}
 
 function guardarPersona() {
   var nom = document.getElementById('fpNombre').value.trim();
@@ -1586,7 +1582,7 @@ function exportarRespaldo() {
   leerDeDB('rp_todos', function(personas) {
     leerDeDB('rp_libreta', function(libreta) {
       var respaldo = {
-        version: 'v114',
+        version: 'v115',
         fecha: new Date().toISOString(),
         personas: personas || [],
         libreta: libreta || [],
@@ -1869,7 +1865,7 @@ function importar8k() {
     btn.textContent = '⚡ IMPORTAR LOS 8000 REGISTROS';
     return;
   }
-  var url = 'https://raw.githubusercontent.com/lefer1207/registro-v114/main/respaldov114_compacto.json';
+  var url = 'https://raw.githubusercontent.com/lefer1207/registro-v115/main/respaldov115_compacto.json';
   fetch(url)
     .then(function(r) { return r.json(); })
     .then(function(data) {
@@ -1994,7 +1990,7 @@ function importarFotos() {
     return;
   }
   var totalChunks = 19;
-  var baseUrl = 'https://raw.githubusercontent.com/lefer1207/registro-v114/main/';
+  var baseUrl = 'https://raw.githubusercontent.com/lefer1207/registro-v115/main/';
   var fotos = [];
   var descargados = 0;
   
@@ -2075,6 +2071,6 @@ function importarFotos() {
 }
 
 </script>
-  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v114</div>
+  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v115</div>
 </body>
 </html>
