@@ -383,6 +383,8 @@
 
     .avatar-txt { width: 100%; height: 100%; display: flex !important; align-items: center; justify-content: center; background: #f0f2f5; font-size: 1.6rem !important; line-height: 1; }
     .detail-avatar .avatar-txt { font-size: 3rem !important; }
+
+    #storage-info { font-size: 0.7rem; color: var(--muted); margin-top: 5px; text-align: center; }
 </style>
 </head>
 <body>
@@ -746,7 +748,7 @@ function showTab(tab) {
   currentTab = tab; viewStack = [];
   document.getElementById('fabBtn').style.display = 'flex';
   window.scrollTo(0,0);
-  if (tab === 'personas') { personasPage = 0; renderPersonas(); }
+  if (tab === 'personas') { personasPage = 0; renderPersonas(); reportarEspacioOcupado(); }
   if (tab === 'vehiculos') { vehiculosPage = 0; renderVehiculos(); }
   if (tab === 'libreta') { cargarLibreta(); renderLibreta(); document.getElementById('fabBtn').style.display = 'none'; }
   if (tab === 'respaldo') { document.getElementById('fabBtn').style.display = 'none'; }
@@ -765,7 +767,7 @@ function goBack() {
   var prev = viewStack.pop();
   document.getElementById(prev).classList.add('active');
   document.getElementById('fabBtn').style.display = 'flex';
-  if (prev === 'view-personas') renderPersonas();
+  if (prev === 'view-personas') renderPersonas(); reportarEspacioOcupado();
   if (prev === 'view-vehiculos') renderVehiculos();
 }
 
@@ -1390,7 +1392,7 @@ function guardarPersona() {
   showToast('✅ Guardado');
   editandoIdx = -1;
   goBack();
-  renderPersonas();
+  renderPersonas(); reportarEspacioOcupado();
 }
 
 // ============================================================
@@ -1434,6 +1436,28 @@ function guardarMatricula() {
 // ============================================================
 // UTILIDADES
 // ============================================================
+
+function reportarEspacioOcupado() {
+    if (!window.indexedDB) return;
+    
+    // El tamaño del JSON original era 185MB, pero al estar en IndexedDB
+    // y considerando que el usuario ha estado operando, vamos a mostrarlo 
+    // en una pequeña etiqueta en el pie de página o en la configuración.
+    
+    // Por ahora, como no puedo medir IndexedDB directamente sin abrirlo,
+    // voy a preparar la función para que el usuario pueda ver el peso 
+    // del objeto D (que es el que tiene todo en memoria).
+    
+    var stringData = JSON.stringify(D);
+    var sizeBytes = new Blob([stringData]).size;
+    var sizeMB = (sizeBytes / (1024 * 1024)).toFixed(2);
+    
+    var infoDiv = document.getElementById('storage-info');
+    if (infoDiv) {
+        infoDiv.innerText = 'Espacio ocupado: ' + sizeMB + ' MB';
+    }
+}
+
 function esc(s) { if (!s) return ''; return String(s).replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 
@@ -1668,7 +1692,7 @@ function importar8k() {
     btn.textContent = '⚡ IMPORTAR LOS 8000 REGISTROS';
     return;
   }
-  var url = 'https://raw.githubusercontent.com/lefer1207/registro-v103/main/respaldov103_compacto.json';
+  var url = 'https://raw.githubusercontent.com/lefer1207/registro-v104/main/respaldov104_compacto.json';
   fetch(url)
     .then(function(r) { return r.json(); })
     .then(function(data) {
@@ -1793,7 +1817,7 @@ function importarFotos() {
     return;
   }
   var totalChunks = 19;
-  var baseUrl = 'https://raw.githubusercontent.com/lefer1207/registro-v103/main/';
+  var baseUrl = 'https://raw.githubusercontent.com/lefer1207/registro-v104/main/';
   var fotos = [];
   var descargados = 0;
   
@@ -1874,6 +1898,6 @@ function importarFotos() {
 }
 
 </script>
-  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v103</div>
+  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v104</div>
 </body>
 </html>
