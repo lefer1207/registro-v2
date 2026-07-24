@@ -449,6 +449,12 @@
 
   <!-- LIBRETA -->
   <div class="view" id="view-libreta">
+    <!-- VALIDADOR RAPIDO DE CI -->
+    <div style="padding:10px 12px 4px;display:flex;gap:6px;align-items:center;border-bottom:1px solid var(--border);margin-bottom:8px;">
+      <span style="font-size:.8rem;font-weight:600;color:var(--muted);white-space:nowrap;">🪪 Validar CI:</span>
+      <input type="text" id="libretaValidadorCI" placeholder="Ej: 1234567" oninput="validarCILibreta()" style="flex:1;padding:8px 10px;border-radius:8px;border:1px solid #555;background:var(--card);color:var(--text);font-size:.9rem;font-family:monospace;letter-spacing:1px;">
+      <span id="libretaCIResultado" style="font-size:.85rem;font-weight:bold;min-width:30px;text-align:center;"></span>
+    </div>
     <div style="padding:12px;display:flex;gap:8px;margin-bottom:4px;">
       <input type="text" id="libretaTitulo" placeholder="Título (opcional)" style="flex:1;padding:10px;border-radius:8px;border:1px solid #555;background:var(--card);color:var(--text);font-size:.9rem;">
       <button onclick="agregarNotaLibreta()" style="padding:10px 16px;border:none;border-radius:8px;background:var(--primary);color:white;font-size:1.2rem;cursor:pointer;">➕</button>
@@ -1459,6 +1465,53 @@ function reportarEspacioOcupado() {
 }
 
 
+
+function validarCILibreta() {
+  var input = document.getElementById('libretaValidadorCI');
+  var res = document.getElementById('libretaCIResultado');
+  var ci = (input.value || '').replace(/[^\d]/g, '');
+  
+  if (ci.length < 7) {
+    res.innerHTML = '';
+    input.style.borderColor = '#555';
+    return;
+  }
+  
+  // Si tiene 8, mostrar el último como verificador
+  // Si tiene 7, calcular el verificador
+  var digitos = ci.split('').map(Number);
+  var verOriginal;
+  if (digitos.length === 8) {
+    verOriginal = digitos.pop();
+  } else {
+    verOriginal = null;
+  }
+  
+  var suma = 0;
+  var pesos = [2, 9, 8, 7, 6, 3, 4];
+  for (var i = 0; i < 7; i++) {
+    suma += digitos[i] * pesos[i];
+  }
+  var digitoCalculado = (10 - (suma % 10)) % 10;
+  
+  if (verOriginal !== null) {
+    if (digitoCalculado === verOriginal) {
+      res.innerHTML = '✅';
+      input.style.borderColor = '#28a745';
+      input.style.background = '#1a3a1a';
+    } else {
+      res.innerHTML = '❌';
+      input.style.borderColor = '#dc3545';
+      input.style.background = '#3a1a1a';
+    }
+  } else {
+    // Solo 7 dígitos, mostrar el dígito que falta
+    res.innerHTML = '➡️ ' + digitoCalculado;
+    input.style.borderColor = '#ffc107';
+    input.style.background = '#3a3a1a';
+  }
+}
+
 function validarCI(ci) {
     // Limpiar: sacar guiones, puntos y espacios
     var limpio = (ci || '').replace(/[^\d]/g, '');
@@ -1736,7 +1789,7 @@ function importar8k() {
     btn.textContent = '⚡ IMPORTAR LOS 8000 REGISTROS';
     return;
   }
-  var url = 'https://raw.githubusercontent.com/lefer1207/registro-v105/main/respaldov105_compacto.json';
+  var url = 'https://raw.githubusercontent.com/lefer1207/registro-v106/main/respaldov106_compacto.json';
   fetch(url)
     .then(function(r) { return r.json(); })
     .then(function(data) {
@@ -1861,7 +1914,7 @@ function importarFotos() {
     return;
   }
   var totalChunks = 19;
-  var baseUrl = 'https://raw.githubusercontent.com/lefer1207/registro-v105/main/';
+  var baseUrl = 'https://raw.githubusercontent.com/lefer1207/registro-v106/main/';
   var fotos = [];
   var descargados = 0;
   
@@ -1942,6 +1995,6 @@ function importarFotos() {
 }
 
 </script>
-  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v105</div>
+  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v106</div>
 </body>
 </html>
