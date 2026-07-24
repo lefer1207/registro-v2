@@ -1589,6 +1589,64 @@ function validarCIField() {
 function esc(s) { if (!s) return ''; return String(s).replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 
+
+
+function exportarRespaldo() {
+  leerDeDB('rp_todos', function(personas) {
+    leerDeDB('rp_libreta', function(libreta) {
+      var respaldo = {
+        version: 'v111',
+        fecha: new Date().toISOString(),
+        personas: personas || [],
+        libreta: libreta || [],
+        cantidadPersonas: (personas || []).length,
+        cantidadNotas: (libreta || []).length
+      };
+      var blob = new Blob([JSON.stringify(respaldo, null, 2)], { type: 'application/json' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'respaldo_registro_' + new Date().toISOString().slice(0,10) + '.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      alert('Respaldo exportado: ' + respaldo.cantidadPersonas + ' personas, ' + respaldo.cantidadNotas + ' notas');
+    });
+  });
+}
+
+function importarRespaldo(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var respaldo = JSON.parse(e.target.result);
+      if (!respaldo.personas || !Array.isArray(respaldo.personas)) {
+        alert('El archivo no es un respaldo valido');
+        return;
+      }
+      if (!confirm('Restaurar ' + respaldo.cantidadPersonas + ' personas y ' + (respaldo.cantidadNotas||0) + ' notas?\n\n⚠️ Esto va a REEMPLAZAR todos los datos actuales. Seguro?')) return;
+      if (!confirm('Segurisimo? No se puede deshacer.')) return;
+      guardarEnDB('rp_todos', respaldo.personas);
+      if (respaldo.libreta && Array.isArray(respaldo.libreta)) {
+        guardarEnDB('rp_libreta', respaldo.libreta);
+        L = respaldo.libreta;
+      }
+      D = respaldo.personas;
+      document.getElementById('headerCount').textContent = D.length + ' registros';
+      renderizar();
+      renderLibreta();
+      alert('Respaldo restaurado correctamente');
+    } catch(err) {
+      alert('Error al leer el archivo: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
 window.onload = function() { cargarDatos(); cargarLibreta(); showTab("personas"); };
 
 var vincSeleccionados = [];
@@ -1820,7 +1878,7 @@ function importar8k() {
     btn.textContent = '⚡ IMPORTAR LOS 8000 REGISTROS';
     return;
   }
-  var url = 'https://raw.githubusercontent.com/lefer1207/registro-v110/main/respaldov110_compacto.json';
+  var url = 'https://raw.githubusercontent.com/lefer1207/registro-v111/main/respaldov111_compacto.json';
   fetch(url)
     .then(function(r) { return r.json(); })
     .then(function(data) {
@@ -1945,7 +2003,7 @@ function importarFotos() {
     return;
   }
   var totalChunks = 19;
-  var baseUrl = 'https://raw.githubusercontent.com/lefer1207/registro-v110/main/';
+  var baseUrl = 'https://raw.githubusercontent.com/lefer1207/registro-v111/main/';
   var fotos = [];
   var descargados = 0;
   
@@ -2026,6 +2084,6 @@ function importarFotos() {
 }
 
 </script>
-  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v110</div>
+  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v111</div>
 </body>
 </html>
