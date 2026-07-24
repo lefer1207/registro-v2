@@ -491,13 +491,14 @@
     <h2 id="formPersonaTitulo" style="font-size:1.1rem;margin-bottom:16px;">Nueva Persona</h2>
     <div class="form-section">
       <h3>Foto</h3>
-      <div class="photo-upload-area" id="photoPreviewContainer" onclick="document.getElementById('photoInputCam').click()">
+      <div class="photo-upload-area" id="photoPreviewContainer" onclick="document.getElementById('photoInputGal').click()">
         <div style="text-align:center">
           <div style="font-size:.8rem;color:var(--muted)">Tocar para agregar foto</div>
         </div>
       </div>
       <input type="file" id="photoInputCam" accept="image/*" capture="environment" onchange="handlePhoto(event)" style="display:none">
       <input type="file" id="photoInputGal" accept="image/*" onchange="handlePhoto(event)" style="display:none">
+      <button onclick="document.getElementById('photoInputCam').click()" style="width:100%;padding:10px;border:none;border-radius:8px;background:#444;color:white;font-size:.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px;">📷 Tomar foto</button>
     </div>
     <div class="form-section">
       <h3>Datos Personales</h3>
@@ -1595,7 +1596,7 @@ function exportarRespaldo() {
   leerDeDB('rp_todos', function(personas) {
     leerDeDB('rp_libreta', function(libreta) {
       var respaldo = {
-        version: 'v112',
+        version: 'v113',
         fecha: new Date().toISOString(),
         personas: personas || [],
         libreta: libreta || [],
@@ -1878,7 +1879,7 @@ function importar8k() {
     btn.textContent = '⚡ IMPORTAR LOS 8000 REGISTROS';
     return;
   }
-  var url = 'https://raw.githubusercontent.com/lefer1207/registro-v112/main/respaldov112_compacto.json';
+  var url = 'https://raw.githubusercontent.com/lefer1207/registro-v113/main/respaldov113_compacto.json';
   fetch(url)
     .then(function(r) { return r.json(); })
     .then(function(data) {
@@ -2003,7 +2004,7 @@ function importarFotos() {
     return;
   }
   var totalChunks = 19;
-  var baseUrl = 'https://raw.githubusercontent.com/lefer1207/registro-v112/main/';
+  var baseUrl = 'https://raw.githubusercontent.com/lefer1207/registro-v113/main/';
   var fotos = [];
   var descargados = 0;
   
@@ -2084,6 +2085,6 @@ function importarFotos() {
 }
 
 </script>
-  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v112</div>
+  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v113</div>
 </body>
 </html>
