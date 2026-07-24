@@ -741,7 +741,6 @@ function agregarNotaLibreta() {
   renderLibreta();
 }
 
-}
 
 function eliminarNotaLibreta(idx) {
   if (!confirm('¿Borrar esta anotación?')) return;
@@ -1821,7 +1820,7 @@ function importar8k() {
     btn.textContent = '⚡ IMPORTAR LOS 8000 REGISTROS';
     return;
   }
-  var url = 'https://raw.githubusercontent.com/lefer1207/registro-v109/main/respaldov109_compacto.json';
+  var url = 'https://raw.githubusercontent.com/lefer1207/registro-v110/main/respaldov110_compacto.json';
   fetch(url)
     .then(function(r) { return r.json(); })
     .then(function(data) {
@@ -1946,7 +1945,7 @@ function importarFotos() {
     return;
   }
   var totalChunks = 19;
-  var baseUrl = 'https://raw.githubusercontent.com/lefer1207/registro-v109/main/';
+  var baseUrl = 'https://raw.githubusercontent.com/lefer1207/registro-v110/main/';
   var fotos = [];
   var descargados = 0;
   
@@ -2027,6 +2026,6 @@ function importarFotos() {
 }
 
 </script>
-  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v109</div>
+  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v110</div>
 </body>
 </html>
