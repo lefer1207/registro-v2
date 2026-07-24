@@ -462,7 +462,7 @@
     </div>
     <div style="padding:12px;display:flex;gap:8px;margin-bottom:4px;">
       <input type="text" id="libretaTitulo" placeholder="Título (opcional)" style="flex:1;padding:10px;border-radius:8px;border:1px solid #555;background:var(--card);color:var(--text);font-size:.9rem;">
-      <button onclick="agregarNotaLibreta()" style="padding:10px 16px;border:none;border-radius:8px;background:var(--primary);color:white;font-size:1.2rem;cursor:pointer;">➕</button>
+      <button onclick="agregarNotaLibreta()" id="libretaBtnAccion" style="padding:10px 16px;border:none;border-radius:8px;background:var(--primary);color:white;font-size:1.2rem;cursor:pointer;">➕</button>
     </div>
     <div style="padding:0 12px 12px;">
       <textarea id="libretaContenido" placeholder="Escribí tu anotación..." style="width:100%;padding:10px;border-radius:8px;border:1px solid #555;background:var(--card);color:var(--text);font-size:.9rem;resize:vertical;min-height:70px;box-sizing:border-box;font-family:inherit;"></textarea>
@@ -667,6 +667,7 @@ function guardarAdicionales() {
 // LIBRETA DE ANOTACIONES
 // ============================================================
 var L = [];
+var editIndexLibreta = -1;
 
 function cargarLibreta() {
   leerDeDB('rp_libreta', function(valor) {
@@ -720,6 +721,25 @@ function agregarNotaLibreta() {
   var titulo = document.getElementById('libretaTitulo').value.trim();
   var contenido = document.getElementById('libretaContenido').value.trim();
   if (!contenido) { alert('Escribí algo en la nota'); return; }
+  
+  if (editIndexLibreta > -1) {
+    // Actualizar nota existente
+    L[editIndexLibreta].titulo = titulo;
+    L[editIndexLibreta].contenido = contenido;
+    editIndexLibreta = -1;
+    document.getElementById('libretaBtnAccion').innerText = '➕';
+  } else {
+    // Crear nota nueva
+    var hoy = new Date();
+    var fecha = hoy.getDate().toString().padStart(2,'0')+'/'+(hoy.getMonth()+1).toString().padStart(2,'0')+'/'+hoy.getFullYear();
+    L.push({ titulo: titulo, contenido: contenido, fecha: fecha, id: Date.now() });
+  }
+  
+  guardarLibreta();
+  document.getElementById('libretaTitulo').value = '';
+  document.getElementById('libretaContenido').value = '';
+  renderLibreta();
+}
   var hoy = new Date();
   var fecha = hoy.getDate().toString().padStart(2,'0')+'/'+(hoy.getMonth()+1).toString().padStart(2,'0')+'/'+hoy.getFullYear();
   L.push({ titulo: titulo, contenido: contenido, fecha: fecha, id: Date.now() });
@@ -738,14 +758,12 @@ function eliminarNotaLibreta(idx) {
 
 function editarNotaLibreta(idx) {
   var n = L[idx];
-  var nuevoTitulo = prompt('Título:', n.titulo);
-  if (nuevoTitulo === null) return;
-  var nuevoContenido = prompt('Contenido:', n.contenido);
-  if (nuevoContenido === null) return;
-  n.titulo = nuevoTitulo.trim();
-  n.contenido = nuevoContenido.trim();
-  guardarLibreta();
-  renderLibreta();
+  document.getElementById('libretaTitulo').value = n.titulo || '';
+  document.getElementById('libretaContenido').value = n.contenido || '';
+  editIndexLibreta = idx;
+  document.getElementById('libretaBtnAccion').innerText = '💾';
+  // Hacer scroll hacia arriba para que el usuario vea el formulario
+  document.getElementById('view-libreta').scrollTop = 0;
 }
 
 // ============================================================
@@ -1809,7 +1827,7 @@ function importar8k() {
     btn.textContent = '⚡ IMPORTAR LOS 8000 REGISTROS';
     return;
   }
-  var url = 'https://raw.githubusercontent.com/lefer1207/registro-v108/main/respaldov108_compacto.json';
+  var url = 'https://raw.githubusercontent.com/lefer1207/registro-v109/main/respaldov109_compacto.json';
   fetch(url)
     .then(function(r) { return r.json(); })
     .then(function(data) {
@@ -1934,7 +1952,7 @@ function importarFotos() {
     return;
   }
   var totalChunks = 19;
-  var baseUrl = 'https://raw.githubusercontent.com/lefer1207/registro-v108/main/';
+  var baseUrl = 'https://raw.githubusercontent.com/lefer1207/registro-v109/main/';
   var fotos = [];
   var descargados = 0;
   
@@ -2015,6 +2033,6 @@ function importarFotos() {
 }
 
 </script>
-  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v108</div>
+  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v109</div>
 </body>
 </html>
