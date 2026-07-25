@@ -940,13 +940,6 @@ function cerrarScanner() {
   document.getElementById('scannerOverlay').classList.remove('open');
   if (html5QrCode) { try { html5QrCode.stop(); } catch(e){} }
 }
-function aplicarOCR(ci) {
-  cerrarScanner();
-  document.getElementById('fpCI').value = ci;
-  validarCIField();
-  showToast('✅ CI: ' + ci);
-}
-
 function guardarAdicionales() {
   document.getElementById('headerCount').textContent = D.length + ' registros';
   if (!D || !Array.isArray(D)) { console.error('guardarAdicionales: datos invalidos'); return; }
