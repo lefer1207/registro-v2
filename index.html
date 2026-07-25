@@ -785,7 +785,44 @@ function guardarAdicionales() {
     guardarEnDB('rp_checksum', suma);
   } catch(e) {}
   try { localStorage.setItem('rp_todos', JSON.stringify(D)); } catch(e) {}
+  autoBackupSemanal();
 }
+
+// ============================================================
+// BLINDAJE EXTRA: Auto-respaldo semanal
+// ============================================================
+function autoBackupSemanal() {
+  try {
+    var ultimoBackup = localStorage.getItem('rp_ultimo_backup');
+    var hoy = new Date().toISOString().slice(0,10);
+    if (ultimoBackup === hoy) return;
+    // Si pasaron 7+ dias desde el ultimo backup, exportar automatico
+    if (ultimoBackup) {
+      var diff = (new Date(hoy) - new Date(ultimoBackup)) / (1000*60*60*24);
+      if (diff < 7) return;
+    }
+    var exportData = { personas: D, libreta: L, fecha: hoy };
+    var blob = new Blob([JSON.stringify(exportData, null, 2)], {type: 'application/json'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'backup-semanal-' + hoy + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    localStorage.setItem('rp_ultimo_backup', hoy);
+    showToast('📦 Backup semanal generado automaticamente');
+  } catch(e) {}
+}
+
+// ============================================================
+// BLINDAJE EXTRA: Alerta al cerrar si hay cambios
+// ============================================================
+window.addEventListener('beforeunload', function(e) {
+  e.preventDefault();
+  e.returnValue = '⚠️ Tiene datos sin guardar. Seguro que queres salir?';
+});
 
 // ============================================================
 // LIBRETA DE ANOTACIONES
@@ -1254,7 +1291,14 @@ function editarPersona() { abrirFormPersona(editandoIdx); }
 function eliminarPersonaLista(idx) {
   if (idx < BASE.length) { showToast('No se puede eliminar un registro base'); return; }
   var nombre = D[idx][0];
-  if (!confirm('🗑️ Eliminar a ' + nombre + '?')) return;
+  var ciMostrar = D[idx][1] || '---';
+  var confirmacion = prompt('🗑️ Para eliminar a ' + nombre + ' (CI: ' + ciMostrar + '), escribi SU APELLIDO:\n\n(Escribi el apellido exacto para confirmar)');
+  if (!confirmacion) { showToast('Eliminacion cancelada'); return; }
+  var apellido = nombre.split(' ').slice(1).join(' ').trim();
+  if (confirmacion.trim().toLowerCase() !== apellido.toLowerCase()) {
+    showToast('❌ Apellido incorrecto, eliminacion cancelada');
+    return;
+  }
   D.splice(idx, 1);
   guardarAdicionales();
   renderPersonas(document.getElementById('searchPersonas').value);
@@ -1262,7 +1306,16 @@ function eliminarPersonaLista(idx) {
 }
 
 function eliminarPersona() {
-  if (!confirm('🗑️ Eliminar a ' + D[editandoIdx][0] + '?')) return;
+  var p = D[editandoIdx];
+  var nombre = p[0];
+  var ciMostrar = p[1] || '---';
+  var confirmacion = prompt('🗑️ Para eliminar a ' + nombre + ' (CI: ' + ciMostrar + '), escribi SU APELLIDO:\n\n(Escribi el apellido exacto para confirmar)');
+  if (!confirmacion) { showToast('Eliminacion cancelada'); return; }
+  var apellido = nombre.split(' ').slice(1).join(' ').trim();
+  if (confirmacion.trim().toLowerCase() !== apellido.toLowerCase()) {
+    showToast('❌ Apellido incorrecto, eliminacion cancelada');
+    return;
+  }
   D.splice(editandoIdx, 1);
   guardarAdicionales();
   editandoIdx = -1;
