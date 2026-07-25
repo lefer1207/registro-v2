@@ -450,25 +450,6 @@
 }
 #scannerContainer video { border-radius: 0; }
 #scannerContainer img { border-radius: 0; }
-
-.snapshot-item {
-  padding: 10px 12px;
-  margin: 4px 0;
-  background: var(--card-bg, #f5f5f5);
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.85rem;
-}
-.snapshot-item:hover {
-  background: var(--accent-bg, #e0e0e0);
-}
-.snapshots-panel {
-  padding: 4px;
-}
-
 </style>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 </head>
@@ -796,7 +777,7 @@ function cargarDatos() {
       if (verificarIntegridad(valor)) {
         D = valor;
         document.getElementById('headerCount').textContent = D.length + ' registros';
-        renderPersonas(); reportarEspacioOcupado(); actualizarIndicadorSnapshot();
+        renderPersonas(); reportarEspacioOcupado();
         return;
       }
       console.warn('Datos corruptos, intentando restaurar backup...');
@@ -871,8 +852,6 @@ function cerrarBusquedaRapida() {
   document.getElementById('searchOverlay').classList.remove('open');
 }
 function ejecutarBusquedaRapida() {
-  try {
-
   var q = document.getElementById('overlaySearch').value.trim();
   var res = document.getElementById('overlayResults');
   if (!q) { res.innerHTML = ''; return; }
@@ -946,88 +925,7 @@ function guardarAdicionales() {
   } catch(e) {}
   try { localStorage.setItem('rp_todos', JSON.stringify(D)); } catch(e) {}
   autoBackupSemanal();
-  generarBackupSnapshot();
 }
-// ============================================================
-// SISTEMA DE BACKUP ROTATIVO - 5 snapshots automaticos
-// ============================================================
-function generarBackupSnapshot() {
-  try {
-    leerDeDB('rp_backup_snapshots', function(snapshots) {
-      if (!snapshots || !Array.isArray(snapshots)) snapshots = [];
-      var snapshot = {
-        fecha: new Date().toISOString(),
-        personas: JSON.parse(JSON.stringify(D)),
-        libreta: JSON.parse(JSON.stringify(L || []))
-      };
-      snapshots.push(snapshot);
-      if (snapshots.length > 5) snapshots = snapshots.slice(-5);
-      guardarEnDB('rp_backup_snapshots', snapshots);
-      guardarEnDB('rp_ultimo_snapshot', snapshot.fecha);
-      localStorage.setItem('rp_ultimo_snapshot', snapshot.fecha);
-    });
-  } catch(e) { console.warn('Snapshot no generado:', e); }
-}
-
-function listarSnapshots(callback) {
-  leerDeDB('rp_backup_snapshots', function(snapshots) {
-    if (!snapshots || !Array.isArray(snapshots)) snapshots = [];
-    callback(snapshots);
-  });
-}
-
-function restaurarSnapshot(index) {
-  listarSnapshots(function(snapshots) {
-    if (!snapshots[index]) { showToast('Snap no encontrado'); return; }
-    var snap = snapshots[index];
-    if (!confirm('Restaurar snapshot del ' + new Date(snap.fecha).toLocaleString() + '?\n\nEsto reemplaza TODOS los datos actuales.')) return;
-    D = JSON.parse(JSON.stringify(snap.personas));
-    L = snap.libreta || [];
-    guardarEnDB('rp_todos', D);
-    guardarEnDB('rp_libreta', L);
-    renderizar();
-    renderLibreta();
-    showToast('Snapshot restaurado: ' + D.length + ' registros');
-  });
-}
-
-function mostrarSnapshots() {
-  listarSnapshots(function(snapshots) {
-    var html = '<div class="snapshots-panel">';
-    html += '<h3 style="margin:0 0 8px;font-size:1rem;">Snapshots Automaticos</h3>';
-    if (!snapshots.length) {
-      html += '<p style="font-size:0.85rem;opacity:0.6;">Aun no hay snapshots. Se generan al guardar datos.</p>';
-    } else {
-      for (var i = snapshots.length - 1; i >= 0; i--) {
-        var s = snapshots[i];
-        var d = new Date(s.fecha);
-        html += '<div class="snapshot-item" onclick="restaurarSnapshot(' + i + ')">';
-        html += '<span>' + d.toLocaleDateString() + ' ' + d.toLocaleTimeString() + '</span>';
-        html += '<span style="font-size:0.8rem;opacity:0.6;">' + (s.personas||[]).length + ' personas</span>';
-        html += '</div>';
-      }
-    }
-    html += '</div>';
-    var overlay = document.createElement('div');
-    overlay.className = 'modal-overlay';
-    overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;';
-    var modal = document.createElement('div');
-    modal.style.cssText = 'background:var(--bg);color:var(--text);border-radius:16px;padding:20px;max-width:360px;width:90%;max-height:80vh;overflow-y:auto;';
-    modal.innerHTML = html + '<button onclick="this.closest(\'.modal-overlay\').remove()" style="margin-top:12px;width:100%;">Cerrar</button>';
-    overlay.appendChild(modal);
-    document.body.appendChild(overlay);
-    overlay.onclick = function(e) { if (e.target === this) this.remove(); };
-  });
-}
-
-// Backup al cerrar pagina
-window.addEventListener('beforeunload', function() {
-  try {
-    var backup = { personas: D, libreta: L, fecha: new Date().toISOString() };
-    localStorage.setItem('rp_emergency_backup', JSON.stringify(backup));
-  } catch(e) {}
-});
-
 
 // ============================================================
 // BLINDAJE EXTRA: Auto-respaldo semanal
@@ -1261,8 +1159,6 @@ function cambiarPagPersonas(dir) {
 
 var buscarPersonasTimer;
 function buscarPersonas() {
-  try {
-
   clearTimeout(buscarPersonasTimer);
   buscarPersonasTimer = setTimeout(function(){
     var q = document.getElementById('searchPersonas').value.trim();
@@ -1338,8 +1234,6 @@ function buscarVehiculos() {
 // ============================================================
 var buscarGlobalTimer;
 function buscarGlobal() {
-  try {
-
   clearTimeout(buscarGlobalTimer);
   buscarGlobalTimer = setTimeout(function(){
     var q = document.getElementById('searchGlobal').value.trim();
@@ -2463,53 +2357,6 @@ function importarFotos() {
   }
   
   descargarChunk(1);
-}
-
-
-
-function recuperarEmergencia() {
-  try {
-    var backup = localStorage.getItem('rp_emergency_backup');
-    if (!backup) { showToast('No hay backup de emergencia'); return; }
-    var data = JSON.parse(backup);
-    if (!data.personas || !Array.isArray(data.personas)) { showToast('Backup corrupto'); return; }
-    if (!confirm('Restaurar backup de emergencia del ' + new Date(data.fecha).toLocaleString() + '?\n\nEsto reemplaza los datos actuales.')) return;
-    D = data.personas;
-    L = data.libreta || [];
-    guardarEnDB('rp_todos', D);
-    guardarEnDB('rp_libreta', L);
-    renderizar();
-    renderLibreta();
-    showToast('Backup de emergencia restaurado: ' + D.length + ' registros');
-  } catch(e) {
-    showToast('Error al recuperar backup de emergencia');
-  }
-}
-
-
-
-function actualizarIndicadorSnapshot() {
-  try {
-    var fecha = localStorage.getItem('rp_ultimo_snapshot');
-    var el = document.getElementById('snapshotIndicator');
-    if (!el) return;
-    if (fecha) {
-      var d = new Date(fecha);
-      var ahora = new Date();
-      var diff = Math.floor((ahora - d) / 1000 / 60);
-      if (diff < 60) el.textContent = 'snap hace ' + diff + 'm';
-      else el.textContent = 'snap ' + d.toLocaleDateString();
-    }
-  } catch(e) {}
-}
-
-
-
-function renderizar() {
-  document.getElementById('headerCount').textContent = D.length + ' registros';
-  renderPersonas();
-  reportarEspacioOcupado();
-  actualizarIndicadorSnapshot();
 }
 
 </script>
