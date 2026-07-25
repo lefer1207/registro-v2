@@ -1291,14 +1291,7 @@ function editarPersona() { abrirFormPersona(editandoIdx); }
 function eliminarPersonaLista(idx) {
   if (idx < BASE.length) { showToast('No se puede eliminar un registro base'); return; }
   var nombre = D[idx][0];
-  var ciMostrar = D[idx][1] || '---';
-  var confirmacion = prompt('🗑️ Para eliminar a ' + nombre + ' (CI: ' + ciMostrar + '), escribi SU APELLIDO:\n\n(Escribi el apellido exacto para confirmar)');
-  if (!confirmacion) { showToast('Eliminacion cancelada'); return; }
-  var apellido = nombre.split(' ').slice(1).join(' ').trim();
-  if (confirmacion.trim().toLowerCase() !== apellido.toLowerCase()) {
-    showToast('❌ Apellido incorrecto, eliminacion cancelada');
-    return;
-  }
+  if (!confirm('⚠️ ESTAS SEGURO?\n\nVas a eliminar a ' + nombre + '.\n\nEsta accion no se puede deshacer.')) return;
   D.splice(idx, 1);
   guardarAdicionales();
   renderPersonas(document.getElementById('searchPersonas').value);
@@ -1306,16 +1299,8 @@ function eliminarPersonaLista(idx) {
 }
 
 function eliminarPersona() {
-  var p = D[editandoIdx];
-  var nombre = p[0];
-  var ciMostrar = p[1] || '---';
-  var confirmacion = prompt('🗑️ Para eliminar a ' + nombre + ' (CI: ' + ciMostrar + '), escribi SU APELLIDO:\n\n(Escribi el apellido exacto para confirmar)');
-  if (!confirmacion) { showToast('Eliminacion cancelada'); return; }
-  var apellido = nombre.split(' ').slice(1).join(' ').trim();
-  if (confirmacion.trim().toLowerCase() !== apellido.toLowerCase()) {
-    showToast('❌ Apellido incorrecto, eliminacion cancelada');
-    return;
-  }
+  var nombre = D[editandoIdx][0];
+  if (!confirm('⚠️ ESTAS SEGURO?\n\nVas a eliminar a ' + nombre + '.\n\nEsta accion no se puede deshacer.')) return;
   D.splice(editandoIdx, 1);
   guardarAdicionales();
   editandoIdx = -1;
