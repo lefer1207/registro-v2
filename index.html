@@ -443,6 +443,13 @@
 .scanner-overlay .scanner-status {
   color: #fff; text-align: center; margin-top: 16px; font-size: 0.9rem;
 }
+#scannerContainer {
+  width: 100%; max-width: 400px; min-height: 300px;
+  display: flex; align-items: center; justify-content: center;
+  background: #111; border-radius: 12px; overflow: hidden;
+}
+#scannerContainer video { border-radius: 0; }
+#scannerContainer img { border-radius: 0; }
 </style>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 </head>
@@ -898,29 +905,35 @@ var html5QrCode = null;
 function abrirScanner() {
   document.getElementById('scannerOverlay').classList.add('open');
   document.getElementById('scannerStatus').textContent = 'Iniciando camara...';
-  if (html5QrCode) { html5QrCode.stop(); html5QrCode.clear(); }
+  if (html5QrCode) { try { html5QrCode.stop(); } catch(e){} html5QrCode.clear(); }
   html5QrCode = new Html5Qrcode("scannerContainer");
-  html5QrCode.start(
-    { facingMode: "environment" },
-    { fps: 10, qrbox: { width: 300, height: 200 } },
-    function(decodedText) {
-      var ci = '';
-      var match = decodedText.match(/\b(\d{7,8})\b/);
-      if (match) ci = match[1];
-      if (/^\d{7,8}$/.test(decodedText.trim())) ci = decodedText.trim();
-      if (ci) {
-        cerrarScanner();
-        document.getElementById('fpCI').value = ci;
-        validarCIField();
-        showToast('📷 CI escaneada: ' + ci);
-      } else {
-        document.getElementById('scannerStatus').textContent = '⚠️ No se pudo leer un CI valido. Intentá de nuevo.';
-      }
-    },
-    function(err) {}
-  ).catch(function(err) {
-    document.getElementById('scannerStatus').textContent = '❌ Error al acceder a la camara. Permiti el acceso o usa la cedula de codigo de barras.';
-  });
+  // Pequeña pausa para que el DOM se renderice
+  setTimeout(function(){
+    html5QrCode.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: { width: 250, height: 150 } },
+      function(decodedText) {
+        var ci = '';
+        var match = decodedText.match(/\b(\d{7,8})\b/);
+        if (match) ci = match[1];
+        if (/^\d{7,8}$/.test(decodedText.trim())) ci = decodedText.trim();
+        if (ci) {
+          cerrarScanner();
+          document.getElementById('fpCI').value = ci;
+          validarCIField();
+          showToast('📷 CI escaneada: ' + ci);
+        } else {
+          document.getElementById('scannerStatus').textContent = '⚠️ No se pudo leer un CI valido. Intentá de nuevo.';
+        }
+      },
+      function(err) {}
+    ).then(function(){
+      document.getElementById('scannerStatus').textContent = '📷 Apuntale al QR de la cedula';
+    }).catch(function(err) {
+      document.getElementById('scannerStatus').textContent = '❌ No se pudo iniciar la camara. Permiti el acceso o proba con otro dispositivo.';
+      document.getElementById('scannerStatus').innerHTML += '<br><button onclick="abrirScanner()" style="margin-top:12px;padding:10px 20px;background:#3498db;color:white;border:none;border-radius:8px;font-size:1rem;cursor:pointer;">Reintentar</button>';
+    });
+  }, 300);
 }
 function cerrarScanner() {
   document.getElementById('scannerOverlay').classList.remove('open');
