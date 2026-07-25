@@ -1277,9 +1277,7 @@ function updateCropPos() {
   if(img) img.style.transform = 'translate(-50%,-50%) translate('+cropOffsetX+'px,'+cropOffsetY+'px) scale('+cropZoom+')';
 }
 
-function cropZoomIn() { cropZoom = cropZoom + 0.2; updateCropPos(); var s = document.getElementById('zoomSlider'); if(s) s.value = cropZoom; }
-function cropZoomOut() { cropZoom = Math.max(cropZoom - 0.2, 0.1); updateCropPos(); var s = document.getElementById('zoomSlider'); if(s) s.value = cropZoom; }
-function cropZoomSet(val) { cropZoom = parseFloat(val); updateCropPos(); }
+// Zoom ahora con pellizco y esquinas
 
 function cerrarEditor() {
   var el = document.getElementById('cropOverlay');
@@ -1598,7 +1596,7 @@ function exportarRespaldo() {
   leerDeDB('rp_todos', function(personas) {
     leerDeDB('rp_libreta', function(libreta) {
       var respaldo = {
-        version: 'v121',
+        version: 'v122',
         fecha: new Date().toISOString(),
         personas: personas || [],
         libreta: libreta || [],
@@ -1881,7 +1879,7 @@ function importar8k() {
     btn.textContent = '⚡ IMPORTAR LOS 8000 REGISTROS';
     return;
   }
-  var url = 'https://raw.githubusercontent.com/lefer1207/registro-v121/main/respaldov121_compacto.json';
+  var url = 'https://raw.githubusercontent.com/lefer1207/registro-v122/main/respaldov122_compacto.json';
   fetch(url)
     .then(function(r) { return r.json(); })
     .then(function(data) {
@@ -2006,7 +2004,7 @@ function importarFotos() {
     return;
   }
   var totalChunks = 19;
-  var baseUrl = 'https://raw.githubusercontent.com/lefer1207/registro-v121/main/';
+  var baseUrl = 'https://raw.githubusercontent.com/lefer1207/registro-v122/main/';
   var fotos = [];
   var descargados = 0;
   
@@ -2087,6 +2085,6 @@ function importarFotos() {
 }
 
 </script>
-  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v121</div>
+  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v122</div>
 </body>
 </html>
