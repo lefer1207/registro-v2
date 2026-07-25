@@ -854,35 +854,47 @@ function cerrarBusquedaRapida() {
 function ejecutarBusquedaRapida() {
   clearTimeout(buscarRapidoTimer);
   buscarRapidoTimer = setTimeout(function(){
-    var q = document.getElementById('searchRapido').value.trim();
+    var q = (document.getElementById('searchRapido').value || '').trim();
     var res = document.getElementById('searchResultados');
     if (!q) { res.innerHTML = '<div class="empty-state"><div class="icon">🔍</div><p>Empeza a escribir para buscar<br>en todos los campos.</p></div>'; return; }
+    
     var qClean = q.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
     var words = qClean.split(/\s+/).filter(function(w){ return w.length > 0; });
     var encontrados = [];
+    
     for (var i = 0; i < D.length; i++) {
       var p = D[i];
-      var nombre = (p[0]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-      var ci = (p[1]||'').toLowerCase();
-      var fec = (p[2]||'').toLowerCase();
-      var dir = (p[3]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-      var alias = (p[4]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-      var tel = (p[5]||'').toLowerCase();
-      var notasArr = (p[10]||[]).join(' ').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-      var antec = (p[9]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-      var vehs = (p[7]||[]).join(' ').toLowerCase();
+      if (!p || !Array.isArray(p)) continue;
+      
+      // Combinar todos los campos buscables en un solo string limpio
+      var searchString = [
+        (p[0]||''), // nombre
+        (p[1]||''), // ci
+        (p[2]||''), // fec
+        (p[3]||''), // dir
+        (p[4]||''), // alias
+        (p[5]||''), // tel
+        (p[6]||''), // notas (v1)
+        (p[9]||''), // antec
+        ((p[10]||[]).join(' ')), // notas (v2 array)
+        ((p[7]||[]).join(' '))   // vehs
+      ].join(' ').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+      
       var matchAll = true;
       for (var w = 0; w < words.length; w++) {
-        if (!nombre.includes(words[w]) && !ci.includes(words[w]) && !fec.includes(words[w]) && !dir.includes(words[w]) && !alias.includes(words[w]) && !tel.includes(words[w]) && !vehs.includes(words[w]) && !notasArr.includes(words[w]) && !antec.includes(words[w])) {
-          matchAll = false; break;
+        if (searchString.indexOf(words[w]) === -1) {
+          matchAll = false;
+          break;
         }
       }
-      if (matchAll) encontrados.push({idx:i, p:p});
+      if (matchAll) encontrados.push({idx: i, p: p});
     }
+    
     if (encontrados.length === 0) {
       res.innerHTML = '<div class="empty-state"><div class="icon">😕</div><p>No se encontraron resultados<br>para "'+esc(q)+'".</p></div>';
       return;
     }
+    
     var h = '<div style="padding:4px 0 12px;color:var(--muted);font-size:.85rem;">'+encontrados.length+' resultado'+(encontrados.length!==1?'s':'')+'</div>';
     for (var i = 0; i < encontrados.length; i++) {
       var p = encontrados[i].p;
