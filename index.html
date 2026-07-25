@@ -855,12 +855,12 @@ function ejecutarBusquedaRapida() {
   var q = document.getElementById('overlaySearch').value.trim();
   var res = document.getElementById('overlayResults');
   if (!q) { res.innerHTML = ''; return; }
-  var qClean = q.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  var qClean = q.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   var words = qClean.split(/\s+/).filter(function(w){ return w.length > 0; });
   var filter = [];
   for (var i = 0; i < D.length; i++) {
     var p = D[i];
-    var nombre = (p[0]||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    var nombre = (p[0]||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     var ci = (p[1]||'').toLowerCase();
     var matchAll = true;
     for (var w = 0; w < words.length; w++) {
@@ -1111,31 +1111,16 @@ function renderPersonas(q) {
   ultimosIndicesPersonas = [];
   if (q) {
     var qRaw = q.toLowerCase();
-    var qClean = qRaw.normalize("NFD").replace(/[̀-ͯ]/g, "");
+    var qClean = qRaw.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     var words = qClean.split(/\s+/).filter(function(w){ return w.length > 0; });
     var directMatches = [];
     for (var i = 0; i < D.length; i++) {
       var p = D[i];
-      var nombre = (p[0]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+      var nombre = (p[0]||'').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
       var ci = (p[1]||'').toLowerCase();
-      var fec = (p[2]||'').toLowerCase();
-      var dir = (p[3]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-      var alias = (p[4]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-      var tel = (p[5]||'').toLowerCase();
-      var notas = (p[6]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-      var antec = (p[9]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-      var notasArr = (p[10]||[]).join(' ').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-      
-      var vehs = (p[7]||[]);
       var matchAll = words.length > 0;
       for(var w=0; w<words.length; w++) {
-        var found = nombre.includes(words[w]) || ci.includes(words[w]) || fec.includes(words[w]) || dir.includes(words[w]) || alias.includes(words[w]) || tel.includes(words[w]) || notas.includes(words[w]) || antec.includes(words[w]) || notasArr.includes(words[w]);
-        if (!found) {
-          for(var v=0; v<vehs.length; v++) {
-            if ((vehs[v]||'').toLowerCase().includes(words[w])) { found = true; break; }
-          }
-        }
-        if(!found) { matchAll = false; break; }
+        if (!nombre.includes(words[w]) && !ci.includes(words[w])) { matchAll = false; break; }
       }
       
       if (matchAll) {
@@ -1190,10 +1175,10 @@ function buscarPersonas() {
   buscarPersonasTimer = setTimeout(function(){
     var q = document.getElementById('searchPersonas').value.trim();
     if (!q) { renderPersonas(D); return; }
-    var qClean = q.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    var qClean = q.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     var words = qClean.split(/\s+/).filter(function(w){ return w.length > 0; });
     var filter = D.filter(function(p){
-      var nombre = (p[0]||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+      var nombre = (p[0]||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
       var ci = (p[1]||'').toLowerCase();
       for (var w = 0; w < words.length; w++) {
         if (!nombre.includes(words[w]) && !ci.includes(words[w])) return false;
@@ -1276,14 +1261,14 @@ function buscarGlobal() {
     var q = document.getElementById('searchGlobal').value.trim();
     var res = document.getElementById('resultadosBusqueda');
     if (!q) { res.innerHTML = ''; return; }
-    var qClean = q.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    var qClean = q.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     var words = qClean.split(/\s+/).filter(function(w){ return w.length > 0; });
     var results = [];
     var matchedIdx = {};
     for (var i = 0; i < D.length; i++) {
       var p = D[i];
       if (!p) continue;
-      var nombre = (p[0]||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+      var nombre = (p[0]||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
       var ci = (p[1]||'').toLowerCase();
       var matchAll = true;
       for (var w = 0; w < words.length; w++) {
@@ -1985,20 +1970,20 @@ function buscarVinculos() {
   var val = input.value.trim().toLowerCase();
   var dropdown = document.getElementById('vincDropdown');
   if (!val || val.length < 2) { dropdown.style.display = 'none'; return; }
-  var qClean = val.normalize("NFD").replace(/[̀-ͯ]/g, "");
+  var qClean = val.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   var words = qClean.split(/\s+/).filter(function(w){ return w.length > 0; });
   var results = [];
   for (var i = 0; i < D.length; i++) {
     var p = D[i];
-    var nombre = (p[0]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+    var nombre = (p[0]||'').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     var ci = (p[1]||'').toLowerCase();
     var fec = (p[2]||'').toLowerCase();
-    var dir = (p[3]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-    var alias = (p[4]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+    var dir = (p[3]||'').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    var alias = (p[4]||'').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     var tel = (p[5]||'').toLowerCase();
-    var notas = (p[6]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-    var antec = (p[9]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-    var notasArr = (p[10]||[]).join(' ').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+    var notas = (p[6]||'').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    var antec = (p[9]||'').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    var notasArr = (p[10]||[]).join(' ').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     var vehs = (p[7]||[]);
     
     var matchAll = words.length > 0;
