@@ -852,69 +852,30 @@ function cerrarBusquedaRapida() {
   document.getElementById('searchOverlay').classList.remove('open');
 }
 function ejecutarBusquedaRapida() {
-  clearTimeout(buscarRapidoTimer);
-  buscarRapidoTimer = setTimeout(function(){
-    var q = (document.getElementById('searchRapido').value || '').trim();
-    var res = document.getElementById('searchResultados');
-    if (!q) { res.innerHTML = '<div class="empty-state"><div class="icon">🔍</div><p>Empeza a escribir para buscar<br>en todos los campos.</p></div>'; return; }
-    
-    var qClean = q.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-    var words = qClean.split(/\s+/).filter(function(w){ return w.length > 0; });
-    var encontrados = [];
-    
-    for (var i = 0; i < D.length; i++) {
-      var p = D[i];
-      if (!p || !Array.isArray(p)) continue;
-      
-      // Combinar todos los campos buscables en un solo string limpio
-      var searchString = [
-        (p[0]||''), // nombre
-        (p[1]||''), // ci
-        (p[2]||''), // fec
-        (p[3]||''), // dir
-        (p[4]||''), // alias
-        (p[5]||''), // tel
-        (p[6]||''), // notas (v1)
-        (p[9]||''), // antec
-        ((p[10]||[]).join(' ')), // notas (v2 array)
-        ((p[7]||[]).join(' '))   // vehs
-      ].join(' ').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-      
-      var matchAll = true;
-      for (var w = 0; w < words.length; w++) {
-        if (searchString.indexOf(words[w]) === -1) {
-          matchAll = false;
-          break;
-        }
-      }
-      if (matchAll) encontrados.push({idx: i, p: p});
+  var q = document.getElementById('overlaySearch').value.trim();
+  var res = document.getElementById('overlayResults');
+  if (!q) { res.innerHTML = ''; return; }
+  var qClean = q.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  var words = qClean.split(/\s+/).filter(function(w){ return w.length > 0; });
+  var filter = [];
+  for (var i = 0; i < D.length; i++) {
+    var p = D[i];
+    var searchString = [(p[0]||''), (p[1]||'')].join(' ').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    var matchAll = true;
+    for (var w = 0; w < words.length; w++) {
+      var esc = words[w].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      var re = new RegExp('\\\\b' + esc + '\\\\b', 'i');
+      if (!re.test(searchString)) { matchAll = false; break; }
     }
-    
-    if (encontrados.length === 0) {
-      res.innerHTML = '<div class="empty-state"><div class="icon">😕</div><p>No se encontraron resultados<br>para "'+esc(q)+'".</p></div>';
-      return;
-    }
-    
-    var h = '<div style="padding:4px 0 12px;color:var(--muted);font-size:.85rem;">'+encontrados.length+' resultado'+(encontrados.length!==1?'s':'')+'</div>';
-    for (var i = 0; i < encontrados.length; i++) {
-      var p = encontrados[i].p;
-      var foto = (p[11] && p[11].length > 50) ? p[11] : '';
-      var fotoHtml = foto ? '<img src="'+foto+'" style="width:48px;height:48px;border-radius:4px;object-fit:cover;flex-shrink:0;">' : '<div class="avatar" style="background:var(--primary);font-size:1.2rem;width:48px;height:48px;border-radius:4px;display:flex;align-items:center;justify-content:center;">👤</div>';
-      h += '<div class="card" onclick="cerrarBusquedaRapida();verPersona('+encontrados[i].idx+')" style="cursor:pointer;">';
-      h += fotoHtml;
-      h += '<div class="card-info"><div><strong>'+esc(p[0])+'</strong></div>';
-      h += '<div class="card-sub">'+(p[1]?'CI '+esc(p[1]):'')+(p[4]?' · '+esc(p[4]):'')+'</div></div>';
-      h += '<div class="card-arrow">›</div></div>';
-    }
-    res.innerHTML = h;
-  }, 200);
-}
-
-// ============================================================
-// ESCANER DE CI
-// ============================================================
-var html5QrCode = null;
-function abrirScanner() {
+    if (matchAll) filter.push({idx: i, p: p});
+    if (filter.length >= 10) break;
+  }
+  var html = '';
+  filter.forEach(function(item){
+    html += '<div class="result-item" onclick="verPersona('+item.idx+');cerrarOverlayBusqueda()">'+esc(item.p[0])+' <span style="opacity:0.6;font-size:0.8em">CI '+esc(item.p[1])+'</span></div>';
+  });
+  res.innerHTML = html || '<div style="padding:20px;text-align:center;opacity:0.5">Sin resultados</div>';
+}function abrirScanner() {
   document.getElementById('scannerOverlay').classList.add('open');
   document.getElementById('scannerStatus').textContent = 'Iniciando camara...';
   if (html5QrCode) { try { html5QrCode.stop(); } catch(e){} html5QrCode.clear(); }
@@ -1227,14 +1188,23 @@ function cambiarPagPersonas(dir) {
 var buscarPersonasTimer;
 function buscarPersonas() {
   clearTimeout(buscarPersonasTimer);
-  personasPage = 0;
-  buscarPersonasTimer = setTimeout(function(){ renderPersonas(document.getElementById('searchPersonas').value); }, 350);
-}
-
-// ============================================================
-// RENDER VEHICULOS
-// ============================================================
-function getVehiculos() {
+  buscarPersonasTimer = setTimeout(function(){
+    var q = document.getElementById('searchPersonas').value.trim();
+    if (!q) { renderPersonas(D); return; }
+    var qClean = q.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    var words = qClean.split(/\s+/).filter(function(w){ return w.length > 0; });
+    var filter = D.filter(function(p){
+      var searchString = [(p[0]||''), (p[1]||'')].join(' ').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      for (var w = 0; w < words.length; w++) {
+        var esc = words[w].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        var re = new RegExp('\\\\b' + esc + '\\\\b', 'i');
+        if (!re.test(searchString)) return false;
+      }
+      return true;
+    });
+    renderPersonas(filter);
+  }, 300);
+}function getVehiculos() {
   var v = [];
   for (var i = 0; i < D.length; i++) {
     var p = D[i];
@@ -1315,10 +1285,8 @@ function buscarGlobal() {
     for (var i = 0; i < D.length; i++) {
       var p = D[i];
       if (!p || !Array.isArray(p)) continue;
-      var searchString = [
-        (p[0]||''), (p[1]||''), (p[2]||''), (p[3]||''), (p[4]||''),
-        (p[5]||''), ((p[7]||[]).join(' '))
-      ].join(' ').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      // Solo buscamos en NOMBRE (p[0]) y CEDULA (p[1])
+      var searchString = [(p[0]||''), (p[1]||'')].join(' ').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
       var matchAll = true;
       for (var w = 0; w < words.length; w++) {
         try {
@@ -1332,7 +1300,7 @@ function buscarGlobal() {
         matchedIdx[i] = true;
       }
     }
-    // Add vinculados of matched people
+    // Agregar vinculados de las personas encontradas
     var extra = [];
     for (var a = 0; a < results.length; a++) {
       var idx = results[a].idx;
@@ -1348,9 +1316,7 @@ function buscarGlobal() {
         }
       }
     }
-    for (var e = 0; e < extra.length; e++) {
-      results.push(extra[e]);
-    }
+    for (var e = 0; e < extra.length; e++) { results.push(extra[e]); }
     var html = '';
     if (results.length) {
       html += '<div style="font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin:8px 0 6px;">Personas</div>';
