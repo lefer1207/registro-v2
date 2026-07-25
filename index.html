@@ -452,6 +452,7 @@
 #scannerContainer img { border-radius: 0; }
 </style>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 </head>
 <body>
 
@@ -496,7 +497,11 @@
   <div class="scanner-overlay" id="scannerOverlay">
     <button class="scanner-close" onclick="cerrarScanner()">✕</button>
     <div id="scannerContainer"></div>
+    <div class="scanner-actions" id="scannerActions" style="display:none;margin-top:12px;gap:10px;flex-wrap:wrap;justify-content:center;">
+      <button onclick="tomarFotoOCR()" style="padding:14px 24px;border:none;border-radius:12px;background:#27ae60;color:white;font-size:1rem;cursor:pointer;font-weight:bold;">📸 Tomar foto</button>
+    </div>
     <div class="scanner-status" id="scannerStatus">Esperando lector QR...</div>
+    <div class="scanner-result" id="scannerResult" style="display:none;margin-top:8px;padding:12px;background:#222;border-radius:10px;color:#fff;max-width:400px;width:100%;box-sizing:border-box;font-size:.85rem;text-align:left;"></div>
   </div>
 
   <!-- PERSONAS -->
@@ -928,7 +933,8 @@ function abrirScanner() {
       },
       function(err) {}
     ).then(function(){
-      document.getElementById('scannerStatus').textContent = '📷 Apuntale al QR de la cedula';
+      document.getElementById('scannerStatus').textContent = '📷 QR para cedulas nuevas · 📸 Foto para viejas';
+      document.getElementById('scannerActions').style.display = 'flex';
     }).catch(function(err) {
       document.getElementById('scannerStatus').textContent = '❌ No se pudo iniciar la camara. Permiti el acceso o proba con otro dispositivo.';
       document.getElementById('scannerStatus').innerHTML += '<br><button onclick="abrirScanner()" style="margin-top:12px;padding:10px 20px;background:#3498db;color:white;border:none;border-radius:8px;font-size:1rem;cursor:pointer;">Reintentar</button>';
@@ -937,7 +943,92 @@ function abrirScanner() {
 }
 function cerrarScanner() {
   document.getElementById('scannerOverlay').classList.remove('open');
+  document.getElementById('scannerActions').style.display = 'none';
+  document.getElementById('scannerResult').style.display = 'none';
   if (html5QrCode) { try { html5QrCode.stop(); } catch(e){} }
+}
+function tomarFotoOCR() {
+  if (!html5QrCode) return;
+  var video = document.querySelector('#scannerContainer video');
+  if (!video) { showToast('⚠️ Espera que la camara este activa'); return; }
+  document.getElementById('scannerStatus').textContent = '🔍 Procesando imagen...';
+  var canvas = document.createElement('canvas');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  var ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0);
+  var imgData = canvas.toDataURL('image/jpeg', 0.9);
+  try { html5QrCode.stop(); } catch(e){}
+  document.getElementById('scannerContainer').innerHTML = '<img src="'+imgData+'" style="max-width:100%;border-radius:12px;">';
+  Tesseract.recognize(
+    imgData,
+    'spa',
+    { logger: function(m) { if(m.status==='recognizing') document.getElementById('scannerStatus').textContent = '🔍 '+(m.progress*100).toFixed(0)+'%'; } }
+  ).then(function(result) {
+    var text = result.data.text;
+    document.getElementById('scannerResult').style.display = 'block';
+    var ciMatch = text.match(/(\d{7,8})/g);
+    var lines = text.split('\n').map(function(l){ return l.trim(); }).filter(function(l){ return l.length > 3; });
+    var nombre = '';
+    for (var i=0; i<lines.length; i++) {
+      var l = lines[i].toUpperCase();
+      if (/[A-Z]{4,}/.test(l) && !/^\d/.test(l) && !/URY|URUGUAY|IDENTIDAD|CEDULA|DOCUMENTO|REPUBLICA|MATRIZ/.test(l)) {
+        nombre = l.replace(/[^A-ZÁÉÍÓÚÑ\s]/g, '').trim();
+        break;
+      }
+    }
+    var fechaMatch = text.match(/(\d{2})[\/\.](\d{2})[\/\.](\d{4})/);
+    var fecha = '';
+    if (fechaMatch) {
+      var d = fechaMatch[1], m = fechaMatch[2], y = fechaMatch[3];
+      if (parseInt(d)>=1 && parseInt(d)<=31 && parseInt(m)>=1 && parseInt(m)<=12 && parseInt(y)>=1900 && parseInt(y)<=2010) {
+        fecha = d+'/'+m+'/'+y;
+      }
+    }
+    var ci = '';
+    if (ciMatch) {
+      for (var i=0; i<ciMatch.length; i++) {
+        var n = ciMatch[i];
+        if (n.length >= 7 && n.length <= 8) { ci = n; break; }
+      }
+      if (ciMatch.length > 1) {
+        var best = ciMatch[0];
+        for (var j=1; j<ciMatch.length; j++) {
+          if (ciMatch[j].length > best.length) best = ciMatch[j];
+        }
+        ci = best;
+      }
+    }
+    var html = '';
+    if (ci) { html += '<div>📇 CI: '+ci+'</div>'; }
+    if (nombre) { html += '<div>👤 Nombre: '+nombre+'</div>'; }
+    if (fecha) { html += '<div>📅 FN: '+fecha+'</div>'; }
+    if (!html) { html = '<div style="color:#e74c3c;">❌ No se pudo extraer datos. Proba con mejor iluminacion y enfoque.</div>'; }
+    document.getElementById('scannerResult').innerHTML = html;
+    document.getElementById('scannerStatus').textContent = '✅ Datos extraidos';
+    var btnHtml = '<div style="margin-top:12px;display:flex;gap:8px;justify-content:center;">';
+    if (ci) btnHtml += '<button onclick="aplicarOCR(\''+ci+'\',\''+esc(nombre)+'\',\''+fecha+'\')" style="padding:10px 20px;border:none;border-radius:8px;background:#27ae60;color:white;font-size:.9rem;cursor:pointer;">✅ Aplicar</button>';
+    btnHtml += '<button onclick="reintentarOCR()" style="padding:10px 20px;border:none;border-radius:8px;background:#555;color:white;font-size:.9rem;cursor:pointer;">🔄 Reintentar</button>';
+    btnHtml += '</div>';
+    document.getElementById('scannerResult').innerHTML += btnHtml;
+  }).catch(function(err) {
+    document.getElementById('scannerStatus').textContent = '❌ Error al procesar la imagen.';
+    document.getElementById('scannerResult').style.display = 'block';
+    document.getElementById('scannerResult').innerHTML = '<div style="color:#e74c3c;">Error de OCR. Proba de nuevo con mejor luz.</div><div style="margin-top:12px;text-align:center;"><button onclick="reintentarOCR()" style="padding:10px 20px;border:none;border-radius:8px;background:#3498db;color:white;font-size:.9rem;cursor:pointer;">🔄 Reintentar</button></div>';
+  });
+}
+function aplicarOCR(ci, nombre, fecha) {
+  cerrarScanner();
+  if (ci) document.getElementById('fpCI').value = ci;
+  if (nombre) document.getElementById('fpNombre').value = nombre;
+  if (fecha) document.getElementById('fpFN').value = fecha;
+  validarCIField();
+  showToast('✅ Datos de cedula aplicados');
+}
+function reintentarOCR() {
+  document.getElementById('scannerResult').style.display = 'none';
+  document.getElementById('scannerContainer').innerHTML = '';
+  abrirScanner();
 }
 
 function guardarAdicionales() {
