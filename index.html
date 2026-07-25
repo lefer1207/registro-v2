@@ -405,7 +405,46 @@
 .error-screen button { padding: 14px 30px; background: #3498db; color: #fff; border: none; border-radius: 10px; font-size: 1rem; cursor: pointer; }
 .error-screen button:hover { background: #2980b9; }
 
+/* BUSQUEDA RAPIDA OVERLAY */
+.search-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: var(--bg); z-index: 99999; display: none; flex-direction: column;
+  padding: 16px; box-sizing: border-box;
+}
+.search-overlay.open { display: flex; }
+.search-overlay-header { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; }
+.search-overlay-header input {
+  flex: 1; padding: 14px 16px; border-radius: 12px; border: 2px solid var(--secondary);
+  background: var(--card); color: var(--text); font-size: 1.1rem; outline: none;
+}
+.search-overlay-header input:focus { border-color: var(--primary); }
+.search-overlay-close {
+  font-size: 1.5rem; padding: 8px 16px; border: none; background: transparent;
+  color: var(--text); cursor: pointer; font-weight: bold;
+}
+.search-overlay-results { flex: 1; overflow-y: auto; }
+.search-overlay-results .card { margin-bottom: 8px; }
+.search-overlay-results .empty-state { margin-top: 40px; }
+.search-hit { background: #fff3cd; color: #856404; border-radius: 3px; padding: 0 2px; }
+
+/* ESCANER CI */
+.scanner-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: #000; z-index: 99999; display: none; flex-direction: column;
+  align-items: center; justify-content: center; padding: 16px; box-sizing: border-box;
+}
+.scanner-overlay.open { display: flex; }
+.scanner-overlay video { width: 100%; max-width: 400px; border-radius: 12px; }
+.scanner-overlay .scanner-close {
+  position: absolute; top: 16px; right: 16px; font-size: 2rem; color: #fff;
+  background: rgba(255,255,255,0.2); border: none; border-radius: 50%; width: 48px; height: 48px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+.scanner-overlay .scanner-status {
+  color: #fff; text-align: center; margin-top: 16px; font-size: 0.9rem;
+}
 </style>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 </head>
 <body>
 
@@ -428,12 +467,31 @@
   <button onclick="showTab('libreta')" id="tab-libreta">
     <span class="icon">📓</span>Libreta
   </button>
+  <button onclick="abrirBusquedaRapida()" id="tab-buscar" style="color:var(--secondary);">
+    <span class="icon">🔍</span>Buscar
+  </button>
   <button onclick="showTab('respaldo')" id="tab-respaldo">
     <span class="icon">💾</span>Respaldo
   </button>
 </nav>
 
 <main>
+  <!-- BUSQUEDA RAPIDA OVERLAY -->
+  <div class="search-overlay" id="searchOverlay">
+    <div class="search-overlay-header">
+      <input type="search" id="searchRapido" placeholder="🔍 Buscar nombre, CI, patente, alias..." autocomplete="off" oninput="ejecutarBusquedaRapida()">
+      <button class="search-overlay-close" onclick="cerrarBusquedaRapida()">✕</button>
+    </div>
+    <div class="search-overlay-results" id="searchResultados"></div>
+  </div>
+
+  <!-- ESCANER CI OVERLAY -->
+  <div class="scanner-overlay" id="scannerOverlay">
+    <button class="scanner-close" onclick="cerrarScanner()">✕</button>
+    <div id="scannerContainer"></div>
+    <div class="scanner-status" id="scannerStatus">Esperando lector QR...</div>
+  </div>
+
   <!-- PERSONAS -->
   <div class="view active" id="view-personas">
     <div class="search-bar">
@@ -524,7 +582,7 @@
     <div class="form-section">
       <h3>Datos Personales</h3>
       <div class="form-group"><label>Nombre</label><input type="text" id="fpNombre" placeholder="Nombre completo"></div>
-      <div class="form-group"><label>Cedula</label><input type="text" id="fpCI" oninput="validarCIField()" placeholder="Cedula de identidad" inputmode="numeric"></div>
+      <div class="form-group"><label>Cedula</label><div style="display:flex;gap:6px;"><input type="text" id="fpCI" oninput="validarCIField()" placeholder="Cedula de identidad" inputmode="numeric" style="flex:1;"><button type="button" onclick="abrirScanner()" style="padding:8px 12px;border:none;border-radius:8px;background:var(--primary);color:white;font-size:1rem;cursor:pointer;white-space:nowrap;">📷</button></div></div>
       <div class="form-group"><label>Fecha de nacimiento</label><input type="text" id="fpFN" placeholder="DD/MM/AAAA"></div>
       <div class="form-group"><label>Direccion</label><input type="text" id="fpDir" placeholder="Direccion"></div>
       <div class="form-group"><label>Alias</label><input type="text" id="fpAlias" placeholder="Alias / apodo"></div>
@@ -771,6 +829,102 @@ function recuperarDeBackup() {
     D = [];
     document.getElementById('headerCount').textContent = '0 registros';
   });
+}
+
+// ============================================================
+// BUSQUEDA RAPIDA (overlay fullscreen)
+// ============================================================
+var buscarRapidoTimer;
+function abrirBusquedaRapida() {
+  document.getElementById('searchOverlay').classList.add('open');
+  document.getElementById('searchRapido').value = '';
+  document.getElementById('searchResultados').innerHTML = '<div class="empty-state"><div class="icon">🔍</div><p>Empeza a escribir para buscar<br>en todos los campos.</p></div>';
+  setTimeout(function(){ document.getElementById('searchRapido').focus(); }, 300);
+}
+function cerrarBusquedaRapida() {
+  document.getElementById('searchOverlay').classList.remove('open');
+}
+function ejecutarBusquedaRapida() {
+  clearTimeout(buscarRapidoTimer);
+  buscarRapidoTimer = setTimeout(function(){
+    var q = document.getElementById('searchRapido').value.trim();
+    var res = document.getElementById('searchResultados');
+    if (!q) { res.innerHTML = '<div class="empty-state"><div class="icon">🔍</div><p>Empeza a escribir para buscar<br>en todos los campos.</p></div>'; return; }
+    var qClean = q.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+    var words = qClean.split(/\s+/).filter(function(w){ return w.length > 0; });
+    var encontrados = [];
+    for (var i = 0; i < D.length; i++) {
+      var p = D[i];
+      var nombre = (p[0]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+      var ci = (p[1]||'').toLowerCase();
+      var fec = (p[2]||'').toLowerCase();
+      var dir = (p[3]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+      var alias = (p[4]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+      var tel = (p[5]||'').toLowerCase();
+      var notasArr = (p[10]||[]).join(' ').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+      var antec = (p[9]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+      var vehs = (p[7]||[]).join(' ').toLowerCase();
+      var matchAll = true;
+      for (var w = 0; w < words.length; w++) {
+        if (!nombre.includes(words[w]) && !ci.includes(words[w]) && !fec.includes(words[w]) && !dir.includes(words[w]) && !alias.includes(words[w]) && !tel.includes(words[w]) && !vehs.includes(words[w]) && !notasArr.includes(words[w]) && !antec.includes(words[w])) {
+          matchAll = false; break;
+        }
+      }
+      if (matchAll) encontrados.push({idx:i, p:p});
+    }
+    if (encontrados.length === 0) {
+      res.innerHTML = '<div class="empty-state"><div class="icon">😕</div><p>No se encontraron resultados<br>para "'+esc(q)+'".</p></div>';
+      return;
+    }
+    var h = '<div style="padding:4px 0 12px;color:var(--muted);font-size:.85rem;">'+encontrados.length+' resultado'+(encontrados.length!==1?'s':'')+'</div>';
+    for (var i = 0; i < encontrados.length; i++) {
+      var p = encontrados[i].p;
+      var foto = (p[11] && p[11].length > 50) ? p[11] : '';
+      var fotoHtml = foto ? '<img src="'+foto+'" style="width:48px;height:48px;border-radius:50%;object-fit:cover;flex-shrink:0;">' : '<div class="avatar" style="background:var(--primary);font-size:1.2rem;width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;">👤</div>';
+      h += '<div class="card" onclick="cerrarBusquedaRapida();verPersona('+encontrados[i].idx+')" style="cursor:pointer;">';
+      h += fotoHtml;
+      h += '<div class="card-info"><div><strong>'+esc(p[0])+'</strong></div>';
+      h += '<div class="card-sub">'+(p[1]?'CI '+esc(p[1]):'')+(p[4]?' · '+esc(p[4]):'')+'</div></div>';
+      h += '<div class="card-arrow">›</div></div>';
+    }
+    res.innerHTML = h;
+  }, 200);
+}
+
+// ============================================================
+// ESCANER DE CI
+// ============================================================
+var html5QrCode = null;
+function abrirScanner() {
+  document.getElementById('scannerOverlay').classList.add('open');
+  document.getElementById('scannerStatus').textContent = 'Iniciando camara...';
+  if (html5QrCode) { html5QrCode.stop(); html5QrCode.clear(); }
+  html5QrCode = new Html5Qrcode("scannerContainer");
+  html5QrCode.start(
+    { facingMode: "environment" },
+    { fps: 10, qrbox: { width: 300, height: 200 } },
+    function(decodedText) {
+      var ci = '';
+      var match = decodedText.match(/\b(\d{7,8})\b/);
+      if (match) ci = match[1];
+      if (/^\d{7,8}$/.test(decodedText.trim())) ci = decodedText.trim();
+      if (ci) {
+        cerrarScanner();
+        document.getElementById('fpCI').value = ci;
+        validarCIField();
+        showToast('📷 CI escaneada: ' + ci);
+      } else {
+        document.getElementById('scannerStatus').textContent = '⚠️ No se pudo leer un CI valido. Intentá de nuevo.';
+      }
+    },
+    function(err) {}
+  ).catch(function(err) {
+    document.getElementById('scannerStatus').textContent = '❌ Error al acceder a la camara. Permiti el acceso o usa la cedula de codigo de barras.';
+  });
+}
+function cerrarScanner() {
+  document.getElementById('scannerOverlay').classList.remove('open');
+  if (html5QrCode) { try { html5QrCode.stop(); } catch(e){} }
 }
 
 function guardarAdicionales() {
