@@ -1308,78 +1308,37 @@ function buscarGlobal() {
     var q = document.getElementById('searchGlobal').value.trim();
     var res = document.getElementById('resultadosBusqueda');
     if (!q) { res.innerHTML = ''; return; }
-    var qRaw = q.toLowerCase();
-    var qClean = qRaw.normalize("NFD").replace(/[̀-ͯ]/g, "");
+    var qClean = q.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     var words = qClean.split(/\s+/).filter(function(w){ return w.length > 0; });
-    var personasEncontradas = [];
-    var vinculadosAgregados = {};
+    var results = [];
     for (var i = 0; i < D.length; i++) {
       var p = D[i];
-      var nombre = (p[0]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-      var ci = (p[1]||'').toLowerCase();
-      var fec = (p[2]||'').toLowerCase();
-      var dir = (p[3]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-      var alias = (p[4]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-      var tel = (p[5]||'').toLowerCase();
-      var notas = (p[6]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-      var antec = (p[9]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-      var notasArr = (p[10]||[]).join(' ').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-      
-      var vehs = (p[7]||[]);
-      var matchAll = words.length > 0;
-      for(var w=0; w<words.length; w++) {
-        var found = nombre.includes(words[w]) || ci.includes(words[w]) || fec.includes(words[w]) || dir.includes(words[w]) || alias.includes(words[w]) || tel.includes(words[w]) || notas.includes(words[w]) || antec.includes(words[w]) || notasArr.includes(words[w]);
-        if (!found) {
-          for(var v=0; v<vehs.length; v++) {
-            if ((vehs[v]||'').toLowerCase().includes(words[w])) { found = true; break; }
-          }
-        }
-        if(!found) { matchAll = false; break; }
+      if (!p || !Array.isArray(p)) continue;
+      var searchString = [
+        (p[0]||''), (p[1]||''), (p[2]||''), (p[3]||''), (p[4]||''),
+        (p[5]||''), (p[6]||''), (p[9]||''),
+        ((p[10]||[]).join(' ')),
+        ((p[7]||[]).join(' '))
+      ].join(' ').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      var matchAll = true;
+      for (var w = 0; w < words.length; w++) {
+        if (!searchString.includes(words[w])) { matchAll = false; break; }
       }
-      
-      if (matchAll) {
-        personasEncontradas.push({idx:i, p:p});
-        vinculadosAgregados[i] = true;
-      }
-    }
-    // Add vinculados of matched personas
-    var extra = [];
-    for (var a = 0; a < personasEncontradas.length; a++) {
-      var idx = personasEncontradas[a].idx;
-      var vincStr = (D[idx][8]||'');
-      if (!vincStr) continue;
-      var vincNames = vincStr.split(',').map(function(s){ return s.trim(); }).filter(function(s){ return s; });
-      for (var v = 0; v < vincNames.length; v++) {
-        for (var i = 0; i < D.length; i++) {
-          if (D[i][0].trim() === vincNames[v] && !vinculadosAgregados[i]) {
-            extra.push({idx:i, p:D[i]});
-            vinculadosAgregados[i] = true;
-          }
-        }
-      }
-    }
-    // Add vinculados after direct matches
-    for (var e = 0; e < extra.length; e++) {
-      personasEncontradas.push(extra[e]);
+      if (matchAll) results.push({idx:i, p:p});
     }
     var html = '';
-    if (personasEncontradas.length) {
+    if (results.length) {
       html += '<div style="font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin:8px 0 6px;">Personas</div>';
-      for (var i = 0; i < Math.min(personasEncontradas.length, 30); i++) {
-        var pe = personasEncontradas[i];
-        var f = '<div class="avatar">'+(pe.p[11] && pe.p[11].startsWith('data:image') && pe.p[11].length>100?'<img src="'+esc(pe.p[11])+'">':'<div class="avatar-txt">👤</div>')+'</div>';
-        html += '<div class="card" onclick="verPersona('+pe.idx+')">'+f+'<div class="card-info"><div class="card-name">'+esc(pe.p[0])+'</div><div class="card-sub">CI '+(esc(pe.p[1])||'---')+'</div></div><div class="card-arrow">›</div></div>';
+      for (var i = 0; i < Math.min(results.length, 30); i++) {
+        var r = results[i];
+        var f = '<div class="avatar">'+(r.p[11] && r.p[11].startsWith('data:image') && r.p[11].length>100?'<img src="'+esc(r.p[11])+'">':'<div class="avatar-txt">\ud83d\udc64</div>')+'</div>';
+        html += '<div class="card" onclick="verPersona('+r.idx+')">'+f+'<div class="card-info"><div class="card-name">'+esc(r.p[0])+'</div><div class="card-sub">CI '+(esc(r.p[1])||'---')+'</div></div><div class="card-arrow">\u203a</div></div>';
       }
     }
-    if (!html) html = '<div class="empty-state"><div class="icon">🔍</div><p>Sin resultados</p></div>';
+    if (!html) html = '<div class="empty-state"><div class="icon">\ud83d\udd0d</div><p>Sin resultados</p></div>';
     res.innerHTML = html;
   }, 400);
-}
-
-// ============================================================
-// VER PERSONA
-// ============================================================
-function verPersona(idx) {
+}function verPersona(idx) {
   var p = D[idx];
   editandoIdx = idx;
   showView('view-detalle-persona');
