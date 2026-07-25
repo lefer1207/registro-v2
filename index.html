@@ -1162,7 +1162,7 @@ function buscarPersonas() {
   clearTimeout(buscarPersonasTimer);
   buscarPersonasTimer = setTimeout(function(){
     var q = document.getElementById('searchPersonas').value.trim();
-    if (!q) { renderPersonas(D); return; }
+    if (!q) { renderPersonas(); return; }
     renderPersonas(q);
   }, 300);
 }function getVehiculos() {
