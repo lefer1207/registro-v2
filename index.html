@@ -1110,58 +1110,47 @@ function renderPersonas(q) {
   var items = q ? [] : D;
   ultimosIndicesPersonas = [];
   if (q) {
-    var qRaw = q.toLowerCase();
-    var qClean = qRaw.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    var qClean = q.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     var words = qClean.split(/\s+/).filter(function(w){ return w.length > 0; });
-    var directMatches = [];
     for (var i = 0; i < D.length; i++) {
       var p = D[i];
+      if (!p) continue;
       var nombre = (p[0]||'').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
       var ci = (p[1]||'').toLowerCase();
       var matchAll = words.length > 0;
       for(var w=0; w<words.length; w++) {
         if (!nombre.includes(words[w]) && !ci.includes(words[w])) { matchAll = false; break; }
       }
-      
-      if (matchAll) {
-        directMatches.push(i);
-        items.push(p);
-      }
-    }
-    // Rebuild ultimosIndicesPersonas
-    for (var i = 0; i < items.length; i++) {
-      for (var j = 0; j < D.length; j++) {
-        if (D[j] === items[i]) {
-          ultimosIndicesPersonas.push(j);
-          break;
-        }
-      }
+      if (matchAll) { items.push(p); ultimosIndicesPersonas.push(i); }
     }
   }
   var from = personasPage * PAGE_SIZE;
   var to = from + PAGE_SIZE;
   var pageItems = items.slice(from, to);
   var lista = document.getElementById('listaPersonas');
-
   if (!pageItems.length) {
     lista.innerHTML = '<div class="empty-state"><div class="icon">👤</div><p>'+(q?'Sin resultados.':'No hay personas registradas.')+'<br>Toca el + para agregar.</p></div>';
     document.getElementById('paginacionPersonas').innerHTML = '';
     return;
   }
-
   var h = '';
   for (var idx = 0; idx < pageItems.length; idx++) {
     var p = pageItems[idx];
     var idxReal = ultimosIndicesPersonas.length ? ultimosIndicesPersonas[from + idx] : (from + idx);
     var f = '<div class="avatar">'+(p[11] && p[11].startsWith('data:image') && p[11].length>100?'<img src="'+esc(p[11])+'">':'<div class="avatar-txt">👤</div>')+'</div>';
     var badge = idxReal >= BASE.length ? '<span class="badge-new">NUEVO</span>' : '';
-    h += '<div class="card" onclick="verPersona('+idxReal+')">'+f+'<div class="card-info"><div class="card-name">'+esc(p[0])+badge+'</div><div class="card-sub">CI '+(esc(p[1])||'---')+' '+(p[4]?'• '+esc(p[4]):'')+'</div></div><div class="card-arrow">›</div></div>';
+    h += '<div class="card" onclick="verPersona('+idxReal+')">'+f+'<div class="card-info"><div class="card-name">'+esc(p[0])+badge+'</div><div class="card-sub">CI '+(esc(p[1])||'---')+'</div></div><div class="card-arrow">›</div></div>';
   }
   lista.innerHTML = h;
-
-  var pag = document.getElementById('paginacionPersonas');
   var totalPages = Math.ceil(items.length / PAGE_SIZE);
-  pag.innerHTML = '<button onclick="cambiarPagPersonas(-1)" '+(personasPage===0?'disabled':'')+'>← Anterior</button><span>Pág. '+(personasPage+1)+'/'+totalPages+'</span><button onclick="cambiarPagPersonas(1)" '+(to>=items.length?'disabled':'')+'>Siguiente →</button>';
+  var pag = document.getElementById('paginacionPersonas');
+  var ph = '';
+  if (totalPages > 1) {
+    ph += '<button onclick="cambiarPaginaPersonas(0)" '+(personasPage===0?'disabled':'')+'>«</button>';
+    ph += '<span>' + (personasPage + 1) + ' / ' + totalPages + '</span>';
+    ph += '<button onclick="cambiarPaginaPersonas('+(totalPages-1)+')" '+(personasPage===totalPages-1?'disabled':'')+'>»</button>';
+  }
+  pag.innerHTML = ph;
 }
 
 function cambiarPagPersonas(dir) {
@@ -1175,17 +1164,7 @@ function buscarPersonas() {
   buscarPersonasTimer = setTimeout(function(){
     var q = document.getElementById('searchPersonas').value.trim();
     if (!q) { renderPersonas(D); return; }
-    var qClean = q.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    var words = qClean.split(/\s+/).filter(function(w){ return w.length > 0; });
-    var filter = D.filter(function(p){
-      var nombre = (p[0]||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-      var ci = (p[1]||'').toLowerCase();
-      for (var w = 0; w < words.length; w++) {
-        if (!nombre.includes(words[w]) && !ci.includes(words[w])) return false;
-      }
-      return true;
-    });
-    renderPersonas(filter);
+    renderPersonas(q);
   }, 300);
 }function getVehiculos() {
   var v = [];
