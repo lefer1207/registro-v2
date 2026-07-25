@@ -880,7 +880,7 @@ function ejecutarBusquedaRapida() {
     for (var i = 0; i < encontrados.length; i++) {
       var p = encontrados[i].p;
       var foto = (p[11] && p[11].length > 50) ? p[11] : '';
-      var fotoHtml = foto ? '<img src="'+foto+'" style="width:48px;height:48px;border-radius:50%;object-fit:cover;flex-shrink:0;">' : '<div class="avatar" style="background:var(--primary);font-size:1.2rem;width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;">👤</div>';
+      var fotoHtml = foto ? '<img src="'+foto+'" style="width:48px;height:48px;border-radius:4px;object-fit:cover;flex-shrink:0;">' : '<div class="avatar" style="background:var(--primary);font-size:1.2rem;width:48px;height:48px;border-radius:4px;display:flex;align-items:center;justify-content:center;">👤</div>';
       h += '<div class="card" onclick="cerrarBusquedaRapida();verPersona('+encontrados[i].idx+')" style="cursor:pointer;">';
       h += fotoHtml;
       h += '<div class="card-info"><div><strong>'+esc(p[0])+'</strong></div>';
