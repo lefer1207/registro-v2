@@ -1294,17 +1294,14 @@ function confirmarCrop() {
   tempImg.onload = function() {
     var iw = tempImg.width, ih = tempImg.height;
     var z = cropZoom, ox = cropOffsetX, oy = cropOffsetY;
-    // En el contenedor, la imagen se muestra centrada, luego desplazada (ox,oy) y escalada por z
-    // El cuadro visible es cwxcw pixeles en pantalla
-    // En coordenadas de la imagen original, eso es:
-    //   - centro del cuadro en la imagen original: iw/2 - ox/z , ih/2 - oy/z
-    //   - tamaño del cuadro en la imagen original: cw/z , cw/z
-    //   - esquina superior izquierda: centro - tamaño/2
-    var cx = iw / 2 - ox / z;
-    var cy = ih / 2 - oy / z;
-    var half = (cw / 2) / z;
-    var sx = cx - half;
-    var sy = cy - half;
+    // La imagen se centra en el contenedor, luego se desplaza (ox,oy) y escala por z
+    // CSS: translate(-50%,-50%) translate(ox,oy) scale(z)
+    // Centro de la imagen original en pantalla: (ox, oy)
+    // Esquina sup-izq (x=0) en imagen: iw/2 - ox/z
+    // sx = iw/2 - ox/z, sy = ih/2 - oy/z
+    // sw = cw/z, sh = cw/z
+    var sx = iw / 2 - ox / z;
+    var sy = ih / 2 - oy / z;
     var sw = cw / z;
     var sh = cw / z;
     // Clampear a bordes de la imagen
@@ -1599,7 +1596,7 @@ function exportarRespaldo() {
   leerDeDB('rp_todos', function(personas) {
     leerDeDB('rp_libreta', function(libreta) {
       var respaldo = {
-        version: 'v118',
+        version: 'v119',
         fecha: new Date().toISOString(),
         personas: personas || [],
         libreta: libreta || [],
@@ -1882,7 +1879,7 @@ function importar8k() {
     btn.textContent = '⚡ IMPORTAR LOS 8000 REGISTROS';
     return;
   }
-  var url = 'https://raw.githubusercontent.com/lefer1207/registro-v118/main/respaldov118_compacto.json';
+  var url = 'https://raw.githubusercontent.com/lefer1207/registro-v119/main/respaldov119_compacto.json';
   fetch(url)
     .then(function(r) { return r.json(); })
     .then(function(data) {
@@ -2007,7 +2004,7 @@ function importarFotos() {
     return;
   }
   var totalChunks = 19;
-  var baseUrl = 'https://raw.githubusercontent.com/lefer1207/registro-v118/main/';
+  var baseUrl = 'https://raw.githubusercontent.com/lefer1207/registro-v119/main/';
   var fotos = [];
   var descargados = 0;
   
@@ -2088,6 +2085,6 @@ function importarFotos() {
 }
 
 </script>
-  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v118</div>
+  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v119</div>
 </body>
 </html>
