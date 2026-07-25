@@ -47,6 +47,15 @@
       box-shadow: 0 0 0 1000px rgba(0,0,0,0.5) !important;
       pointer-events: none !important;
     }
+        .crop-handle {
+      position: absolute !important; width: 24px !important; height: 24px !important;
+      border: 3px solid #fff !important; border-radius: 50% !important;
+      background: rgba(0,0,0,0.5) !important; z-index: 10 !important;
+    }
+    .crop-handle-nw { top: -12px !important; left: -12px !important; cursor: nwse-resize !important; }
+    .crop-handle-ne { top: -12px !important; right: -12px !important; cursor: nesw-resize !important; }
+    .crop-handle-sw { bottom: -12px !important; left: -12px !important; cursor: nesw-resize !important; }
+    .crop-handle-se { bottom: -12px !important; right: -12px !important; cursor: nwse-resize !important; }
     .crop-controls {
       display: flex !important; gap: 10px !important; margin-top: 20px !important;
     }
@@ -1218,6 +1227,9 @@ var cropZoom = 1;
 var cropOffsetX = 0, cropOffsetY = 0;
 var cropDragStartX = 0, cropDragStartY = 0;
 var cropDragging = false;
+var cropPinching = false;
+var cropPinchDist = 0;
+var cropPinchZoom = 1;
 
 function abrirEditor(dataUrl) {
   cropImgData = dataUrl;
@@ -1240,19 +1252,17 @@ function renderCropModal() {
   overlay.innerHTML = '<div style="color:#fff;margin-bottom:15px;font-family:sans-serif;font-size:1.1rem;font-weight:bold;">Ajustar Foto</div>' +
     '<div class="crop-container" id="cropContainer" style="width:90vw;height:90vw;max-width:450px;max-height:450px;">' +
     '<img id="cropImg" src="'+cropImgData+'" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) translate('+cropOffsetX+'px,'+cropOffsetY+'px) scale('+cropZoom+');max-width:none;cursor:move;user-select:none;">' +
-    '<div class="crop-frame"></div></div>' +
+    '<div class="crop-frame"></div>' +
+    '<div class="crop-handle crop-handle-nw"></div>' +
+    '<div class="crop-handle crop-handle-ne"></div>' +
+    '<div class="crop-handle crop-handle-sw"></div>' +
+    '<div class="crop-handle crop-handle-se"></div>' +
+    '</div>' +
     '<div class="crop-controls">' +
-    '<button class="crop-cancel" onclick="cropZoomOut()" style="width:44px;height:44px;border-radius:50%;border:1px solid #555;background:#333;color:white;font-size:1.5rem;cursor:pointer;">\u2212</button>' +
     '<button class="crop-cancel" onclick="cerrarEditor()">CANCELAR</button>' +
     '<button class="crop-confirm" onclick="confirmarCrop()">APLICAR</button>' +
-    '<button class="crop-confirm" onclick="cropZoomIn()" style="width:44px;height:44px;border-radius:50%;border:1px solid #555;background:#333;color:white;font-size:1.5rem;cursor:pointer;">+</button>' +
     '</div>' +
-    '<div style="margin-top:12px;width:80%;max-width:350px;display:flex;align-items:center;gap:8px;">' +
-    '<span style="color:#888;font-size:0.8rem;">0.1x</span>' +
-    '<input type="range" id="zoomSlider" min="0.1" max="20" step="0.1" value="'+cropZoom+'" style="flex:1;accent-color:#2ecc71;" oninput="cropZoomSet(this.value)">' +
-    '<span style="color:#888;font-size:0.8rem;">20x</span>' +
-    '</div>' +
-    '<div style="color:#888;margin-top:10px;font-size:0.8rem;font-family:sans-serif;">Arrastra la foto para encuadrar \u2022 slider para zoom libre</div>';
+    '<div style="color:#888;margin-top:10px;font-size:0.8rem;font-family:sans-serif;">Arrastra la foto para encuadrar • pellizca para zoom • tira de las esquinas para redimensionar</div>';
   document.body.appendChild(overlay);
 
   var img = document.getElementById('cropImg');
@@ -1260,24 +1270,68 @@ function renderCropModal() {
     cropDragging = true; cropDragStartX = e.clientX - cropOffsetX; cropDragStartY = e.clientY - cropOffsetY; e.preventDefault();
   });
   img.addEventListener('touchstart', function(e) {
-    e.preventDefault(); var t = e.touches[0]; cropDragging = true; cropDragStartX = t.clientX - cropOffsetX; cropDragStartY = t.clientY - cropOffsetY;
+    if(e.touches.length === 2) {
+      var t1 = e.touches[0], t2 = e.touches[1];
+      cropPinchDist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+      cropPinchZoom = cropZoom; cropPinching = true; cropDragging = false; e.preventDefault();
+      return;
+    }
+    if(e.touches.length === 1) {
+      e.preventDefault(); var t = e.touches[0]; cropDragging = true; cropDragStartX = t.clientX - cropOffsetX; cropDragStartY = t.clientY - cropOffsetY;
+    }
   }, {passive:false});
   document.addEventListener('mousemove', function(e) {
     if(!cropDragging) return; cropOffsetX = e.clientX - cropDragStartX; cropOffsetY = e.clientY - cropDragStartY; updateCropPos();
   });
   document.addEventListener('touchmove', function(e) {
+    if(cropPinching && e.touches.length === 2) {
+      e.preventDefault();
+      var t1 = e.touches[0], t2 = e.touches[1];
+      var dist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+      cropZoom = Math.max(0.1, Math.min(20, cropPinchZoom * (dist / cropPinchDist)));
+      updateCropPos(); return;
+    }
     if(!cropDragging) return; e.preventDefault(); var t = e.touches[0]; cropOffsetX = t.clientX - cropDragStartX; cropOffsetY = t.clientY - cropDragStartY; updateCropPos();
   }, {passive:false});
   document.addEventListener('mouseup', function() { cropDragging = false; });
-  document.addEventListener('touchend', function() { cropDragging = false; });
+  document.addEventListener('touchend', function(e) { cropDragging = false; cropPinching = false; });
+  setupCornerHandle('crop-handle-nw', -1, -1);
+  setupCornerHandle('crop-handle-ne', 1, -1);
+  setupCornerHandle('crop-handle-sw', -1, 1);
+  setupCornerHandle('crop-handle-se', 1, 1);
 }
-
 function updateCropPos() {
   var img = document.getElementById('cropImg');
   if(img) img.style.transform = 'translate(-50%,-50%) translate('+cropOffsetX+'px,'+cropOffsetY+'px) scale('+cropZoom+')';
 }
 
-// Zoom ahora con pellizco y esquinas
+
+function setupCornerHandle(className, dirX, dirY) {
+  var el = document.querySelector('.'+className);
+  if(!el) return;
+  var dragging = false, startX, startY, startZoom;
+  el.addEventListener('mousedown', function(e) {
+    dragging = true; startX = e.clientX; startY = e.clientY; startZoom = cropZoom; e.preventDefault(); e.stopPropagation();
+  });
+  el.addEventListener('touchstart', function(e) {
+    if(e.touches.length===1) { dragging = true; startX = e.touches[0].clientX; startY = e.touches[0].clientY; startZoom = cropZoom; e.preventDefault(); e.stopPropagation(); }
+  }, {passive:false});
+  function onMove(e) {
+    if(!dragging) return;
+    var cx = e.clientX || (e.touches && e.touches[0].clientX);
+    var cy = e.clientY || (e.touches && e.touches[0].clientY);
+    if(cx === undefined) return;
+    var dx = (cx - startX) * dirX;
+    var dy = (cy - startY) * dirY;
+    var delta = (Math.abs(dx) > Math.abs(dy) ? dx : dy) * 0.02;
+    cropZoom = Math.max(0.1, Math.min(20, startZoom + delta));
+    updateCropPos();
+  }
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('touchmove', onMove, {passive:false});
+  document.addEventListener('mouseup', function() { dragging = false; });
+  document.addEventListener('touchend', function() { dragging = false; });
+}
 
 function cerrarEditor() {
   var el = document.getElementById('cropOverlay');
