@@ -496,11 +496,7 @@
   <div class="scanner-overlay" id="scannerOverlay">
     <button class="scanner-close" onclick="cerrarScanner()">✕</button>
     <div id="scannerContainer"></div>
-    <div class="scanner-actions" id="scannerActions" style="display:none;margin-top:12px;gap:10px;flex-wrap:wrap;justify-content:center;">
-      <button onclick="tomarFotoOCR()" style="padding:14px 24px;border:none;border-radius:12px;background:#27ae60;color:white;font-size:1rem;cursor:pointer;font-weight:bold;">📸 Foto para cedula vieja</button>
-    </div>
     <div class="scanner-status" id="scannerStatus">Esperando lector QR...</div>
-    <div class="scanner-result" id="scannerResult" style="display:none;margin-top:8px;padding:12px;background:#222;border-radius:10px;color:#fff;max-width:400px;width:100%;box-sizing:border-box;font-size:.85rem;text-align:left;"></div>
   </div>
 
   <!-- PERSONAS -->
@@ -932,8 +928,8 @@ function abrirScanner() {
       },
       function(err) {}
     ).then(function(){
-      document.getElementById('scannerStatus').textContent = '📷 QR para nuevas · 📸 Foto para viejas';
-      document.getElementById('scannerActions').style.display = 'flex';
+      document.getElementById('scannerStatus').textContent = '📷 Apuntale al QR de la cedula';
+
     }).catch(function(err) {
       document.getElementById('scannerStatus').textContent = '❌ No se pudo iniciar la camara. Permiti el acceso o proba con otro dispositivo.';
       document.getElementById('scannerStatus').innerHTML += '<br><button onclick="abrirScanner()" style="margin-top:12px;padding:10px 20px;background:#3498db;color:white;border:none;border-radius:8px;font-size:1rem;cursor:pointer;">Reintentar</button>';
@@ -942,86 +938,13 @@ function abrirScanner() {
 }
 function cerrarScanner() {
   document.getElementById('scannerOverlay').classList.remove('open');
-  document.getElementById('scannerActions').style.display = 'none';
-  document.getElementById('scannerResult').style.display = 'none';
   if (html5QrCode) { try { html5QrCode.stop(); } catch(e){} }
-}
-function tomarFotoOCR() {
-  if (!html5QrCode) return;
-  var video = document.querySelector('#scannerContainer video');
-  if (!video) { showToast('⚠️ Espera que la camara este activa'); return; }
-  document.getElementById('scannerStatus').textContent = '🔍 Procesando...';
-  var canvas = document.createElement('canvas');
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
-  var ctx = canvas.getContext('2d');
-  ctx.drawImage(video, 0, 0);
-  var imgData = canvas.toDataURL('image/jpeg', 0.9);
-  try { html5QrCode.stop(); } catch(e){}
-  document.getElementById('scannerContainer').innerHTML = '<img src="'+imgData+'" style="max-width:100%;border-radius:12px;">';
-  document.getElementById('scannerActions').style.display = 'none';
-  if ('BarcodeDetector' in window) {
-    var bd = new BarcodeDetector({ formats: ['qr_code', 'code_128', 'code_39', 'ean_13', 'code_93'] });
-    var blob = dataURLtoBlob(imgData);
-    createImageBitmap(blob).then(function(bmp){
-      bd.detect(bmp).then(function(codes){
-        if (codes && codes.length > 0) {
-          var raw = codes[0].rawValue || '';
-          var ci = raw.replace(/\D/g, '');
-          if (ci.length >= 7 && ci.length <= 8) {
-            mostrarResultadoCI(ci);
-            return;
-          }
-        }
-        mostrarResultadoCI('');
-      }).catch(function(){ mostrarResultadoCI(''); });
-    }).catch(function(){ mostrarResultadoCI(''); });
-  } else {
-    mostrarResultadoCI('');
-  }
-}
-function dataURLtoBlob(dataURL) {
-  var parts = dataURL.split(',');
-  var mime = parts[0].match(/:(.*?);/)[1];
-  var raw = atob(parts[1]);
-  var arr = new Uint8Array(raw.length);
-  for (var i=0; i<raw.length; i++) arr[i] = raw.charCodeAt(i);
-  return new Blob([arr], { type: mime });
-}
-function mostrarResultadoCI(ci) {
-  document.getElementById('scannerResult').style.display = 'block';
-  if (ci) {
-    document.getElementById('scannerResult').innerHTML = '<div style="color:#2ecc71;font-size:1.1rem;font-weight:bold;">✅ CI: '+ci+'</div>'+
-      '<div style="margin-top:12px;display:flex;gap:8px;justify-content:center;">'+
-      '<button onclick="aplicarOCR(\''+ci+'\')" style="padding:10px 20px;border:none;border-radius:8px;background:#27ae60;color:white;font-size:.9rem;cursor:pointer;">✅ Aplicar</button>'+
-      '<button onclick="reintentarOCR()" style="padding:10px 20px;border:none;border-radius:8px;background:#555;color:white;font-size:.9rem;cursor:pointer;">🔄 Reintentar</button></div>';
-    document.getElementById('scannerStatus').textContent = '✅ CI detectado';
-  } else {
-    document.getElementById('scannerResult').innerHTML = '<div style="color:#ffc107;">⚠️ No se pudo leer automaticamente. Ingresa el numero:</div>'+
-      '<div style="margin-top:8px;display:flex;gap:6px;"><input type="text" id="manualCI" placeholder="CI sin digito" style="flex:1;padding:10px;border-radius:8px;border:1px solid #555;background:#333;color:#fff;font-size:1rem;text-align:center;" inputmode="numeric">'+
-      '<button onclick="aplicarManualCI()" style="padding:10px 16px;border:none;border-radius:8px;background:#27ae60;color:white;font-size:1rem;cursor:pointer;font-weight:bold;">OK</button></div>'+
-      '<div style="margin-top:12px;text-align:center;"><button onclick="reintentarOCR()" style="padding:10px 20px;border:none;border-radius:8px;background:#555;color:white;font-size:.9rem;cursor:pointer;">🔄 Reintentar</button></div>';
-    document.getElementById('scannerStatus').textContent = '✏️ Ingresa el CI manualmente';
-  }
-}
-function aplicarManualCI() {
-  var ci = document.getElementById('manualCI').value.trim().replace(/\D/g, '');
-  if (ci.length < 7) { showToast('⚠️ Ingresa un CI valido (7-8 digitos)'); return; }
-  cerrarScanner();
-  document.getElementById('fpCI').value = ci;
-  validarCIField();
-  showToast('✅ CI: ' + ci);
 }
 function aplicarOCR(ci) {
   cerrarScanner();
   document.getElementById('fpCI').value = ci;
   validarCIField();
   showToast('✅ CI: ' + ci);
-}
-function reintentarOCR() {
-  document.getElementById('scannerResult').style.display = 'none';
-  document.getElementById('scannerContainer').innerHTML = '';
-  abrirScanner();
 }
 
 function guardarAdicionales() {
