@@ -1171,22 +1171,6 @@ function renderPersonas(q) {
         items.push(p);
       }
     }
-    // Add vinculados of matched personas
-    var added = {};
-    for (var d = 0; d < directMatches.length; d++) { added[directMatches[d]] = true; }
-    for (var d = 0; d < directMatches.length; d++) {
-      var idx = directMatches[d];
-      var vincStr = (D[idx][8]||'');
-      if (!vincStr) continue;
-      var vincNames = vincStr.split(',').map(function(s){ return s.trim(); }).filter(function(s){ return s; });
-      for (var v = 0; v < vincNames.length; v++) {
-        for (var i = 0; i < D.length; i++) {
-          if (D[i][0].trim() === vincNames[v] && !added[i]) {
-            items.push(D[i]);
-            added[i] = true;
-          }
-        }
-      }
     }
     // Rebuild ultimosIndicesPersonas
     for (var i = 0; i < items.length; i++) {
