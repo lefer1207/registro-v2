@@ -855,17 +855,16 @@ function ejecutarBusquedaRapida() {
   var q = document.getElementById('overlaySearch').value.trim();
   var res = document.getElementById('overlayResults');
   if (!q) { res.innerHTML = ''; return; }
-  var qClean = q.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  var qClean = q.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
   var words = qClean.split(/\s+/).filter(function(w){ return w.length > 0; });
   var filter = [];
   for (var i = 0; i < D.length; i++) {
     var p = D[i];
-    var searchString = [(p[0]||''), (p[1]||'')].join(' ').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    var nombre = (p[0]||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    var ci = (p[1]||'').toLowerCase();
     var matchAll = true;
     for (var w = 0; w < words.length; w++) {
-      var esc = words[w].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      var re = new RegExp('\\\\b' + esc + '\\\\b', 'i');
-      if (!re.test(searchString)) { matchAll = false; break; }
+      if (!nombre.includes(words[w]) && !ci.includes(words[w])) { matchAll = false; break; }
     }
     if (matchAll) filter.push({idx: i, p: p});
     if (filter.length >= 10) break;
@@ -1191,14 +1190,13 @@ function buscarPersonas() {
   buscarPersonasTimer = setTimeout(function(){
     var q = document.getElementById('searchPersonas').value.trim();
     if (!q) { renderPersonas(D); return; }
-    var qClean = q.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    var qClean = q.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
     var words = qClean.split(/\s+/).filter(function(w){ return w.length > 0; });
     var filter = D.filter(function(p){
-      var searchString = [(p[0]||''), (p[1]||'')].join(' ').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      var nombre = (p[0]||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+      var ci = (p[1]||'').toLowerCase();
       for (var w = 0; w < words.length; w++) {
-        var esc = words[w].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        var re = new RegExp('\\\\b' + esc + '\\\\b', 'i');
-        if (!re.test(searchString)) return false;
+        if (!nombre.includes(words[w]) && !ci.includes(words[w])) return false;
       }
       return true;
     });
@@ -1278,29 +1276,24 @@ function buscarGlobal() {
     var q = document.getElementById('searchGlobal').value.trim();
     var res = document.getElementById('resultadosBusqueda');
     if (!q) { res.innerHTML = ''; return; }
-    var qClean = q.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    var qClean = q.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
     var words = qClean.split(/\s+/).filter(function(w){ return w.length > 0; });
     var results = [];
     var matchedIdx = {};
     for (var i = 0; i < D.length; i++) {
       var p = D[i];
-      if (!p || !Array.isArray(p)) continue;
-      // Solo buscamos en NOMBRE (p[0]) y CEDULA (p[1])
-      var searchString = [(p[0]||''), (p[1]||'')].join(' ').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      if (!p) continue;
+      var nombre = (p[0]||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+      var ci = (p[1]||'').toLowerCase();
       var matchAll = true;
       for (var w = 0; w < words.length; w++) {
-        try {
-          var esc = words[w].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-          var re = new RegExp('\\\\b' + esc + '\\\\b', 'i');
-          if (!re.test(searchString)) { matchAll = false; break; }
-        } catch(e) { matchAll = false; }
+        if (!nombre.includes(words[w]) && !ci.includes(words[w])) { matchAll = false; break; }
       }
       if (matchAll) {
         results.push({idx:i, p:p});
         matchedIdx[i] = true;
       }
     }
-    // Agregar vinculados de las personas encontradas
     var extra = [];
     for (var a = 0; a < results.length; a++) {
       var idx = results[a].idx;
@@ -1309,7 +1302,7 @@ function buscarGlobal() {
       var vincNames = vincStr.split(',').map(function(s){ return s.trim(); }).filter(function(s){ return s; });
       for (var v = 0; v < vincNames.length; v++) {
         for (var i = 0; i < D.length; i++) {
-          if (D[i][0].trim() === vincNames[v] && !matchedIdx[i]) {
+          if (D[i] && D[i][0] && D[i][0].trim() === vincNames[v] && !matchedIdx[i]) {
             extra.push({idx:i, p:D[i]});
             matchedIdx[i] = true;
           }
@@ -1322,11 +1315,11 @@ function buscarGlobal() {
       html += '<div style="font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin:8px 0 6px;">Personas</div>';
       for (var i = 0; i < Math.min(results.length, 30); i++) {
         var r = results[i];
-        var f = '<div class="avatar">'+(r.p[11] && r.p[11].startsWith('data:image') && r.p[11].length>100?'<img src="'+esc(r.p[11])+'">':'<div class="avatar-txt">\ud83d\udc64</div>')+'</div>';
-        html += '<div class="card" onclick="verPersona('+r.idx+')">'+f+'<div class="card-info"><div class="card-name">'+esc(r.p[0])+'</div><div class="card-sub">CI '+(esc(r.p[1])||'---')+'</div></div><div class="card-arrow">\u203a</div></div>';
+        var f = '<div class="avatar">'+(r.p[11] && r.p[11].startsWith('data:image') && r.p[11].length>100?'<img src="'+esc(r.p[11])+'">':'<div class="avatar-txt">👤</div>')+'</div>';
+        html += '<div class="card" onclick="verPersona('+r.idx+')">'+f+'<div class="card-info"><div class="card-name">'+esc(r.p[0])+'</div><div class="card-sub">CI '+(esc(r.p[1])||'---')+'</div></div><div class="card-arrow">›</div></div>';
       }
     }
-    if (!html) html = '<div class="empty-state"><div class="icon">\ud83d\udd0d</div><p>Sin resultados</p></div>';
+    if (!html) html = '<div class="empty-state"><div class="icon">🔍</div><p>Sin resultados</p></div>';
     res.innerHTML = html;
   }, 400);
 }function verPersona(idx) {
