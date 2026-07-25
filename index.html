@@ -745,6 +745,7 @@ function cargarDatos() {
         if (D && Array.isArray(D)) {
           guardarEnDB('rp_todos', D);
           document.getElementById('headerCount').textContent = D.length + ' registros';
+          renderPersonas(); reportarEspacioOcupado();
           return;
         }
       }
@@ -753,6 +754,7 @@ function cargarDatos() {
       D = BASE.concat(a);
       document.getElementById('headerCount').textContent = D.length + ' registros';
       guardarEnDB('rp_todos', D);
+      renderPersonas(); reportarEspacioOcupado();
     });
   });
 }
@@ -787,6 +789,7 @@ function recuperarDeBackup() {
       guardarEnDB('rp_todos', D);
       document.getElementById('headerCount').textContent = D.length + ' registros';
       showToast('🔄 Datos restaurados del backup automatico');
+      renderPersonas(); reportarEspacioOcupado();
       return;
     }
     // Backup tambien corrupto, mostrar error
