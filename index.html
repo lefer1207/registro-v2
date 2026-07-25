@@ -1274,7 +1274,7 @@ function renderCropModal() {
 
 function updateCropPos() {
   var img = document.getElementById('cropImg');
-  if(img) img.style.transform = 'translate(-50%,-50%) scale('+cropZoom+') translate('+cropOffsetX+'px,'+cropOffsetY+'px)';
+  if(img) img.style.transform = 'translate(-50%,-50%) translate('+cropOffsetX+'px,'+cropOffsetY+'px) scale('+cropZoom+')';
 }
 
 function cropZoomIn() { cropZoom = cropZoom + 0.2; updateCropPos(); var s = document.getElementById('zoomSlider'); if(s) s.value = cropZoom; }
@@ -1294,13 +1294,20 @@ function confirmarCrop() {
   tempImg.onload = function() {
     var iw = tempImg.width, ih = tempImg.height;
     var z = cropZoom, ox = cropOffsetX, oy = cropOffsetY;
-    // Calcular qué parte de la imagen original se ve en el cuadro de recorte
-    // La imagen está centrada en el cuadro, luego movida por (ox,oy) y escalada por z
-    var sx = iw / 2 - (cw / 2 + ox) / z;
-    var sy = ih / 2 - (cw / 2 + oy) / z;
+    // En el contenedor, la imagen se muestra centrada, luego desplazada (ox,oy) y escalada por z
+    // El cuadro visible es cwxcw pixeles en pantalla
+    // En coordenadas de la imagen original, eso es:
+    //   - centro del cuadro en la imagen original: iw/2 - ox/z , ih/2 - oy/z
+    //   - tamaño del cuadro en la imagen original: cw/z , cw/z
+    //   - esquina superior izquierda: centro - tamaño/2
+    var cx = iw / 2 - ox / z;
+    var cy = ih / 2 - oy / z;
+    var half = (cw / 2) / z;
+    var sx = cx - half;
+    var sy = cy - half;
     var sw = cw / z;
     var sh = cw / z;
-    // Clampear a los bordes de la imagen
+    // Clampear a bordes de la imagen
     if (sx < 0) { sw += sx; sx = 0; }
     if (sy < 0) { sh += sy; sy = 0; }
     if (sx + sw > iw) sw = iw - sx;
@@ -1311,7 +1318,7 @@ function confirmarCrop() {
     var ctx = canvas.getContext('2d');
     ctx.drawImage(tempImg, sx, sy, sw, sh, 0, 0, 400, 400);
     fotoActual = canvas.toDataURL('image/jpeg', 0.85);
-    document.getElementById('photoPreviewContainer').innerHTML = '<img src="'+fotoActual+'" class="photo-preview">';
+    document.getElementById('photoPreviewContainer').innerHTML = '<img src="'+fotoActual+'" class="photo-preview" style="width:100%;height:100%;object-fit:cover;border-radius:8px;">';
     cerrarEditor();
   };
   tempImg.src = cropImgData;
@@ -1592,7 +1599,7 @@ function exportarRespaldo() {
   leerDeDB('rp_todos', function(personas) {
     leerDeDB('rp_libreta', function(libreta) {
       var respaldo = {
-        version: 'v117',
+        version: 'v118',
         fecha: new Date().toISOString(),
         personas: personas || [],
         libreta: libreta || [],
@@ -1875,7 +1882,7 @@ function importar8k() {
     btn.textContent = '⚡ IMPORTAR LOS 8000 REGISTROS';
     return;
   }
-  var url = 'https://raw.githubusercontent.com/lefer1207/registro-v117/main/respaldov117_compacto.json';
+  var url = 'https://raw.githubusercontent.com/lefer1207/registro-v118/main/respaldov118_compacto.json';
   fetch(url)
     .then(function(r) { return r.json(); })
     .then(function(data) {
@@ -2000,7 +2007,7 @@ function importarFotos() {
     return;
   }
   var totalChunks = 19;
-  var baseUrl = 'https://raw.githubusercontent.com/lefer1207/registro-v117/main/';
+  var baseUrl = 'https://raw.githubusercontent.com/lefer1207/registro-v118/main/';
   var fotos = [];
   var descargados = 0;
   
@@ -2081,6 +2088,6 @@ function importarFotos() {
 }
 
 </script>
-  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v117</div>
+  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v118</div>
 </body>
 </html>
