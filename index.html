@@ -429,7 +429,7 @@
 #scannerContainer video { border-radius: 0; }
 #scannerContainer img { border-radius: 0; }
 </style>
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="html5-qrcode.min.js"></script>
 </head>
 <body>
 
@@ -438,7 +438,7 @@
 <div class="toast" id="toast"></div>
 
 <header>
-  <h1>🛡️ Registro Policial<span style="display:block;font-size:0.6rem;font-weight:normal;opacity:0.6;margin-top:2px;">v124</span></h1>
+  <h1>🛡️ Registro Policial<span style="display:block;font-size:0.6rem;font-weight:normal;opacity:0.6;margin-top:2px;">v125</span></h1>
   <span class="count" id="headerCount">0</span>
 </header>
 
@@ -1762,7 +1762,7 @@ function exportarRespaldo() {
   leerDeDB('rp_todos', function(personas) {
     leerDeDB('rp_libreta', function(libreta) {
       var respaldo = {
-        version: 'v124',
+        version: 'v125',
         fecha: new Date().toISOString(),
         personas: personas || [],
         libreta: libreta || [],
