@@ -2049,7 +2049,12 @@ function importar8k() {
   function tryF(){return fetch(url).then(function(r){if(!r.ok){urlIdx++;if(urlIdx<urls.length){url=urls[urlIdx];return tryF();}throw new Error('No hay respaldo');}return r.json();})}
   tryF()
     .then(function(data) {
-      if (!Array.isArray(data)) throw new Error('Formato incorrecto');
+      if (!Array.isArray(data)) {
+        if (data.personas && Array.isArray(data.personas)) {
+          if (data.libreta) { L = data.libreta; guardarLibreta(); }
+          data = data.personas;
+        } else { throw new Error('Formato incorrecto'); }
+      }
       document.getElementById('respaldoStatus').textContent = '📦 ' + data.length + ' registros (tu respaldo personal). Importando...';
       var nuevos = [];
       for (var i = 0; i < data.length; i++) {
