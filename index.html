@@ -438,7 +438,7 @@
 <div class="toast" id="toast"></div>
 
 <header>
-  <h1>🛡️ Registro Policial<span style="display:block;font-size:0.6rem;font-weight:normal;opacity:0.6;margin-top:2px;">v126</span></h1>
+  <h1>🛡️ Registro Policial<span style="display:block;font-size:0.6rem;font-weight:normal;opacity:0.6;margin-top:2px;">v127</span></h1>
   <span class="count" id="headerCount">0</span>
 </header>
 
@@ -1272,7 +1272,13 @@ function verPersona(idx) {
     }
     h += '<div class="detail-section"><h3>Vinculos</h3><div class="detail-notes">'+txtVinculos+'</div></div>';
   }
-  if (p[9]) h += '<div class="detail-section"><h3>Antecedentes</h3><div class="detail-notes">'+esc(p[9])+'</div></div>';
+  if (p[9]) {
+    var mostrarAnt = true;
+    if (p[10] && p[10].length > 0 && p[10][0].trim() === p[9].trim()) {
+      mostrarAnt = false;
+    }
+    if (mostrarAnt) h += '<div class="detail-section"><h3>Antecedentes</h3><div class="detail-notes">'+esc(p[9])+'</div></div>';
+  }
   if (p[10] && p[10].length) h += '<div class="detail-section"><h3>Notas</h3><div class="detail-notes">'+esc(p[10].join(' / '))+'</div></div>';
 
   h += '<div class="form-actions" style="margin-top:24px; display:flex; gap:10px;">';
@@ -1804,7 +1810,7 @@ function exportarRespaldo() {
   leerDeDB('rp_todos', function(personas) {
     leerDeDB('rp_libreta', function(libreta) {
       var respaldo = {
-        version: 'v126',
+        version: 'v127',
         fecha: new Date().toISOString(),
         personas: personas || [],
         libreta: libreta || [],
@@ -2021,7 +2027,16 @@ function importarDatos(event) {
           if (ciNuevo && ciExistente && ciNuevo === ciExistente) {
             // Actualizar datos si el existente tiene campos vacíos
             for (var k = 0; k < n.length; k++) {
-              if (n[k] && (!D[j][k] || (k === 11 && !D[j][k]))) {
+              if (k === 10) { // Notas
+                if (n[10] && n[10].length > 0) {
+                  var notaNueva = n[10][0];
+                  if (D[j][10] && Array.isArray(D[j][10])) {
+                    if (D[j][10].indexOf(notaNueva) === -1) D[j][10].push(notaNueva);
+                  } else {
+                    D[j][10] = [notaNueva];
+                  }
+                }
+              } else if (n[k] && (!D[j][k] || (k === 11 && !D[j][k]))) {
                 D[j][k] = n[k];
               }
             }
