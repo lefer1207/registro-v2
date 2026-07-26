@@ -438,7 +438,7 @@
 <div class="toast" id="toast"></div>
 
 <header>
-  <h1>🛡️ Registro Policial<span style="display:block;font-size:0.6rem;font-weight:normal;opacity:0.6;margin-top:2px;">v125</span></h1>
+  <h1>🛡️ Registro Policial<span style="display:block;font-size:0.6rem;font-weight:normal;opacity:0.6;margin-top:2px;">v126</span></h1>
   <span class="count" id="headerCount">0</span>
 </header>
 
@@ -863,12 +863,54 @@ function guardarAdicionales() {
     guardarEnDB('rp_checksum', suma);
   } catch(e) {}
   try { localStorage.setItem('rp_todos', JSON.stringify(D)); } catch(e) {}
-  autoBackupSemanal();
+  guardarSnapshot(); autoBackupSemanal();
 }
 
 // ============================================================
 // BLINDAJE EXTRA: Auto-respaldo semanal
 // ============================================================
+
+// ============================================================
+// BLINDAJE TOTAL: Snapshots diarios automaticos
+// ============================================================
+function guardarSnapshot() {
+  try {
+    var hoy = new Date().toISOString().slice(0,10);
+    var ultimoSnap = localStorage.getItem('rp_ultimo_snapshot');
+    if (ultimoSnap === hoy) return;
+    var snap = { fecha: hoy, timestamp: Date.now(), datos: D, libreta: L };
+    leerDeDB('rp_snapshots', function(existing) {
+      var snaps = existing || [];
+      snaps.push(snap);
+      if (snaps.length > 7) snaps = snaps.slice(snaps.length - 7);
+      guardarEnDB('rp_snapshots', snaps);
+      localStorage.setItem('rp_ultimo_snapshot', hoy);
+    });
+  } catch(e) { console.warn('Snapshot fallo:', e); }
+}
+
+function recuperarDeSnapshot(callback) {
+  leerDeDB('rp_snapshots', function(snaps) {
+    if (!snaps || snaps.length === 0) { callback(false); return; }
+    function probar(i) {
+      if (i < 0) { callback(false); return; }
+      var s = snaps[i];
+      if (s && s.datos && Array.isArray(s.datos) && verificarIntegridad(s.datos)) {
+        D = s.datos;
+        if (s.libreta) L = s.libreta;
+        guardarEnDB('rp_todos', D);
+        guardarEnDB('rp_backup', D);
+        try { localStorage.setItem('rp_backup_datos', JSON.stringify(D)); } catch(e){}
+        guardarLibreta();
+        showToast('Recuperado desde snapshot del ' + s.fecha);
+        callback(true);
+      } else {
+        probar(i - 1);
+      }
+    }
+    probar(snaps.length - 1);
+  });
+}
 function autoBackupSemanal() {
   try {
     var ultimoBackup = localStorage.getItem('rp_ultimo_backup');
@@ -1762,7 +1804,7 @@ function exportarRespaldo() {
   leerDeDB('rp_todos', function(personas) {
     leerDeDB('rp_libreta', function(libreta) {
       var respaldo = {
-        version: 'v125',
+        version: 'v126',
         fecha: new Date().toISOString(),
         personas: personas || [],
         libreta: libreta || [],
