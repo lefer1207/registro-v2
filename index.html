@@ -741,7 +741,7 @@ function leerDeDB(clave, callback) {
 }
 
 function cargarDatos() {
-  leerDeDB('rp_todos', function(valor) {
+  leerDeDB('rp_todos', function(valor) { if (!valor || valor.length === 0) { try { var bk = localStorage.getItem('rp_backup_datos'); if (bk) { try { valor = JSON.parse(bk); } catch(e){} } } catch(e){} }
     if (valor && Array.isArray(valor)) {
       if (verificarIntegridad(valor)) {
         D = valor;
@@ -756,7 +756,7 @@ function cargarDatos() {
     leerDeDB('rp_backup', function(backup) {
       if (backup && Array.isArray(backup) && verificarIntegridad(backup)) {
         D = backup;
-        guardarEnDB('rp_todos', D);
+        guardarEnDB('rp_todos', D); try { localStorage.setItem('rp_backup_datos', JSON.stringify(D)); } catch(e){}
         document.getElementById('headerCount').textContent = D.length + ' registros';
         showToast('🔄 Datos recuperados del backup automatico');
         renderPersonas(); reportarEspacioOcupado();
@@ -766,7 +766,7 @@ function cargarDatos() {
       if (full) {
         try { D = JSON.parse(full); } catch(e) { D = null; }
         if (D && Array.isArray(D)) {
-          guardarEnDB('rp_todos', D);
+          guardarEnDB('rp_todos', D); try { localStorage.setItem('rp_backup_datos', JSON.stringify(D)); } catch(e){}
           document.getElementById('headerCount').textContent = D.length + ' registros';
           renderPersonas(); reportarEspacioOcupado();
           return;
@@ -776,7 +776,7 @@ function cargarDatos() {
       var a = g ? JSON.parse(g) : [];
       D = BASE.concat(a);
       document.getElementById('headerCount').textContent = D.length + ' registros';
-      guardarEnDB('rp_todos', D);
+      guardarEnDB('rp_todos', D); try { localStorage.setItem('rp_backup_datos', JSON.stringify(D)); } catch(e){}
       renderPersonas(); reportarEspacioOcupado();
     });
   });
@@ -795,7 +795,7 @@ function recuperarDeBackup() {
   leerDeDB('rp_backup', function(backup) {
     if (backup && Array.isArray(backup) && verificarIntegridad(backup)) {
       D = backup;
-      guardarEnDB('rp_todos', D);
+      guardarEnDB('rp_todos', D); try { localStorage.setItem('rp_backup_datos', JSON.stringify(D)); } catch(e){}
       document.getElementById('headerCount').textContent = D.length + ' registros';
       showToast('🔄 Datos restaurados del backup automatico');
       renderPersonas(); reportarEspacioOcupado();
@@ -854,7 +854,7 @@ function cerrarScanner() {
 function guardarAdicionales() {
   document.getElementById('headerCount').textContent = D.length + ' registros';
   if (!D || !Array.isArray(D)) { console.error('guardarAdicionales: datos invalidos'); return; }
-  guardarEnDB('rp_todos', D);
+  guardarEnDB('rp_todos', D); try { localStorage.setItem('rp_backup_datos', JSON.stringify(D)); } catch(e){}
   guardarEnDB('rp_backup', D);
   try {
     var suma = 0;
@@ -1796,7 +1796,7 @@ function importarRespaldo(event) {
       }
       if (!confirm('Restaurar ' + respaldo.cantidadPersonas + ' personas y ' + (respaldo.cantidadNotas||0) + ' notas?\n\n⚠️ Esto va a REEMPLAZAR todos los datos actuales. Seguro?')) return;
       if (!confirm('Segurisimo? No se puede deshacer.')) return;
-      guardarEnDB('rp_todos', respaldo.personas);
+      guardarEnDB('rp_todos', respaldo.personas); try { localStorage.setItem('rp_backup_datos', JSON.stringify(respaldo.personas)); } catch(e){}
       if (respaldo.libreta && Array.isArray(respaldo.libreta)) {
         guardarEnDB('rp_libreta', respaldo.libreta);
         L = respaldo.libreta;
@@ -2148,7 +2148,7 @@ function importar8k() {
       btn.disabled = false;
       btn.textContent = '⚡ IMPORTAR LOS 8000 REGISTROS';
       var msgExtra = linksCreados > 0 ? (' + ' + linksCreados + ' vínculos') : '';
-      document.getElementById('respaldoStatus').textContent = '✅ ' + agregados + ' nuevos, ' + actualizados + ' actualizados' + msgExtra + ' (Total: ' + D.length + ')';
+      try { localStorage.setItem('rp_backup_datos', JSON.stringify(D)); } catch(e){} document.getElementById('respaldoStatus').textContent = '✅ ' + agregados + ' nuevos, ' + actualizados + ' actualizados' + msgExtra + ' (Total: ' + D.length + ')';
       setTimeout(function(){ document.getElementById('respaldoStatus').textContent = ''; }, 8000);
     })
     .catch(function(err) {
