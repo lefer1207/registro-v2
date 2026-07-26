@@ -438,7 +438,7 @@
 <div class="toast" id="toast"></div>
 
 <header>
-  <h1>🛡️ Registro Policial<span style="display:block;font-size:0.6rem;font-weight:normal;opacity:0.6;margin-top:2px;">v128</span></h1>
+  <h1>🛡️ Registro Policial<span style="display:block;font-size:0.6rem;font-weight:normal;opacity:0.6;margin-top:2px;">v129</span></h1>
   <span class="count" id="headerCount">0</span>
 </header>
 
@@ -1097,9 +1097,10 @@ function renderPersonas(q) {
       if (!p) continue;
       var nombre = (p[0]||'').toLowerCase();
       var ci = (p[1]||'').toLowerCase();
+      var alias = (p[4]||'').toLowerCase();
       var matchAll = words.length > 0;
       for(var w=0; w<words.length; w++) {
-        if (!nombre.includes(words[w]) && !ci.includes(words[w])) { matchAll = false; break; }
+        if (!nombre.includes(words[w]) && !ci.includes(words[w]) && !alias.includes(words[w])) { matchAll = false; break; }
       }
       if (matchAll) { items.push(p); ultimosIndicesPersonas.push(i); }
     }
@@ -1810,7 +1811,7 @@ function exportarRespaldo() {
   leerDeDB('rp_todos', function(personas) {
     leerDeDB('rp_libreta', function(libreta) {
       var respaldo = {
-        version: 'v128',
+        version: 'v129',
         fecha: new Date().toISOString(),
         personas: personas || [],
         libreta: libreta || [],
