@@ -438,7 +438,7 @@
 <div class="toast" id="toast"></div>
 
 <header>
-  <h1>🛡️ Registro Policial<span style="display:block;font-size:0.6rem;font-weight:normal;opacity:0.6;margin-top:2px;">v131</span></h1>
+  <h1>🛡️ Registro Policial<span style="display:block;font-size:0.6rem;font-weight:normal;opacity:0.6;margin-top:2px;">v132</span></h1>
   <span class="count" id="headerCount">0</span>
 </header>
 
@@ -854,22 +854,25 @@ function cerrarScanner() {
 }
 
 function limpiarDuplicadosAntNotas() {
-  if (!confirm('¿Querés limpiar automáticamente los antecedentes que están repetidos en las notas? No se borra información única, solo lo duplicado.')) return;
+  if (!confirm('¿Querés limpiar automáticamente los antecedentes que ya están incluidos en las notas?')) return;
   var cont = 0;
   for (var i = 0; i < D.length; i++) {
     var p = D[i];
-    if (p[9] && p[10] && p[10].length > 0) {
-      var ant = p[9].trim().toLowerCase().replace(/\s+/g, ' ');
-      var nota = p[10][0].trim().toLowerCase().replace(/\s+/g, ' ');
-      if (ant === nota) {
-        D[i][9] = ''; // Limpiar antecedente duplicado
+    if (!p) continue;
+    var ant = (p[9] || '').trim();
+    var notas = (p[10] && p[10].length > 0) ? p[10][0].trim() : '';
+    if (ant && notas) {
+      var antC = ant.toLowerCase().replace(/\s+/g, ' ');
+      var notasC = notas.toLowerCase().replace(/\s+/g, ' ');
+      if (notasC.includes(antC)) {
+        D[i][9] = ''; 
         cont++;
       }
     }
   }
   guardarAdicionales();
   renderPersonas();
-  alert('✨ Proceso terminado. Se limpiaron ' + cont + ' registros que tenían información repetida.');
+  alert('✨ Se despejaron ' + cont + ' registros.');
 }
 
 function guardarAdicionales() {
@@ -1832,7 +1835,7 @@ function exportarRespaldo() {
   leerDeDB('rp_todos', function(personas) {
     leerDeDB('rp_libreta', function(libreta) {
       var respaldo = {
-        version: 'v131',
+        version: 'v132',
         fecha: new Date().toISOString(),
         personas: personas || [],
         libreta: libreta || [],
