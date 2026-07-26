@@ -2045,7 +2045,7 @@ function importar8k() {
     btn.textContent = '⚡ IMPORTAR LOS 8000 REGISTROS';
     return;
   }
-  var url = 'https://raw.githubusercontent.com/lefer1207/registro-v124/main/respaldov124_compacto.json';
+  var url = 'https://raw.githubusercontent.com/lefer1207/registro-v2/main/respaldo_compacto.json';
   fetch(url)
     .then(function(r) { return r.json(); })
     .then(function(data) {
@@ -2170,7 +2170,7 @@ function importarFotos() {
     return;
   }
   var totalChunks = 19;
-  var baseUrl = 'https://raw.githubusercontent.com/lefer1207/registro-v124/main/';
+  var baseUrl = 'https://raw.githubusercontent.com/lefer1207/registro-v2/main/';
   var fotos = [];
   var descargados = 0;
   
@@ -2251,7 +2251,7 @@ function importarFotos() {
 }
 
 </script>
-  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v124</div>
+  
 <script>
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("service-worker.js");
