@@ -1,4 +1,4 @@
-const CACHE = 'registro-v2-cache-v124';
+const CACHE = 'registro-v2-cache-v125';
 
 self.addEventListener('install', function(e) {
   e.waitUntil(
@@ -6,7 +6,8 @@ self.addEventListener('install', function(e) {
       return cache.addAll([
         '.',
         'index.html',
-        'manifest.json'
+        'manifest.json',
+        'html5-qrcode.min.js'
       ]);
     })
   );
