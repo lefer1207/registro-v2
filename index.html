@@ -438,7 +438,7 @@
 <div class="toast" id="toast"></div>
 
 <header>
-  <h1>🛡️ Registro Policial<span style="display:block;font-size:0.6rem;font-weight:normal;opacity:0.6;margin-top:2px;">v129</span></h1>
+  <h1>🛡️ Registro Policial<span style="display:block;font-size:0.6rem;font-weight:normal;opacity:0.6;margin-top:2px;">v130</span></h1>
   <span class="count" id="headerCount">0</span>
 </header>
 
@@ -851,6 +851,26 @@ function cerrarScanner() {
   document.getElementById('scannerOverlay').classList.remove('open');
   if (html5QrCode) { try { html5QrCode.stop(); } catch(e){} }
 }
+
+function limpiarDuplicadosAntNotas() {
+  if (!confirm('¿Querés limpiar automáticamente los antecedentes que están repetidos en las notas? No se borra información única, solo lo duplicado.')) return;
+  var cont = 0;
+  for (var i = 0; i < D.length; i++) {
+    var p = D[i];
+    if (p[9] && p[10] && p[10].length > 0) {
+      var ant = p[9].trim().toLowerCase().replace(/\s+/g, ' ');
+      var nota = p[10][0].trim().toLowerCase().replace(/\s+/g, ' ');
+      if (ant === nota) {
+        D[i][9] = ''; // Limpiar antecedente duplicado
+        cont++;
+      }
+    }
+  }
+  guardarAdicionales();
+  renderPersonas();
+  alert('✨ Proceso terminado. Se limpiaron ' + cont + ' registros que tenían información repetida.');
+}
+
 function guardarAdicionales() {
   document.getElementById('headerCount').textContent = D.length + ' registros';
   if (!D || !Array.isArray(D)) { console.error('guardarAdicionales: datos invalidos'); return; }
@@ -1811,7 +1831,7 @@ function exportarRespaldo() {
   leerDeDB('rp_todos', function(personas) {
     leerDeDB('rp_libreta', function(libreta) {
       var respaldo = {
-        version: 'v129',
+        version: 'v130',
         fecha: new Date().toISOString(),
         personas: personas || [],
         libreta: libreta || [],
@@ -2130,8 +2150,12 @@ function importar8k() {
         if (p.vehiculo2) vehs.push(p.vehiculo2);
         var ant = p.antecedentes || '';
         var nts = p.notas ? [p.notas] : [];
-        if (ant && nts.length > 0 && ant.trim() === nts[0].trim()) {
-          ant = '';  // Antecedentes igual a Notas -> no duplicar
+        if (ant && nts.length > 0) {
+          var antL = ant.trim().toLowerCase().replace(/\s+/g, ' ');
+          var notaL = nts[0].trim().toLowerCase().replace(/\s+/g, ' ');
+          if (antL === notaL) {
+            ant = ''; // Duplicado exacto ignorando espacios/mayúsculas
+          }
         }
         nuevos.push([
           nombre,
