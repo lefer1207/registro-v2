@@ -2045,12 +2045,12 @@ function importar8k() {
     btn.textContent = '⚡ Importar registros';
     return;
   }
-  var url = 'https://raw.githubusercontent.com/lefer1207/registro-v2/dev/respaldo_8000.json';
-  fetch(url)
-    .then(function(r) { return r.json(); })
+  var urls = ['https://raw.githubusercontent.com/lefer1207/registro-v2/dev/respaldo_personal.json','https://raw.githubusercontent.com/lefer1207/registro-v2/dev/respaldo_8000.json']; var urlIdx = 0; var url = urls[0];
+  function tryF(){return fetch(url).then(function(r){if(!r.ok){urlIdx++;if(urlIdx<urls.length){url=urls[urlIdx];return tryF();}throw new Error('No hay respaldo');}return r.json();})}
+  tryF()
     .then(function(data) {
       if (!Array.isArray(data)) throw new Error('Formato incorrecto');
-      document.getElementById('respaldoStatus').textContent = '📦 ' + data.length + ' registros descargados. Importando...';
+      document.getElementById('respaldoStatus').textContent = '📦 ' + data.length + ' registros (tu respaldo personal). Importando...';
       var nuevos = [];
       for (var i = 0; i < data.length; i++) {
         var p = data[i];
