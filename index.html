@@ -438,7 +438,7 @@
 <div class="toast" id="toast"></div>
 
 <header>
-  <h1>🛡️ Registro Policial<span style="display:block;font-size:0.6rem;font-weight:normal;opacity:0.6;margin-top:2px;">v132</span></h1>
+  <h1>🛡️ Registro Policial<span style="display:block;font-size:0.6rem;font-weight:normal;opacity:0.6;margin-top:2px;">v133</span></h1>
   <span class="count" id="headerCount">0</span>
 </header>
 
@@ -854,25 +854,37 @@ function cerrarScanner() {
 }
 
 function limpiarDuplicadosAntNotas() {
-  if (!confirm('¿Querés limpiar automáticamente los antecedentes que ya están incluidos en las notas?')) return;
+  if (!confirm('¿Querés limpiar los antecedentes? Se borrará solo la parte del texto que ya está repetida en las notas, dejando el resto intacto.')) return;
   var cont = 0;
   for (var i = 0; i < D.length; i++) {
     var p = D[i];
     if (!p) continue;
     var ant = (p[9] || '').trim();
     var notas = (p[10] && p[10].length > 0) ? p[10][0].trim() : '';
-    if (ant && notas) {
-      var antC = ant.toLowerCase().replace(/\s+/g, ' ');
-      var notasC = notas.toLowerCase().replace(/\s+/g, ' ');
-      if (notasC.includes(antC)) {
-        D[i][9] = ''; 
-        cont++;
+    if (!ant || !notas) continue;
+    
+    var antWords = ant.split(/\s+/);
+    var notasLower = notas.toLowerCase();
+    var nuevasPalabras = [];
+    
+    for (var w = 0; w < antWords.length; w++) {
+      var word = antWords[w];
+      if (!word) continue;
+      // Si la palabra NO está en la nota, la conservamos
+      if (notasLower.indexOf(word.toLowerCase()) === -1) {
+        nuevasPalabras.push(word);
       }
+    }
+    
+    var nuevoAnt = nuevasPalabras.join(' ').trim();
+    if (nuevoAnt !== ant) {
+      D[i][9] = nuevoAnt;
+      cont++;
     }
   }
   guardarAdicionales();
   renderPersonas();
-  alert('✨ Se despejaron ' + cont + ' registros.');
+  alert('✨ Se limpiaron ' + cont + ' registros. Solo se eliminó el texto repetido, dejando el resto.');
 }
 
 function guardarAdicionales() {
@@ -1835,7 +1847,7 @@ function exportarRespaldo() {
   leerDeDB('rp_todos', function(personas) {
     leerDeDB('rp_libreta', function(libreta) {
       var respaldo = {
-        version: 'v132',
+        version: 'v133',
         fecha: new Date().toISOString(),
         personas: personas || [],
         libreta: libreta || [],
