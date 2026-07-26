@@ -438,7 +438,7 @@
 <div class="toast" id="toast"></div>
 
 <header>
-  <h1>🛡️ Registro Policial<span style="display:block;font-size:0.6rem;font-weight:normal;opacity:0.6;margin-top:2px;">v127</span></h1>
+  <h1>🛡️ Registro Policial<span style="display:block;font-size:0.6rem;font-weight:normal;opacity:0.6;margin-top:2px;">v128</span></h1>
   <span class="count" id="headerCount">0</span>
 </header>
 
@@ -1810,7 +1810,7 @@ function exportarRespaldo() {
   leerDeDB('rp_todos', function(personas) {
     leerDeDB('rp_libreta', function(libreta) {
       var respaldo = {
-        version: 'v127',
+        version: 'v128',
         fecha: new Date().toISOString(),
         personas: personas || [],
         libreta: libreta || [],
@@ -2036,6 +2036,11 @@ function importarDatos(event) {
                     D[j][10] = [notaNueva];
                   }
                 }
+              } else if (k === 9) { // Antecedentes
+                // Solo si el registro actual tiene antecedentes VACIOS y el nuevo tiene algo distinto a notas
+                if (!D[j][9] && n[9]) {
+                  D[j][9] = n[9];
+                }
               } else if (n[k] && (!D[j][k] || (k === 11 && !D[j][k]))) {
                 D[j][k] = n[k];
               }
@@ -2124,6 +2129,9 @@ function importar8k() {
         if (p.vehiculo2) vehs.push(p.vehiculo2);
         var ant = p.antecedentes || '';
         var nts = p.notas ? [p.notas] : [];
+        if (ant && nts.length > 0 && ant.trim() === nts[0].trim()) {
+          ant = '';  // Antecedentes igual a Notas -> no duplicar
+        }
         nuevos.push([
           nombre,
           (p.ci || '').toString().trim(),
