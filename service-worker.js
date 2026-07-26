@@ -1,4 +1,4 @@
-const CACHE = 'registro-v2-cache-v127';
+const CACHE = 'registro-v2-cache-v128';
 
 self.addEventListener('install', function(e) {
   e.waitUntil(
