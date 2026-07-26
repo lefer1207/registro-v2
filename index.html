@@ -438,7 +438,7 @@
 <div class="toast" id="toast"></div>
 
 <header>
-  <h1>🛡️ Registro Policial<span style="display:block;font-size:0.6rem;font-weight:normal;opacity:0.6;margin-top:2px;">v130</span></h1>
+  <h1>🛡️ Registro Policial<span style="display:block;font-size:0.6rem;font-weight:normal;opacity:0.6;margin-top:2px;">v131</span></h1>
   <span class="count" id="headerCount">0</span>
 </header>
 
@@ -1831,7 +1831,7 @@ function exportarRespaldo() {
   leerDeDB('rp_todos', function(personas) {
     leerDeDB('rp_libreta', function(libreta) {
       var respaldo = {
-        version: 'v130',
+        version: 'v131',
         fecha: new Date().toISOString(),
         personas: personas || [],
         libreta: libreta || [],
