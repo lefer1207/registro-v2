@@ -405,7 +405,31 @@
 .error-screen button { padding: 14px 30px; background: #3498db; color: #fff; border: none; border-radius: 10px; font-size: 1rem; cursor: pointer; }
 .error-screen button:hover { background: #2980b9; }
 
+/* ESCANER CI */
+.scanner-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: #000; z-index: 99999; display: none; flex-direction: column;
+  align-items: center; justify-content: center; padding: 16px; box-sizing: border-box;
+}
+.scanner-overlay.open { display: flex; }
+.scanner-overlay video { width: 100%; max-width: 400px; border-radius: 12px; }
+.scanner-overlay .scanner-close {
+  position: absolute; top: 16px; right: 16px; font-size: 2rem; color: #fff;
+  background: rgba(255,255,255,0.2); border: none; border-radius: 50%; width: 48px; height: 48px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+.scanner-overlay .scanner-status {
+  color: #fff; text-align: center; margin-top: 16px; font-size: 0.9rem;
+}
+#scannerContainer {
+  width: 100%; max-width: 400px; min-height: 300px;
+  display: flex; align-items: center; justify-content: center;
+  background: #111; border-radius: 12px; overflow: hidden;
+}
+#scannerContainer video { border-radius: 0; }
+#scannerContainer img { border-radius: 0; }
 </style>
+<script src="html5-qrcode.min.js"></script>
 </head>
 <body>
 
@@ -414,7 +438,7 @@
 <div class="toast" id="toast"></div>
 
 <header>
-  <h1>🛡️ Registro Policial</h1>
+  <h1>🛡️ Registro Policial<span style="display:block;font-size:0.6rem;font-weight:normal;opacity:0.6;margin-top:2px;">v129</span></h1>
   <span class="count" id="headerCount">0</span>
 </header>
 
@@ -428,12 +452,21 @@
   <button onclick="showTab('libreta')" id="tab-libreta">
     <span class="icon">📓</span>Libreta
   </button>
+  
   <button onclick="showTab('respaldo')" id="tab-respaldo">
     <span class="icon">💾</span>Respaldo
   </button>
 </nav>
+  
 
 <main>
+  <!-- ESCANER CI OVERLAY -->
+  <div class="scanner-overlay" id="scannerOverlay">
+    <button class="scanner-close" onclick="cerrarScanner()">✕</button>
+    <div id="scannerContainer"></div>
+    <div class="scanner-status" id="scannerStatus">Esperando lector QR...</div>
+  </div>
+
   <!-- PERSONAS -->
   <div class="view active" id="view-personas">
     <div class="search-bar">
@@ -459,8 +492,9 @@
       <h3 style="margin-bottom:20px;">💾 Respaldo de Datos</h3>
       <p style="color:var(--muted);margin-bottom:20px;font-size:.85rem;">Exportá tus datos para guardarlos o pasarlos a otro dispositivo. También podés importar un respaldo anterior.</p>
       <button onclick="exportarDatos()" style="width:100%;padding:14px;margin-bottom:12px;border:none;border-radius:10px;background:var(--primary);color:white;font-size:1rem;cursor:pointer;">📤 Exportar datos</button>
+      
       <button onclick="document.getElementById('importFileInput').click()" style="width:100%;padding:14px;margin-bottom:12px;border:none;border-radius:10px;background:#444;color:white;font-size:1rem;cursor:pointer;">📥 Importar datos</button>
-      <button id="btnImportar8k" onclick="importar8k()" style="width:100%;padding:14px;margin-bottom:12px;border:none;border-radius:10px;background:#27ae60;color:white;font-size:1rem;cursor:pointer;">⚡ IMPORTAR LOS 8000 REGISTROS</button>
+      <button id="btnImportar8k" onclick="importar8k()" style="width:100%;padding:14px;margin-bottom:12px;border:none;border-radius:10px;background:#27ae60;color:white;font-size:1rem;cursor:pointer;">⚡ Importar registros</button>
       <button id="btnImportarFotos" onclick="importarFotos()" style="width:100%;padding:14px;margin-bottom:12px;border:none;border-radius:10px;background:#8e44ad;color:white;font-size:1rem;cursor:pointer;">📸 IMPORTAR FOTOS</button>
       <input type="file" id="importFileInput" accept=".json" onchange="importarDatos(event)" style="display:none">
       <div id="storage-info" style="margin-top:8px;font-size:.7rem;color:var(--muted);"></div>
@@ -524,7 +558,7 @@
     <div class="form-section">
       <h3>Datos Personales</h3>
       <div class="form-group"><label>Nombre</label><input type="text" id="fpNombre" placeholder="Nombre completo"></div>
-      <div class="form-group"><label>Cedula</label><input type="text" id="fpCI" oninput="validarCIField()" placeholder="Cedula de identidad" inputmode="numeric"></div>
+      <div class="form-group"><label>Cedula</label><div style="display:flex;gap:6px;"><input type="text" id="fpCI" oninput="validarCIField()" placeholder="Cedula de identidad" inputmode="numeric" style="flex:1;"><button type="button" onclick="abrirScanner()" style="padding:8px 12px;border:none;border-radius:8px;background:var(--primary);color:white;font-size:1rem;cursor:pointer;white-space:nowrap;">📷</button></div></div>
       <div class="form-group"><label>Fecha de nacimiento</label><input type="text" id="fpFN" placeholder="DD/MM/AAAA"></div>
       <div class="form-group"><label>Direccion</label><input type="text" id="fpDir" placeholder="Direccion"></div>
       <div class="form-group"><label>Alias</label><input type="text" id="fpAlias" placeholder="Alias / apodo"></div>
@@ -707,7 +741,7 @@ function leerDeDB(clave, callback) {
 }
 
 function cargarDatos() {
-  leerDeDB('rp_todos', function(valor) {
+  leerDeDB('rp_todos', function(valor) { if (!valor || valor.length === 0) { try { var bk = localStorage.getItem('rp_backup_datos'); if (bk) { try { valor = JSON.parse(bk); } catch(e){} } } catch(e){} }
     if (valor && Array.isArray(valor)) {
       if (verificarIntegridad(valor)) {
         D = valor;
@@ -722,7 +756,7 @@ function cargarDatos() {
     leerDeDB('rp_backup', function(backup) {
       if (backup && Array.isArray(backup) && verificarIntegridad(backup)) {
         D = backup;
-        guardarEnDB('rp_todos', D);
+        guardarEnDB('rp_todos', D); try { localStorage.setItem('rp_backup_datos', JSON.stringify(D)); } catch(e){}
         document.getElementById('headerCount').textContent = D.length + ' registros';
         showToast('🔄 Datos recuperados del backup automatico');
         renderPersonas(); reportarEspacioOcupado();
@@ -732,7 +766,7 @@ function cargarDatos() {
       if (full) {
         try { D = JSON.parse(full); } catch(e) { D = null; }
         if (D && Array.isArray(D)) {
-          guardarEnDB('rp_todos', D);
+          guardarEnDB('rp_todos', D); try { localStorage.setItem('rp_backup_datos', JSON.stringify(D)); } catch(e){}
           document.getElementById('headerCount').textContent = D.length + ' registros';
           renderPersonas(); reportarEspacioOcupado();
           return;
@@ -742,7 +776,7 @@ function cargarDatos() {
       var a = g ? JSON.parse(g) : [];
       D = BASE.concat(a);
       document.getElementById('headerCount').textContent = D.length + ' registros';
-      guardarEnDB('rp_todos', D);
+      guardarEnDB('rp_todos', D); try { localStorage.setItem('rp_backup_datos', JSON.stringify(D)); } catch(e){}
       renderPersonas(); reportarEspacioOcupado();
     });
   });
@@ -761,7 +795,7 @@ function recuperarDeBackup() {
   leerDeDB('rp_backup', function(backup) {
     if (backup && Array.isArray(backup) && verificarIntegridad(backup)) {
       D = backup;
-      guardarEnDB('rp_todos', D);
+      guardarEnDB('rp_todos', D); try { localStorage.setItem('rp_backup_datos', JSON.stringify(D)); } catch(e){}
       document.getElementById('headerCount').textContent = D.length + ' registros';
       showToast('🔄 Datos restaurados del backup automatico');
       renderPersonas(); reportarEspacioOcupado();
@@ -773,10 +807,54 @@ function recuperarDeBackup() {
   });
 }
 
+// ============================================================
+// BUSQUEDA RAPIDA (overlay fullscreen)
+// ============================================================
+
+
+
+function abrirScanner() {
+  document.getElementById('scannerOverlay').classList.add('open');
+  document.getElementById('scannerStatus').textContent = 'Iniciando camara...';
+  if (html5QrCode) { try { html5QrCode.stop(); } catch(e){} html5QrCode.clear(); }
+  html5QrCode = new Html5Qrcode("scannerContainer");
+  // Pequeña pausa para que el DOM se renderice
+  setTimeout(function(){
+    html5QrCode.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: { width: 250, height: 150 } },
+      function(decodedText) {
+        var ci = '';
+        var match = decodedText.match(/\b(\d{7,8})\b/);
+        if (match) ci = match[1];
+        if (/^\d{7,8}$/.test(decodedText.trim())) ci = decodedText.trim();
+        if (ci) {
+          cerrarScanner();
+          document.getElementById('fpCI').value = ci;
+          validarCIField();
+          showToast('📷 CI escaneada: ' + ci);
+        } else {
+          document.getElementById('scannerStatus').textContent = '⚠️ No se pudo leer un CI valido. Intentá de nuevo.';
+        }
+      },
+      function(err) {}
+    ).then(function(){
+      document.getElementById('scannerStatus').textContent = '📷 Apuntale al QR de la cedula';
+
+    }).catch(function(err) {
+      document.getElementById('scannerStatus').textContent = '❌ No se pudo iniciar la camara. Permiti el acceso o proba con otro dispositivo.';
+      document.getElementById('scannerStatus').innerHTML += '<br><button onclick="abrirScanner()" style="margin-top:12px;padding:10px 20px;background:#3498db;color:white;border:none;border-radius:8px;font-size:1rem;cursor:pointer;">Reintentar</button>';
+    });
+  }, 300);
+}
+function cerrarScanner() {
+  document.getElementById('scannerOverlay').classList.remove('open');
+  if (html5QrCode) { try { html5QrCode.stop(); } catch(e){} }
+}
 function guardarAdicionales() {
   document.getElementById('headerCount').textContent = D.length + ' registros';
   if (!D || !Array.isArray(D)) { console.error('guardarAdicionales: datos invalidos'); return; }
-  guardarEnDB('rp_todos', D);
+  guardarEnDB('rp_todos', D); try { localStorage.setItem('rp_backup_datos', JSON.stringify(D)); } catch(e){}
   guardarEnDB('rp_backup', D);
   try {
     var suma = 0;
@@ -785,12 +863,54 @@ function guardarAdicionales() {
     guardarEnDB('rp_checksum', suma);
   } catch(e) {}
   try { localStorage.setItem('rp_todos', JSON.stringify(D)); } catch(e) {}
-  autoBackupSemanal();
+  guardarSnapshot(); autoBackupSemanal();
 }
 
 // ============================================================
 // BLINDAJE EXTRA: Auto-respaldo semanal
 // ============================================================
+
+// ============================================================
+// BLINDAJE TOTAL: Snapshots diarios automaticos
+// ============================================================
+function guardarSnapshot() {
+  try {
+    var hoy = new Date().toISOString().slice(0,10);
+    var ultimoSnap = localStorage.getItem('rp_ultimo_snapshot');
+    if (ultimoSnap === hoy) return;
+    var snap = { fecha: hoy, timestamp: Date.now(), datos: D, libreta: L };
+    leerDeDB('rp_snapshots', function(existing) {
+      var snaps = existing || [];
+      snaps.push(snap);
+      if (snaps.length > 7) snaps = snaps.slice(snaps.length - 7);
+      guardarEnDB('rp_snapshots', snaps);
+      localStorage.setItem('rp_ultimo_snapshot', hoy);
+    });
+  } catch(e) { console.warn('Snapshot fallo:', e); }
+}
+
+function recuperarDeSnapshot(callback) {
+  leerDeDB('rp_snapshots', function(snaps) {
+    if (!snaps || snaps.length === 0) { callback(false); return; }
+    function probar(i) {
+      if (i < 0) { callback(false); return; }
+      var s = snaps[i];
+      if (s && s.datos && Array.isArray(s.datos) && verificarIntegridad(s.datos)) {
+        D = s.datos;
+        if (s.libreta) L = s.libreta;
+        guardarEnDB('rp_todos', D);
+        guardarEnDB('rp_backup', D);
+        try { localStorage.setItem('rp_backup_datos', JSON.stringify(D)); } catch(e){}
+        guardarLibreta();
+        showToast('Recuperado desde snapshot del ' + s.fecha);
+        callback(true);
+      } else {
+        probar(i - 1);
+      }
+    }
+    probar(snaps.length - 1);
+  });
+}
 function autoBackupSemanal() {
   try {
     var ultimoBackup = localStorage.getItem('rp_ultimo_backup');
@@ -971,90 +1091,47 @@ function renderPersonas(q) {
   var items = q ? [] : D;
   ultimosIndicesPersonas = [];
   if (q) {
-    var qRaw = q.toLowerCase();
-    var qClean = qRaw.normalize("NFD").replace(/[̀-ͯ]/g, "");
-    var words = qClean.split(/\s+/).filter(function(w){ return w.length > 0; });
-    var directMatches = [];
+    var words = q.toLowerCase().split(/\s+/).filter(function(w){ return w.length > 0; });
     for (var i = 0; i < D.length; i++) {
       var p = D[i];
-      var nombre = (p[0]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+      if (!p) continue;
+      var nombre = (p[0]||'').toLowerCase();
       var ci = (p[1]||'').toLowerCase();
-      var fec = (p[2]||'').toLowerCase();
-      var dir = (p[3]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-      var alias = (p[4]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-      var tel = (p[5]||'').toLowerCase();
-      var notas = (p[6]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-      var antec = (p[9]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-      var notasArr = (p[10]||[]).join(' ').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-      
-      var vehs = (p[7]||[]);
+      var alias = (p[4]||'').toLowerCase();
       var matchAll = words.length > 0;
       for(var w=0; w<words.length; w++) {
-        var found = nombre.includes(words[w]) || ci.includes(words[w]) || fec.includes(words[w]) || dir.includes(words[w]) || alias.includes(words[w]) || tel.includes(words[w]) || notas.includes(words[w]) || antec.includes(words[w]) || notasArr.includes(words[w]);
-        if (!found) {
-          for(var v=0; v<vehs.length; v++) {
-            if ((vehs[v]||'').toLowerCase().includes(words[w])) { found = true; break; }
-          }
-        }
-        if(!found) { matchAll = false; break; }
+        if (!nombre.includes(words[w]) && !ci.includes(words[w]) && !alias.includes(words[w])) { matchAll = false; break; }
       }
-      
-      if (matchAll) {
-        directMatches.push(i);
-        items.push(p);
-      }
-    }
-    // Add vinculados of matched personas
-    var added = {};
-    for (var d = 0; d < directMatches.length; d++) { added[directMatches[d]] = true; }
-    for (var d = 0; d < directMatches.length; d++) {
-      var idx = directMatches[d];
-      var vincStr = (D[idx][8]||'');
-      if (!vincStr) continue;
-      var vincNames = vincStr.split(',').map(function(s){ return s.trim(); }).filter(function(s){ return s; });
-      for (var v = 0; v < vincNames.length; v++) {
-        for (var i = 0; i < D.length; i++) {
-          if (D[i][0].trim() === vincNames[v] && !added[i]) {
-            items.push(D[i]);
-            added[i] = true;
-          }
-        }
-      }
-    }
-    // Rebuild ultimosIndicesPersonas
-    for (var i = 0; i < items.length; i++) {
-      for (var j = 0; j < D.length; j++) {
-        if (D[j] === items[i]) {
-          ultimosIndicesPersonas.push(j);
-          break;
-        }
-      }
+      if (matchAll) { items.push(p); ultimosIndicesPersonas.push(i); }
     }
   }
   var from = personasPage * PAGE_SIZE;
   var to = from + PAGE_SIZE;
   var pageItems = items.slice(from, to);
   var lista = document.getElementById('listaPersonas');
-
   if (!pageItems.length) {
     lista.innerHTML = '<div class="empty-state"><div class="icon">👤</div><p>'+(q?'Sin resultados.':'No hay personas registradas.')+'<br>Toca el + para agregar.</p></div>';
     document.getElementById('paginacionPersonas').innerHTML = '';
     return;
   }
-
   var h = '';
   for (var idx = 0; idx < pageItems.length; idx++) {
     var p = pageItems[idx];
     var idxReal = ultimosIndicesPersonas.length ? ultimosIndicesPersonas[from + idx] : (from + idx);
     var f = '<div class="avatar">'+(p[11] && p[11].startsWith('data:image') && p[11].length>100?'<img src="'+esc(p[11])+'">':'<div class="avatar-txt">👤</div>')+'</div>';
     var badge = idxReal >= BASE.length ? '<span class="badge-new">NUEVO</span>' : '';
-    h += '<div class="card" onclick="verPersona('+idxReal+')">'+f+'<div class="card-info"><div class="card-name">'+esc(p[0])+badge+'</div><div class="card-sub">CI '+(esc(p[1])||'---')+' '+(p[4]?'• '+esc(p[4]):'')+'</div></div><div class="card-arrow">›</div></div>';
+    h += '<div class="card" onclick="verPersona('+idxReal+')">'+f+'<div class="card-info"><div class="card-name">'+esc(p[0])+badge+'</div><div class="card-sub">CI '+(esc(p[1])||'---')+'</div></div><div class="card-arrow">›</div></div>';
   }
   lista.innerHTML = h;
-
-  var pag = document.getElementById('paginacionPersonas');
   var totalPages = Math.ceil(items.length / PAGE_SIZE);
-  pag.innerHTML = '<button onclick="cambiarPagPersonas(-1)" '+(personasPage===0?'disabled':'')+'>← Anterior</button><span>Pág. '+(personasPage+1)+'/'+totalPages+'</span><button onclick="cambiarPagPersonas(1)" '+(to>=items.length?'disabled':'')+'>Siguiente →</button>';
+  var pag = document.getElementById('paginacionPersonas');
+  var ph = '';
+  if (totalPages > 1) {
+    ph += '<button onclick="cambiarPaginaPersonas(0)" '+(personasPage===0?'disabled':'')+'>«</button>';
+    ph += '<span>' + (personasPage + 1) + ' / ' + totalPages + '</span>';
+    ph += '<button onclick="cambiarPaginaPersonas('+(totalPages-1)+')" '+(personasPage===totalPages-1?'disabled':'')+'>»</button>';
+  }
+  pag.innerHTML = ph;
 }
 
 function cambiarPagPersonas(dir) {
@@ -1065,14 +1142,12 @@ function cambiarPagPersonas(dir) {
 var buscarPersonasTimer;
 function buscarPersonas() {
   clearTimeout(buscarPersonasTimer);
-  personasPage = 0;
-  buscarPersonasTimer = setTimeout(function(){ renderPersonas(document.getElementById('searchPersonas').value); }, 350);
-}
-
-// ============================================================
-// RENDER VEHICULOS
-// ============================================================
-function getVehiculos() {
+  buscarPersonasTimer = setTimeout(function(){
+    var q = document.getElementById('searchPersonas').value.trim();
+    if (!q) { renderPersonas(); return; }
+    renderPersonas(q);
+  }, 300);
+}function getVehiculos() {
   var v = [];
   for (var i = 0; i < D.length; i++) {
     var p = D[i];
@@ -1139,84 +1214,7 @@ function buscarVehiculos() {
 // ============================================================
 // BUSQUEDA GLOBAL
 // ============================================================
-var buscarGlobalTimer;
-function buscarGlobal() {
-  clearTimeout(buscarGlobalTimer);
-  buscarGlobalTimer = setTimeout(function(){
-    var q = document.getElementById('searchGlobal').value.trim();
-    var res = document.getElementById('resultadosBusqueda');
-    if (!q) { res.innerHTML = ''; return; }
-    var qRaw = q.toLowerCase();
-    var qClean = qRaw.normalize("NFD").replace(/[̀-ͯ]/g, "");
-    var words = qClean.split(/\s+/).filter(function(w){ return w.length > 0; });
-    var personasEncontradas = [];
-    var vinculadosAgregados = {};
-    for (var i = 0; i < D.length; i++) {
-      var p = D[i];
-      var nombre = (p[0]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-      var ci = (p[1]||'').toLowerCase();
-      var fec = (p[2]||'').toLowerCase();
-      var dir = (p[3]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-      var alias = (p[4]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-      var tel = (p[5]||'').toLowerCase();
-      var notas = (p[6]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-      var antec = (p[9]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-      var notasArr = (p[10]||[]).join(' ').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-      
-      var vehs = (p[7]||[]);
-      var matchAll = words.length > 0;
-      for(var w=0; w<words.length; w++) {
-        var found = nombre.includes(words[w]) || ci.includes(words[w]) || fec.includes(words[w]) || dir.includes(words[w]) || alias.includes(words[w]) || tel.includes(words[w]) || notas.includes(words[w]) || antec.includes(words[w]) || notasArr.includes(words[w]);
-        if (!found) {
-          for(var v=0; v<vehs.length; v++) {
-            if ((vehs[v]||'').toLowerCase().includes(words[w])) { found = true; break; }
-          }
-        }
-        if(!found) { matchAll = false; break; }
-      }
-      
-      if (matchAll) {
-        personasEncontradas.push({idx:i, p:p});
-        vinculadosAgregados[i] = true;
-      }
-    }
-    // Add vinculados of matched personas
-    var extra = [];
-    for (var a = 0; a < personasEncontradas.length; a++) {
-      var idx = personasEncontradas[a].idx;
-      var vincStr = (D[idx][8]||'');
-      if (!vincStr) continue;
-      var vincNames = vincStr.split(',').map(function(s){ return s.trim(); }).filter(function(s){ return s; });
-      for (var v = 0; v < vincNames.length; v++) {
-        for (var i = 0; i < D.length; i++) {
-          if (D[i][0].trim() === vincNames[v] && !vinculadosAgregados[i]) {
-            extra.push({idx:i, p:D[i]});
-            vinculadosAgregados[i] = true;
-          }
-        }
-      }
-    }
-    // Add vinculados after direct matches
-    for (var e = 0; e < extra.length; e++) {
-      personasEncontradas.push(extra[e]);
-    }
-    var html = '';
-    if (personasEncontradas.length) {
-      html += '<div style="font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin:8px 0 6px;">Personas</div>';
-      for (var i = 0; i < Math.min(personasEncontradas.length, 30); i++) {
-        var pe = personasEncontradas[i];
-        var f = '<div class="avatar">'+(pe.p[11] && pe.p[11].startsWith('data:image') && pe.p[11].length>100?'<img src="'+esc(pe.p[11])+'">':'<div class="avatar-txt">👤</div>')+'</div>';
-        html += '<div class="card" onclick="verPersona('+pe.idx+')">'+f+'<div class="card-info"><div class="card-name">'+esc(pe.p[0])+'</div><div class="card-sub">CI '+(esc(pe.p[1])||'---')+'</div></div><div class="card-arrow">›</div></div>';
-      }
-    }
-    if (!html) html = '<div class="empty-state"><div class="icon">🔍</div><p>Sin resultados</p></div>';
-    res.innerHTML = html;
-  }, 400);
-}
 
-// ============================================================
-// VER PERSONA
-// ============================================================
 function verPersona(idx) {
   var p = D[idx];
   editandoIdx = idx;
@@ -1275,7 +1273,13 @@ function verPersona(idx) {
     }
     h += '<div class="detail-section"><h3>Vinculos</h3><div class="detail-notes">'+txtVinculos+'</div></div>';
   }
-  if (p[9]) h += '<div class="detail-section"><h3>Antecedentes</h3><div class="detail-notes">'+esc(p[9])+'</div></div>';
+  if (p[9]) {
+    var mostrarAnt = true;
+    if (p[10] && p[10].length > 0 && p[10][0].trim() === p[9].trim()) {
+      mostrarAnt = false;
+    }
+    if (mostrarAnt) h += '<div class="detail-section"><h3>Antecedentes</h3><div class="detail-notes">'+esc(p[9])+'</div></div>';
+  }
   if (p[10] && p[10].length) h += '<div class="detail-section"><h3>Notas</h3><div class="detail-notes">'+esc(p[10].join(' / '))+'</div></div>';
 
   h += '<div class="form-actions" style="margin-top:24px; display:flex; gap:10px;">';
@@ -1807,7 +1811,7 @@ function exportarRespaldo() {
   leerDeDB('rp_todos', function(personas) {
     leerDeDB('rp_libreta', function(libreta) {
       var respaldo = {
-        version: 'v122',
+        version: 'v129',
         fecha: new Date().toISOString(),
         personas: personas || [],
         libreta: libreta || [],
@@ -1841,7 +1845,7 @@ function importarRespaldo(event) {
       }
       if (!confirm('Restaurar ' + respaldo.cantidadPersonas + ' personas y ' + (respaldo.cantidadNotas||0) + ' notas?\n\n⚠️ Esto va a REEMPLAZAR todos los datos actuales. Seguro?')) return;
       if (!confirm('Segurisimo? No se puede deshacer.')) return;
-      guardarEnDB('rp_todos', respaldo.personas);
+      guardarEnDB('rp_todos', respaldo.personas); try { localStorage.setItem('rp_backup_datos', JSON.stringify(respaldo.personas)); } catch(e){}
       if (respaldo.libreta && Array.isArray(respaldo.libreta)) {
         guardarEnDB('rp_libreta', respaldo.libreta);
         L = respaldo.libreta;
@@ -1880,20 +1884,20 @@ function buscarVinculos() {
   var val = input.value.trim().toLowerCase();
   var dropdown = document.getElementById('vincDropdown');
   if (!val || val.length < 2) { dropdown.style.display = 'none'; return; }
-  var qClean = val.normalize("NFD").replace(/[̀-ͯ]/g, "");
+  var qClean = val.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   var words = qClean.split(/\s+/).filter(function(w){ return w.length > 0; });
   var results = [];
   for (var i = 0; i < D.length; i++) {
     var p = D[i];
-    var nombre = (p[0]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+    var nombre = (p[0]||'').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     var ci = (p[1]||'').toLowerCase();
     var fec = (p[2]||'').toLowerCase();
-    var dir = (p[3]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-    var alias = (p[4]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+    var dir = (p[3]||'').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    var alias = (p[4]||'').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     var tel = (p[5]||'').toLowerCase();
-    var notas = (p[6]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-    var antec = (p[9]||'').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-    var notasArr = (p[10]||[]).join(' ').toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+    var notas = (p[6]||'').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    var antec = (p[9]||'').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    var notasArr = (p[10]||[]).join(' ').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     var vehs = (p[7]||[]);
     
     var matchAll = words.length > 0;
@@ -2024,7 +2028,21 @@ function importarDatos(event) {
           if (ciNuevo && ciExistente && ciNuevo === ciExistente) {
             // Actualizar datos si el existente tiene campos vacíos
             for (var k = 0; k < n.length; k++) {
-              if (n[k] && (!D[j][k] || (k === 11 && !D[j][k]))) {
+              if (k === 10) { // Notas
+                if (n[10] && n[10].length > 0) {
+                  var notaNueva = n[10][0];
+                  if (D[j][10] && Array.isArray(D[j][10])) {
+                    if (D[j][10].indexOf(notaNueva) === -1) D[j][10].push(notaNueva);
+                  } else {
+                    D[j][10] = [notaNueva];
+                  }
+                }
+              } else if (k === 9) { // Antecedentes
+                // Solo si el registro actual tiene antecedentes VACIOS y el nuevo tiene algo distinto a notas
+                if (!D[j][9] && n[9]) {
+                  D[j][9] = n[9];
+                }
+              } else if (n[k] && (!D[j][k] || (k === 11 && !D[j][k]))) {
                 D[j][k] = n[k];
               }
             }
@@ -2085,17 +2103,22 @@ function importar8k() {
   btn.disabled = true;
   btn.textContent = '⏳ Descargando registros...';
   document.getElementById('respaldoStatus').textContent = '⏳ Descargando archivo compacto...';
-  if (!confirm('⚠️ Se importarán ~1000 personas únicas desde el respaldo. ¿Querés continuar?')) {
+  if (!confirm('⚠️ Se importarán registros desde el respaldo. ¿Querés continuar?')) {
     btn.disabled = false;
-    btn.textContent = '⚡ IMPORTAR LOS 8000 REGISTROS';
+    btn.textContent = '⚡ Importar registros';
     return;
   }
-  var url = 'https://raw.githubusercontent.com/lefer1207/registro-v122/main/respaldov122_compacto.json';
-  fetch(url)
-    .then(function(r) { return r.json(); })
+  var urls = ['https://raw.githubusercontent.com/lefer1207/registro-v2/dev/respaldo_personal.json','https://raw.githubusercontent.com/lefer1207/registro-v2/dev/respaldo_8000.json']; var urlIdx = 0; var url = urls[0];
+  function tryF(){return fetch(url).then(function(r){if(!r.ok){urlIdx++;if(urlIdx<urls.length){url=urls[urlIdx];return tryF();}throw new Error('No hay respaldo');}return r.json();})}
+  tryF()
     .then(function(data) {
-      if (!Array.isArray(data)) throw new Error('Formato incorrecto');
-      document.getElementById('respaldoStatus').textContent = '📦 ' + data.length + ' registros descargados. Importando...';
+      if (!Array.isArray(data)) {
+        if (data.personas && Array.isArray(data.personas)) {
+          if (data.libreta) { L = data.libreta; guardarLibreta(); }
+          data = data.personas;
+        } else { throw new Error('Formato incorrecto'); }
+      }
+      document.getElementById('respaldoStatus').textContent = '📦 ' + data.length + ' registros (tu respaldo personal). Importando...';
       var nuevos = [];
       for (var i = 0; i < data.length; i++) {
         var p = data[i];
@@ -2107,6 +2130,9 @@ function importar8k() {
         if (p.vehiculo2) vehs.push(p.vehiculo2);
         var ant = p.antecedentes || '';
         var nts = p.notas ? [p.notas] : [];
+        if (ant && nts.length > 0 && ant.trim() === nts[0].trim()) {
+          ant = '';  // Antecedentes igual a Notas -> no duplicar
+        }
         nuevos.push([
           nombre,
           (p.ci || '').toString().trim(),
@@ -2191,19 +2217,20 @@ function importar8k() {
       cargarDatos();
       showTab('personas');
       btn.disabled = false;
-      btn.textContent = '⚡ IMPORTAR LOS 8000 REGISTROS';
+      btn.textContent = '⚡ Importar registros';
       var msgExtra = linksCreados > 0 ? (' + ' + linksCreados + ' vínculos') : '';
-      document.getElementById('respaldoStatus').textContent = '✅ ' + agregados + ' nuevos, ' + actualizados + ' actualizados' + msgExtra + ' (Total: ' + D.length + ')';
+      try { localStorage.setItem('rp_backup_datos', JSON.stringify(D)); } catch(e){} document.getElementById('respaldoStatus').textContent = '✅ ' + agregados + ' nuevos, ' + actualizados + ' actualizados' + msgExtra + ' (Total: ' + D.length + ')';
       setTimeout(function(){ document.getElementById('respaldoStatus').textContent = ''; }, 8000);
     })
     .catch(function(err) {
       btn.disabled = false;
-      btn.textContent = '⚡ IMPORTAR LOS 8000 REGISTROS';
+      btn.textContent = '⚡ Importar registros';
       document.getElementById('respaldoStatus').textContent = '❌ Error al descargar: ' + err.message;
     });
 }
 
 // Importar fotos desde los chunks de 10MB en GitHub (19 partes, ~185MB)
+// Subir respaldo personal a GitHub
 function importarFotos() {
   var btn = document.getElementById('btnImportarFotos');
   btn.disabled = true;
@@ -2215,7 +2242,7 @@ function importarFotos() {
     return;
   }
   var totalChunks = 19;
-  var baseUrl = 'https://raw.githubusercontent.com/lefer1207/registro-v122/main/';
+  var baseUrl = 'https://raw.githubusercontent.com/lefer1207/registro-v2/main/';
   var fotos = [];
   var descargados = 0;
   
@@ -2296,6 +2323,11 @@ function importarFotos() {
 }
 
 </script>
-  <div id="version" style="position:fixed;bottom:4px;right:6px;font-size:10px;color:#888;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;z-index:9999;">v122-blindada</div>
+  
+<script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("service-worker.js");
+    }
+  </script>
 </body>
 </html>
