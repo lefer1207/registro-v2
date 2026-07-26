@@ -1,0 +1,22 @@
+{
+  "name": "Registro Policial",
+  "short_name": "Registro",
+  "description": "Registro Policial - Personas, Veh\u00edculos y Anotaciones",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#2980b9",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
