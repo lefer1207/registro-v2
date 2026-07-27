@@ -438,7 +438,7 @@
 <div class="toast" id="toast"></div>
 
 <header>
-  <h1>🛡️ Registro Policial<span style="display:block;font-size:0.6rem;font-weight:normal;opacity:0.6;margin-top:2px;">v134</span></h1>
+  <h1>🛡️ Registro Policial<span style="display:block;font-size:0.6rem;font-weight:normal;opacity:0.6;margin-top:2px;">v135</span></h1>
   <span class="count" id="headerCount">0</span>
 </header>
 
@@ -1173,6 +1173,7 @@ function renderPersonas(q) {
 function cambiarPagPersonas(dir) {
   personasPage += dir;
   if (personasPage < 0) personasPage = 0;
+  // totalPages is calculated in renderPersonas, we can approximate or just render
   renderPersonas(document.getElementById('searchPersonas').value);
   window.scrollTo(0,0);
 }
@@ -1614,6 +1615,39 @@ function guardarPersona() {
     D[currentIdx][10] = notaTxt ? [notaTxt] : [];
     if (fotoActual) D[currentIdx][11] = fotoActual;
   } else {
+    // Verificar si la CI ya existe (evitar duplicados)
+    if (ci) {
+      var ciLimpia = soloNum(ci);
+      for (var dup = 0; dup < D.length; dup++) {
+        if (soloNum(D[dup][1]) === ciLimpia && D[dup][1]) {
+          if (confirm('⚠️ Esta CI (' + ci + ') ya está registrada en:
+
+' + D[dup][0] + '
+
+¿Querés EDITAR la persona existente en lugar de crear un duplicado?')) {
+            document.getElementById('fpNombre').value = D[dup][0];
+            document.getElementById('fpCI').value = D[dup][1];
+            document.getElementById('fpFN').value = D[dup][2] || '';
+            document.getElementById('fpDir').value = D[dup][3] || '';
+            document.getElementById('fpAlias').value = D[dup][4] || '';
+            document.getElementById('fpTel1').value = D[dup][5] || '';
+            document.getElementById('fpTel2').value = D[dup][6] || '';
+            document.getElementById('fpVeh1').value = (D[dup][7] && D[dup][7][0]) || '';
+            document.getElementById('fpVeh2').value = (D[dup][7] && D[dup][7][1]) || '';
+            document.getElementById('fpVeh3').value = (D[dup][7] && D[dup][7][2]) || '';
+            document.getElementById('fpAnt').value = D[dup][9] || '';
+            document.getElementById('fpNotas').value = (D[dup][10] && D[dup][10][0]) || '';
+            editandoIdx = dup;
+            document.getElementById('respaldoStatus').textContent = '✏️ Editando registro existente de ' + D[dup][0];
+            setTimeout(function(){ document.getElementById('respaldoStatus').textContent = ''; }, 4000);
+            return;
+          } else {
+            showToast('❌ Cancelado - esa CI ya existe');
+            return;
+          }
+        }
+      }
+    }
     if (!nom) nom = 'SIN NOMBRE';
     D.push([nom, ci, document.getElementById('fpFN').value.trim(), document.getElementById('fpDir').value.trim(), document.getElementById('fpAlias').value.trim(), document.getElementById('fpTel1').value.trim(), document.getElementById('fpTel2').value.trim(), vehs, vincTxt, antTxt, notaTxt?[notaTxt]:[], fotoActual||'']);
     currentIdx = D.length - 1;
@@ -1849,7 +1883,7 @@ function exportarRespaldo() {
   leerDeDB('rp_todos', function(personas) {
     leerDeDB('rp_libreta', function(libreta) {
       var respaldo = {
-        version: 'v134',
+        version: 'v135',
         fecha: new Date().toISOString(),
         personas: personas || [],
         libreta: libreta || [],
@@ -2080,7 +2114,7 @@ function importarDatos(event) {
                 if (!D[j][9] && n[9]) {
                   D[j][9] = n[9];
                 }
-              } else if (n[k] && (!D[j][k] || (k === 11 && !D[j][k]))) {
+              } else if (n[k] && (!D[j][k] || k === 11)) {
                 D[j][k] = n[k];
               }
             }
