@@ -1582,10 +1582,9 @@ function guardarPersona() {
     if (!nom && !ci) { showToast('Ingrese al menos el nombre'); return; }
 
     var vehs = [];
-    ['fpVeh1', 'fpVeh2', 'fpVeh3'].forEach(function(id){
-      var v = document.getElementById(id).value.trim();
-      if(v) vehs.push(v);
-    });
+    if(document.getElementById('fpVeh1').value.trim()) vehs.push(document.getElementById('fpVeh1').value.trim());
+    if(document.getElementById('fpVeh2').value.trim()) vehs.push(document.getElementById('fpVeh2').value.trim());
+    if(document.getElementById('fpVeh3').value.trim()) vehs.push(document.getElementById('fpVeh3').value.trim());
 
     var notaTxt = document.getElementById('fpNotas').value.trim();
     var antTxt = document.getElementById('fpAnt').value.trim();
@@ -1593,7 +1592,7 @@ function guardarPersona() {
 
     var currentIdx = -1;
 
-    // Caso EDITAR: Si ya estábamos editando un índice específico
+    // 1. CASO EDITAR (Ya existe un indice de edicion)
     if (editandoIdx >= 0 && editandoIdx < D.length) {
       currentIdx = editandoIdx;
       D[currentIdx][0] = nom || D[currentIdx][0];
@@ -1609,8 +1608,8 @@ function guardarPersona() {
       D[currentIdx][10] = notaTxt ? [notaTxt] : [];
       if (fotoActual) D[currentIdx][11] = fotoActual;
     } 
+    // 2. CASO NUEVO: Verificar si la CI ya existe
     else {
-      // Caso NUEVO: Verificar duplicados por CI
       if (ci) {
         var ciLimpia = soloNum(ci);
         for (var i = 0; i < D.length; i++) {
@@ -1636,7 +1635,7 @@ function guardarPersona() {
           }
         }
       }
-      // Si no es duplicado, crear nuevo
+      // Si no es duplicado, agregar al final
       D.push([
         nom, ci, 
         document.getElementById('fpFN').value.trim(),
@@ -1651,31 +1650,34 @@ function guardarPersona() {
       currentIdx = D.length - 1;
     }
 
-    // Bidirectional vinculados logic simplified to avoid crashes
-    var currentName = D[currentIdx][0];
-    vincSeleccionados.forEach(function(v){
-      if (v.idx >= 0 && v.idx < D.length && v.idx !== currentIdx) {
-        var otherV = D[v.idx][8] || '';
-        var list = otherV.split(',').map(function(s){return s.trim();}).filter(function(s){return s;});
-        if (list.indexOf(currentName) === -1) {
-          list.push(currentName);
-          D[v.idx][8] = list.join(', ');
+    // Actualizar vinculados (solo si tenemos un currentIdx valido)
+    if (currentIdx !== -1) {
+      var currentName = D[currentIdx][0];
+      for (var v = 0; v < vincSeleccionados.length; v++) {
+        var targetIdx = vincSeleccionados[v].idx;
+        if (targetIdx >= 0 && targetIdx < D.length && targetIdx !== currentIdx) {
+          var otherVinculos = D[targetIdx][8] || '';
+          var list = otherVinculos.split(',').map(function(s){return s.trim();}).filter(function(s){return s;});
+          if (list.indexOf(currentName) === -1) {
+            list.push(currentName);
+            D[targetIdx][8] = list.join(', ');
+          }
         }
       }
-    });
+    }
 
-    guardarAdicionales();
+    guardarEnDB('rp_todos', D);
+    try { localStorage.setItem('rp_backup_datos', JSON.stringify(D)); } catch(e){}
+    
     showToast('✅ Guardado');
     editandoIdx = -1;
     goBack();
     renderPersonas(); 
     reportarEspacioOcupado();
-  } catch (e) {
-    console.error(e);
-    alert('Error al guardar: ' + e.message);
+  } catch (err) {
+    alert('Error al guardar: ' + err.message);
   }
 }
-
 function abrirFormVehiculo() {
   showView('view-detalle-vehiculo');
   // Simple form inline for adding a vehicle to a person
