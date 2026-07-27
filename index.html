@@ -1140,7 +1140,9 @@ function renderPersonas(q) {
       var alias = (p[4]||'').toLowerCase();
       var matchAll = words.length > 0;
       for(var w=0; w<words.length; w++) {
-        if (!nombre.includes(words[w]) && !ci.includes(words[w]) && !alias.includes(words[w])) { matchAll = false; break; }
+        var matriculaMatch = false;
+        if (p[7] && p[7].length) { for(var m=0; m<p[7].length; m++) { if (p[7][m].toLowerCase().includes(words[w])) { matriculaMatch = true; break; } } }
+        if (!nombre.includes(words[w]) && !ci.includes(words[w]) && !alias.includes(words[w]) && !matriculaMatch) { matchAll = false; break; }
       }
       if (matchAll) { items.push(p); ultimosIndicesPersonas.push(i); }
     }
