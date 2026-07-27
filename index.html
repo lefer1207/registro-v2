@@ -1576,130 +1576,106 @@ function confirmarCrop() {
 }
 
 function guardarPersona() {
-  var nom = document.getElementById('fpNombre').value.trim();
-  var ci = document.getElementById('fpCI').value.trim();
-  if (!nom && !ci) { showToast('Ingrese al menos el nombre'); return; }
+  try {
+    var nom = document.getElementById('fpNombre').value.trim();
+    var ci = document.getElementById('fpCI').value.trim();
+    if (!nom && !ci) { showToast('Ingrese al menos el nombre'); return; }
 
-  var veh1 = document.getElementById('fpVeh1').value.trim();
-  var veh2 = document.getElementById('fpVeh2').value.trim();
-  var veh3 = document.getElementById('fpVeh3').value.trim();
-  var vehs = [];
-  if (veh1) vehs.push(veh1);
-  if (veh2) vehs.push(veh2);
-  if (veh3) vehs.push(veh3);
+    var vehs = [];
+    ['fpVeh1', 'fpVeh2', 'fpVeh3'].forEach(function(id){
+      var v = document.getElementById(id).value.trim();
+      if(v) vehs.push(v);
+    });
 
-  var notaTxt = document.getElementById('fpNotas').value.trim();
-  var antTxt = document.getElementById('fpAnt').value.trim();
-  var vincTxt = vincSeleccionados.map(function(v){ return v.nombre; }).join(', ');
+    var notaTxt = document.getElementById('fpNotas').value.trim();
+    var antTxt = document.getElementById('fpAnt').value.trim();
+    var vincTxt = vincSeleccionados.map(function(v){ return v.nombre; }).join(', ');
 
-  // Save old vinculados for bidirectional comparison (only for edits)
-  var oldVincTxt = '';
-  if (editandoIdx >= 0 && editandoIdx < D.length) {
-    oldVincTxt = D[editandoIdx][8] || '';
-  }
+    var currentIdx = -1;
 
-  var currentIdx;
-
-  if (editandoIdx >= 0 && editandoIdx < D.length) {
-    currentIdx = editandoIdx;
-    if (nom) D[currentIdx][0] = nom;
-    if (ci) D[currentIdx][1] = ci;
-    D[currentIdx][2] = document.getElementById('fpFN').value.trim();
-    D[currentIdx][3] = document.getElementById('fpDir').value.trim();
-    D[currentIdx][4] = document.getElementById('fpAlias').value.trim();
-    D[currentIdx][5] = document.getElementById('fpTel1').value.trim();
-    D[currentIdx][6] = document.getElementById('fpTel2').value.trim();
-    D[currentIdx][7] = vehs;
-    D[currentIdx][8] = vincTxt;
-    D[currentIdx][9] = antTxt;
-    D[currentIdx][10] = notaTxt ? [notaTxt] : [];
-    if (fotoActual) D[currentIdx][11] = fotoActual;
-  } else {
-    // Verificar si la CI ya existe (evitar duplicados)
-    if (ci) {
-      var ciLimpia = soloNum(ci);
-      for (var dup = 0; dup < D.length; dup++) {
-        if (soloNum(D[dup][1]) === ciLimpia && D[dup][1]) {
-          if (confirm('⚠️ Esta CI (' + ci + ') ya está registrada en:\n\n' + D[dup][0] + '\n\n¿Querés EDITAR la persona existente en lugar de crear un duplicado?')) {
-            document.getElementById('fpNombre').value = D[dup][0];
-            document.getElementById('fpCI').value = D[dup][1];
-            document.getElementById('fpFN').value = D[dup][2] || '';
-            document.getElementById('fpDir').value = D[dup][3] || '';
-            document.getElementById('fpAlias').value = D[dup][4] || '';
-            document.getElementById('fpTel1').value = D[dup][5] || '';
-            document.getElementById('fpTel2').value = D[dup][6] || '';
-            document.getElementById('fpVeh1').value = (D[dup][7] && D[dup][7][0]) || '';
-            document.getElementById('fpVeh2').value = (D[dup][7] && D[dup][7][1]) || '';
-            document.getElementById('fpVeh3').value = (D[dup][7] && D[dup][7][2]) || '';
-            document.getElementById('fpAnt').value = D[dup][9] || '';
-            document.getElementById('fpNotas').value = (D[dup][10] && D[dup][10][0]) || '';
-            editandoIdx = dup;
-            document.getElementById('respaldoStatus').textContent = '✏️ Editando registro existente de ' + D[dup][0];
-            setTimeout(function(){ document.getElementById('respaldoStatus').textContent = ''; }, 3000);
+    // Caso EDITAR: Si ya estábamos editando un índice específico
+    if (editandoIdx >= 0 && editandoIdx < D.length) {
+      currentIdx = editandoIdx;
+      D[currentIdx][0] = nom || D[currentIdx][0];
+      D[currentIdx][1] = ci || D[currentIdx][1];
+      D[currentIdx][2] = document.getElementById('fpFN').value.trim();
+      D[currentIdx][3] = document.getElementById('fpDir').value.trim();
+      D[currentIdx][4] = document.getElementById('fpAlias').value.trim();
+      D[currentIdx][5] = document.getElementById('fpTel1').value.trim();
+      D[currentIdx][6] = document.getElementById('fpTel2').value.trim();
+      D[currentIdx][7] = vehs;
+      D[currentIdx][8] = vincTxt;
+      D[currentIdx][9] = antTxt;
+      D[currentIdx][10] = notaTxt ? [notaTxt] : [];
+      if (fotoActual) D[currentIdx][11] = fotoActual;
+    } 
+    else {
+      // Caso NUEVO: Verificar duplicados por CI
+      if (ci) {
+        var ciLimpia = soloNum(ci);
+        for (var i = 0; i < D.length; i++) {
+          if (D[i][1] && soloNum(D[i][1]) === ciLimpia) {
+            if (confirm('⚠️ CI ' + ci + ' ya existe en:\n\n' + D[i][0] + '\n\n¿Querés EDITAR ese registro?')) {
+              // Cargar datos para editar
+              document.getElementById('fpNombre').value = D[i][0];
+              document.getElementById('fpCI').value = D[i][1];
+              document.getElementById('fpFN').value = D[i][2] || '';
+              document.getElementById('fpDir').value = D[i][3] || '';
+              document.getElementById('fpAlias').value = D[i][4] || '';
+              document.getElementById('fpTel1').value = D[i][5] || '';
+              document.getElementById('fpTel2').value = D[i][6] || '';
+              document.getElementById('fpVeh1').value = (D[i][7] && D[i][7][0]) || '';
+              document.getElementById('fpVeh2').value = (D[i][7] && D[i][7][1]) || '';
+              document.getElementById('fpVeh3').value = (D[i][7] && D[i][7][2]) || '';
+              document.getElementById('fpAnt').value = D[i][9] || '';
+              document.getElementById('fpNotas').value = (D[i][10] && D[i][10][0]) || '';
+              editandoIdx = i;
+              showToast('✏️ Editando registro existente');
+            }
+            return;
           }
-          return; // Detener guardado si hay duplicado (ya sea que acepte editar o cancele)
         }
       }
+      // Si no es duplicado, crear nuevo
+      D.push([
+        nom, ci, 
+        document.getElementById('fpFN').value.trim(),
+        document.getElementById('fpDir').value.trim(),
+        document.getElementById('fpAlias').value.trim(),
+        document.getElementById('fpTel1').value.trim(),
+        document.getElementById('fpTel2').value.trim(),
+        vehs, vincTxt, antTxt, 
+        notaTxt ? [notaTxt] : [], 
+        fotoActual || ''
+      ]);
+      currentIdx = D.length - 1;
     }
-    D.push([nom, ci, document.getElementById('fpFN').value.trim(), document.getElementById('fpDir').value.trim(), document.getElementById('fpAlias').value.trim(), document.getElementById('fpTel1').value.trim(), document.getElementById('fpTel2').value.trim(), vehs, vincTxt, antTxt, notaTxt?[notaTxt]:[], fotoActual||'']);
-    currentIdx = D.length - 1;
-  }
 
-  // === BIDIRECTIONAL LINKING ===
-  var currentName = D[currentIdx][0];
-  var newVincIdxs = vincSeleccionados.map(function(v){ return v.idx; });
-
-  // Get old vinculados indices
-  var oldVincIdxs = [];
-  if (oldVincTxt) {
-    var oldNombres = oldVincTxt.split(',').map(function(s){ return s.trim(); }).filter(function(s){ return s; });
-    for (var n = 0; n < oldNombres.length; n++) {
-      for (var i = 0; i < D.length; i++) {
-        if (D[i][0].trim() === oldNombres[n]) {
-          oldVincIdxs.push(i);
-          break;
+    // Bidirectional vinculados logic simplified to avoid crashes
+    var currentName = D[currentIdx][0];
+    vincSeleccionados.forEach(function(v){
+      if (v.idx >= 0 && v.idx < D.length && v.idx !== currentIdx) {
+        var otherV = D[v.idx][8] || '';
+        var list = otherV.split(',').map(function(s){return s.trim();}).filter(function(s){return s;});
+        if (list.indexOf(currentName) === -1) {
+          list.push(currentName);
+          D[v.idx][8] = list.join(', ');
         }
       }
-    }
-  }
+    });
 
-  // Remove currentName from vinculados that were removed
-  for (var o = 0; o < oldVincIdxs.length; o++) {
-    var oIdx = oldVincIdxs[o];
-    if (oIdx === currentIdx) continue;
-    if (newVincIdxs.indexOf(oIdx) === -1) {
-      var otherVinculos = D[oIdx][8] || '';
-      var otherList = otherVinculos.split(',').map(function(s){ return s.trim(); }).filter(function(s){ return s; });
-      var filtered = [];
-      for (var f = 0; f < otherList.length; f++) {
-        if (otherList[f] !== currentName) filtered.push(otherList[f]);
-      }
-      D[oIdx][8] = filtered.join(', ');
-    }
+    guardarAdicionales();
+    showToast('✅ Guardado');
+    editandoIdx = -1;
+    goBack();
+    renderPersonas(); 
+    reportarEspacioOcupado();
+  } catch (e) {
+    console.error(e);
+    alert('Error al guardar: ' + e.message);
   }
-
-  // Add currentName to new vinculados
-  for (var n = 0; n < newVincIdxs.length; n++) {
-    var oIdx = newVincIdxs[n];
-    if (oIdx === currentIdx) continue;
-    var otherVinculos = D[oIdx][8] || '';
-    var otherList = otherVinculos.split(',').map(function(s){ return s.trim(); }).filter(function(s){ return s; });
-    if (otherList.indexOf(currentName) === -1) {
-      otherList.push(currentName);
-      D[oIdx][8] = otherList.join(', ');
-    }
-  }
-
-  guardarAdicionales();
-  showToast('✅ Guardado');
-  editandoIdx = -1;
-  goBack();
-  renderPersonas(); reportarEspacioOcupado();
 }
 
-// ============================================================
-// FORM VEHICULO
-// ============================================================
 function abrirFormVehiculo() {
   showView('view-detalle-vehiculo');
   // Simple form inline for adding a vehicle to a person
