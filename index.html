@@ -1620,11 +1620,7 @@ function guardarPersona() {
       var ciLimpia = soloNum(ci);
       for (var dup = 0; dup < D.length; dup++) {
         if (soloNum(D[dup][1]) === ciLimpia && D[dup][1]) {
-          if (confirm('⚠️ Esta CI (' + ci + ') ya está registrada en:
-
-' + D[dup][0] + '
-
-¿Querés EDITAR la persona existente en lugar de crear un duplicado?')) {
+          if (confirm('⚠️ Esta CI (' + ci + ') ya está registrada en:\n\n' + D[dup][0] + '\n\n¿Querés EDITAR la persona existente en lugar de crear un duplicado?')) {
             document.getElementById('fpNombre').value = D[dup][0];
             document.getElementById('fpCI').value = D[dup][1];
             document.getElementById('fpFN').value = D[dup][2] || '';
