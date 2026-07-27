@@ -1635,16 +1635,12 @@ function guardarPersona() {
             document.getElementById('fpNotas').value = (D[dup][10] && D[dup][10][0]) || '';
             editandoIdx = dup;
             document.getElementById('respaldoStatus').textContent = '✏️ Editando registro existente de ' + D[dup][0];
-            setTimeout(function(){ document.getElementById('respaldoStatus').textContent = ''; }, 4000);
-            return;
-          } else {
-            showToast('❌ Cancelado - esa CI ya existe');
-            return;
+            setTimeout(function(){ document.getElementById('respaldoStatus').textContent = ''; }, 3000);
           }
+          return; // Detener guardado si hay duplicado (ya sea que acepte editar o cancele)
         }
       }
     }
-    if (!nom) nom = 'SIN NOMBRE';
     D.push([nom, ci, document.getElementById('fpFN').value.trim(), document.getElementById('fpDir').value.trim(), document.getElementById('fpAlias').value.trim(), document.getElementById('fpTel1').value.trim(), document.getElementById('fpTel2').value.trim(), vehs, vincTxt, antTxt, notaTxt?[notaTxt]:[], fotoActual||'']);
     currentIdx = D.length - 1;
   }
