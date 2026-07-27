@@ -429,7 +429,9 @@
 #scannerContainer video { border-radius: 0; }
 #scannerContainer img { border-radius: 0; }
 </style>
-<script src="html5-qrcode.min.js"></script>
+<script src="html5-qrcode.min.js">
+function guardarConRedundancia(d){guardarEnDB("rp_todos",d);guardarEnDB("rp_backup_v2",d);try{localStorage.setItem("rp_backup_datos",JSON.stringify(d))}catch(e){}}
+</script>
 </head>
 <body>
 
@@ -438,7 +440,7 @@
 <div class="toast" id="toast"></div>
 
 <header>
-  <h1>🛡️ Registro Policial<span style="display:block;font-size:0.6rem;font-weight:normal;opacity:0.6;margin-top:2px;">v138</span></h1>
+  <h1>🛡️ Registro Policial<span style="display:block;font-size:0.6rem;font-weight:normal;opacity:0.6;margin-top:2px;">v139</span></h1>
   <span class="count" id="headerCount">0</span>
 </header>
 
