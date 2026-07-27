@@ -1,4 +1,4 @@
-const CACHE = 'registro-v2-cache-v130';
+const CACHE = 'registro-v2-cache-v135';
 
 self.addEventListener('install', function(e) {
   e.waitUntil(
@@ -37,3 +37,5 @@ self.addEventListener('fetch', function(e) {
     })
   );
 });
+
+// Updated at: 1785120929.881533
