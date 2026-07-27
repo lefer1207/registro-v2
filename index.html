@@ -1615,6 +1615,39 @@ function guardarPersona() {
     D[currentIdx][10] = notaTxt ? [notaTxt] : [];
     if (fotoActual) D[currentIdx][11] = fotoActual;
   } else {
+    // Verificar si la CI ya existe (evitar duplicados)
+    if (ci) {
+      var ciLimpia = soloNum(ci);
+      for (var dup = 0; dup < D.length; dup++) {
+        if (soloNum(D[dup][1]) === ciLimpia && D[dup][1]) {
+          if (confirm('⚠️ Esta CI (' + ci + ') ya está registrada en:
+
+' + D[dup][0] + '
+
+¿Querés EDITAR la persona existente en lugar de crear un duplicado?')) {
+            document.getElementById('fpNombre').value = D[dup][0];
+            document.getElementById('fpCI').value = D[dup][1];
+            document.getElementById('fpFN').value = D[dup][2] || '';
+            document.getElementById('fpDir').value = D[dup][3] || '';
+            document.getElementById('fpAlias').value = D[dup][4] || '';
+            document.getElementById('fpTel1').value = D[dup][5] || '';
+            document.getElementById('fpTel2').value = D[dup][6] || '';
+            document.getElementById('fpVeh1').value = (D[dup][7] && D[dup][7][0]) || '';
+            document.getElementById('fpVeh2').value = (D[dup][7] && D[dup][7][1]) || '';
+            document.getElementById('fpVeh3').value = (D[dup][7] && D[dup][7][2]) || '';
+            document.getElementById('fpAnt').value = D[dup][9] || '';
+            document.getElementById('fpNotas').value = (D[dup][10] && D[dup][10][0]) || '';
+            editandoIdx = dup;
+            document.getElementById('respaldoStatus').textContent = '✏️ Editando registro existente de ' + D[dup][0];
+            setTimeout(function(){ document.getElementById('respaldoStatus').textContent = ''; }, 4000);
+            return;
+          } else {
+            showToast('❌ Cancelado - esa CI ya existe');
+            return;
+          }
+        }
+      }
+    }
     if (!nom) nom = 'SIN NOMBRE';
     D.push([nom, ci, document.getElementById('fpFN').value.trim(), document.getElementById('fpDir').value.trim(), document.getElementById('fpAlias').value.trim(), document.getElementById('fpTel1').value.trim(), document.getElementById('fpTel2').value.trim(), vehs, vincTxt, antTxt, notaTxt?[notaTxt]:[], fotoActual||'']);
     currentIdx = D.length - 1;
