@@ -2081,7 +2081,7 @@ function importarDatos(event) {
                 if (!D[j][9] && n[9]) {
                   D[j][9] = n[9];
                 }
-              } else if (n[k] && (!D[j][k] || (k === 11 && !D[j][k]))) {
+              } else if (n[k] && (!D[j][k] || k === 11)) {
                 D[j][k] = n[k];
               }
             }
