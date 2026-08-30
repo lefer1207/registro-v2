@@ -428,6 +428,8 @@
 }
 #scannerContainer video { border-radius: 0; }
 #scannerContainer img { border-radius: 0; }
+
+.ante-modal{position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px}.ante-box{background:var(--card,#fff);width:100%;max-width:560px;max-height:90vh;overflow:auto;border-radius:18px;padding:18px;box-shadow:0 15px 50px rgba(0,0,0,.3)}.ante-box h2{margin:0 0 14px}.ante-file{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 0;border-bottom:1px solid var(--border,#e5e7eb);flex-wrap:wrap}.ante-folder-btn{width:100%;text-align:left;border:1px solid var(--border,#e5e7eb);background:var(--card,#fff);border-radius:12px;padding:13px;color:inherit;font-size:1rem;cursor:pointer}.ante-count{color:var(--muted);font-size:.85rem}
 </style>
 <script src="html5-qrcode.min.js">
 function guardarConRedundancia(d){guardarEnDB("rp_todos",d);guardarEnDB("rp_backup_v2",d);try{localStorage.setItem("rp_backup_datos",JSON.stringify(d))}catch(e){}}
@@ -440,7 +442,7 @@ function guardarConRedundancia(d){guardarEnDB("rp_todos",d);guardarEnDB("rp_back
 <div class="toast" id="toast"></div>
 
 <header>
-  <h1>🛡️ Registro Policial<span style="display:block;font-size:0.6rem;font-weight:normal;opacity:0.6;margin-top:2px;">v141</span></h1>
+  <h1>🛡️ Registro Policial<span style="display:block;font-size:0.6rem;font-weight:normal;opacity:0.6;margin-top:2px;">v142</span></h1>
   <span class="count" id="headerCount">0</span>
 </header>
 
@@ -587,12 +589,7 @@ function guardarConRedundancia(d){guardarEnDB("rp_todos",d);guardarEnDB("rp_back
     </div>
     <div class="form-section">
       <h3>📁 Antecedentes</h3>
-      <div class="form-group">
-        <input type="file" id="fpDocsInput" multiple onchange="agregarDocumentos(event)" style="display:none">
-        <button type="button" class="btn btn-ghost" onclick="document.getElementById('fpDocsInput').click()">📎 Agregar documentos</button>
-        <div id="fpDocsList" style="margin-top:10px"></div>
-        <small style="color:var(--muted)">Podés guardar PDF, Word, Excel, imágenes y otros archivos.</small>
-      </div>
+      <div class="form-group"><button type="button" class="ante-folder-btn" onclick="abrirAntecedentes(-1)">📁 Abrir carpeta de antecedentes<br><span id="fpDocsSummary" class="ante-count">Notas y archivos</span></button></div>
     </div>
     <div class="form-section">
       <h3>Antecedentes anteriores (texto)</h3>
@@ -1327,13 +1324,11 @@ function verPersona(idx) {
     }
     h += '<div class="detail-section"><h3>Vinculos</h3><div class="detail-notes">'+txtVinculos+'</div></div>';
   }
-  if (p[12] && p[12].length) {
-    h += '<div class="detail-section"><h3>📁 Antecedentes</h3><div class="detail-notes">';
-    for (var di = 0; di < p[12].length; di++) {
-      var doc = p[12][di];
-      h += '<div style="display:flex;align-items:center;gap:8px;margin:8px 0;flex-wrap:wrap;">📄 <strong>'+esc(doc.nombre||'Documento')+'</strong> <span style="color:var(--muted);font-size:.8rem">'+esc(doc.tamano||'')+'</span> <a class="btn btn-ghost" style="padding:5px 9px;text-decoration:none" href="'+doc.datos+'" download="'+esc(doc.nombre||'documento')+'">⬇️ Abrir</a></div>';
-    }
-    h += '</div></div>';
+  var carpetaAnt = obtenerCarpetaAntecedentes(p);
+  if (carpetaAnt.archivos.length || carpetaAnt.notas) {
+    h += '<div class="detail-section"><button class="ante-folder-btn" onclick="abrirAntecedentes('+idx+')">📁 Antecedentes<br><span class="ante-count">'+(carpetaAnt.archivos.length)+' archivo(s)'+(carpetaAnt.notas?' · con notas':'')+' · tocar para abrir</span></button></div>';
+  } else {
+    h += '<div class="detail-section"><button class="ante-folder-btn" onclick="abrirAntecedentes('+idx+')">📁 Antecedentes<br><span class="ante-count">Carpeta vacía · tocar para agregar</span></button></div>';
   }
 
   if (p[9]) {
@@ -1381,6 +1376,7 @@ function eliminarPersona() {
 function abrirFormPersona(idx) {
   fotoActual = '';
   documentosActuales = [];
+  antecedentesNotasActuales = '';
   if (idx !== undefined && idx !== null && idx >= 0) {
     var p = D[idx];
     editandoIdx = idx;
@@ -1412,7 +1408,7 @@ function abrirFormPersona(idx) {
     renderVincTags();
     document.getElementById('fpVinc').value = vincSeleccionados.map(function(v){ return v.nombre; }).join(', ');
     document.getElementById('fpAnt').value = p[9]||'';
-    documentosActuales = (p[12] && Array.isArray(p[12])) ? p[12].slice() : [];
+    var ca = obtenerCarpetaAntecedentes(p); documentosActuales = ca.archivos.slice(); antecedentesNotasActuales = ca.notas;
     renderDocumentosFormulario();
     document.getElementById('fpNotas').value = (p[10]&&p[10].length) ? p[10].join(' / ') : '';
     fotoActual = p[11]||'';
@@ -1603,23 +1599,21 @@ function confirmarCrop() {
   tempImg.src = cropImgData;
 }
 
-var documentosActuales = [];
-function formatoTamano(n) { if (n < 1024) return n + ' B'; if (n < 1048576) return Math.round(n/1024) + ' KB'; return (n/1048576).toFixed(1) + ' MB'; }
-function renderDocumentosFormulario() {
-  var el = document.getElementById('fpDocsList'); if (!el) return;
-  if (!documentosActuales.length) { el.innerHTML = '<div style="color:var(--muted);font-size:.85rem">No hay documentos agregados.</div>'; return; }
-  var h='';
-  for (var i=0;i<documentosActuales.length;i++) { var d=documentosActuales[i]; h += '<div style="display:flex;align-items:center;gap:6px;margin:6px 0;flex-wrap:wrap"><span>📄 '+esc(d.nombre||'Documento')+' <small style="color:var(--muted)">'+esc(d.tamano||'')+'</small></span><button type="button" class="btn btn-danger" style="padding:4px 8px" onclick="eliminarDocumentoFormulario('+i+')">🗑️</button></div>'; }
-  el.innerHTML=h;
+var documentosActuales = [], antecedentesNotasActuales = '';
+function obtenerCarpetaAntecedentes(p) { var x=p&&p[12]; if(Array.isArray(x)) return {notas:'',archivos:x}; if(x&&typeof x==='object') return {notas:x.notas||'',archivos:Array.isArray(x.archivos)?x.archivos:[]}; return {notas:'',archivos:[]}; }
+function formatoTamano(n) { if(n<1024)return n+' B'; if(n<1048576)return Math.round(n/1024)+' KB'; return (n/1048576).toFixed(1)+' MB'; }
+function actualizarResumenCarpeta(){var e=document.getElementById('fpDocsSummary');if(e)e.textContent=(documentosActuales.length+' archivo(s)'+(antecedentesNotasActuales?' · con notas':'')+' · tocar para abrir');}
+function renderDocumentosFormulario(){actualizarResumenCarpeta();}
+function abrirAntecedentes(idx){
+  var c=idx>=0&&D[idx]?obtenerCarpetaAntecedentes(D[idx]):{notas:antecedentesNotasActuales,archivos:documentosActuales};
+  var h='<div class="ante-modal" id="anteModal"><div class="ante-box"><h2>📁 Antecedentes</h2><label>📝 Notas</label><textarea id="anteNotas" style="width:100%;min-height:120px;margin:7px 0 14px" placeholder="Escribí las notas de antecedentes...">'+esc(c.notas)+'</textarea><input type="file" id="anteInput" multiple onchange="agregarArchivosAntecedentes(event)" style="display:none"><button type="button" class="btn btn-ghost" onclick="document.getElementById(\'anteInput\').click()">📎 Agregar archivos</button><div id="anteFiles" style="margin-top:10px">'+renderArchivosAntecedentes(c.archivos)+'</div><div class="form-actions" style="margin-top:18px;display:flex;gap:10px"><button type="button" class="btn btn-ghost" style="flex:1" onclick="cerrarAntecedentes()">Cancelar</button><button type="button" class="btn btn-primary" style="flex:1" onclick="guardarAntecedentes('+idx+')">Guardar</button></div></div></div>';
+  document.body.insertAdjacentHTML('beforeend',h); window.anteTemp={idx:idx,notas:c.notas,archivos:c.archivos.slice()};
 }
-function agregarDocumentos(event) {
-  var files=event.target.files||[];
-  for(var i=0;i<files.length;i++) (function(file){
-    var r=new FileReader(); r.onload=function(e){ documentosActuales.push({nombre:file.name,tipo:file.type||'application/octet-stream',tamano:formatoTamano(file.size),fecha:new Date().toISOString(),datos:e.target.result}); renderDocumentosFormulario(); }; r.readAsDataURL(file);
-  })(files[i]);
-  event.target.value='';
-}
-function eliminarDocumentoFormulario(i) { documentosActuales.splice(i,1); renderDocumentosFormulario(); }
+function renderArchivosAntecedentes(a){var h='';for(var i=0;i<a.length;i++){var d=a[i];h+='<div class="ante-file"><span>📄 '+esc(d.nombre||'Documento')+' <small class="ante-count">'+esc(d.tamano||'')+'</small></span><button type="button" class="btn btn-danger" style="padding:4px 8px" onclick="quitarArchivoAntecedente('+i+')">🗑️</button></div>';}return h||'<div class="ante-count">No hay archivos agregados.</div>';}
+function agregarArchivosAntecedentes(e){var fs=e.target.files||[];for(var i=0;i<fs.length;i++)(function(f){var r=new FileReader();r.onload=function(x){window.anteTemp.archivos.push({nombre:f.name,tipo:f.type||'application/octet-stream',tamano:formatoTamano(f.size),fecha:new Date().toISOString(),datos:x.target.result});document.getElementById('anteFiles').innerHTML=renderArchivosAntecedentes(window.anteTemp.archivos);};r.readAsDataURL(f);})(fs[i]);e.target.value='';}
+function quitarArchivoAntecedente(i){window.anteTemp.archivos.splice(i,1);document.getElementById('anteFiles').innerHTML=renderArchivosAntecedentes(window.anteTemp.archivos);}
+function cerrarAntecedentes(){var e=document.getElementById('anteModal');if(e)e.remove();window.anteTemp=null;}
+function guardarAntecedentes(idx){var notas=document.getElementById('anteNotas').value.trim();if(idx>=0&&D[idx]){D[idx][12]={notas:notas,archivos:window.anteTemp.archivos};guardarConRedundancia(D);cerrarAntecedentes();verPersona(idx);}else{antecedentesNotasActuales=notas;documentosActuales=window.anteTemp.archivos;cerrarAntecedentes();actualizarResumenCarpeta();} }
 
 function guardarPersona() {
   try {
@@ -1651,7 +1645,7 @@ function guardarPersona() {
       D[currentIdx][7] = vehs;
       D[currentIdx][8] = vincTxt;
       D[currentIdx][9] = antTxt;
-      D[currentIdx][12] = documentosActuales;
+      D[currentIdx][12] = {notas: antecedentesNotasActuales || '', archivos: documentosActuales};
       D[currentIdx][10] = notaTxt ? [notaTxt] : [];
       if (fotoActual) D[currentIdx][11] = fotoActual;
     } 
@@ -1693,7 +1687,7 @@ function guardarPersona() {
         vehs, vincTxt, antTxt, 
         notaTxt ? [notaTxt] : [], 
         fotoActual || '',
-        documentosActuales
+        {notas: antecedentesNotasActuales || '', archivos: documentosActuales}
 
       ]);
       currentIdx = D.length - 1;
