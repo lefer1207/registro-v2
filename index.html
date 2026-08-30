@@ -444,7 +444,7 @@ function guardarConRedundancia(d,cb){var pendientes=2,fin=function(){pendientes-
 <div class="toast" id="toast"></div>
 
 <header>
-  <h1>🛡️ Registro Policial<span style="display:block;font-size:0.6rem;font-weight:normal;opacity:0.6;margin-top:2px;">v151</span></h1>
+  <h1>🛡️ Registro Policial<span style="display:block;font-size:0.6rem;font-weight:normal;opacity:0.6;margin-top:2px;">v152</span></h1>
   <span class="count" id="headerCount">0</span>
 </header>
 
@@ -1602,7 +1602,7 @@ function formatoTamano(n) { if(n<1024)return n+' B'; if(n<1048576)return Math.ro
 function actualizarResumenCarpeta(){var e=document.getElementById('fpDocsSummary');if(e)e.textContent=(documentosActuales.length+' archivo(s)'+(antecedentesNotasActuales?' · con notas':'')+' · tocar para abrir');}
 function renderDocumentosFormulario(){actualizarResumenCarpeta();}
 function abrirAntecedentes(idx){
-  var c=idx>=0&&D[idx]?obtenerCarpetaAntecedentes(D[idx]):{notas:antecedentesNotasActuales,archivos:documentosActuales};
+  var c=idx>=0&&D[idx]?obtenerCarpetaAntecedentes(D[idx]):{notas:'',mensajes:[],archivos:documentosActuales};
   var h='<div class="ante-modal" id="anteModal"><div class="ante-box"><h2>📁 Antecedentes</h2><label>📝 Notas</label><div id="anteMessages" class="libreta-chat" style="margin:8px 0">'+renderMensajesAntecedentes(c)+'</div><textarea id="anteNotaNueva" style="width:100%;min-height:75px;margin:7px 0" placeholder="Escribí una nota y tocá ➤ Agregar nota"></textarea><button type="button" class="btn btn-ghost" onclick="agregarNotaAntecedente()">➤ Agregar nota</button><input type="file" id="anteInput" multiple onchange="agregarArchivosAntecedentes(event)" style="display:none"><button type="button" class="btn btn-ghost" onclick="document.getElementById(\'anteInput\').click()">📎 Agregar archivos</button><div id="anteFiles" style="margin-top:10px">'+renderArchivosAntecedentes(c.archivos)+'</div><div id="antePreview" style="margin-top:12px"></div><div class="form-actions" style="margin-top:18px;display:flex;gap:10px"><button type="button" class="btn btn-ghost" style="flex:1" onclick="cerrarAntecedentes()">Cancelar</button><button type="button" class="btn btn-primary" style="flex:1" onclick="guardarAntecedentes('+idx+')">Guardar</button></div></div></div>';
   document.body.insertAdjacentHTML('beforeend',h); window.anteTemp={idx:idx,notas:c.notas,mensajes:c.mensajes.slice(),archivos:c.archivos.slice()};
 }
