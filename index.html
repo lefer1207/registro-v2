@@ -442,7 +442,7 @@ function guardarConRedundancia(d){guardarEnDB("rp_todos",d);guardarEnDB("rp_back
 <div class="toast" id="toast"></div>
 
 <header>
-  <h1>🛡️ Registro Policial<span style="display:block;font-size:0.6rem;font-weight:normal;opacity:0.6;margin-top:2px;">v144</span></h1>
+  <h1>🛡️ Registro Policial<span style="display:block;font-size:0.6rem;font-weight:normal;opacity:0.6;margin-top:2px;">v145</span></h1>
   <span class="count" id="headerCount">0</span>
 </header>
 
@@ -1609,7 +1609,7 @@ function abrirAntecedentes(idx){
   var h='<div class="ante-modal" id="anteModal"><div class="ante-box"><h2>📁 Antecedentes</h2><label>📝 Notas</label><textarea id="anteNotas" style="width:100%;min-height:120px;margin:7px 0 14px" placeholder="Escribí las notas de antecedentes...">'+esc(c.notas)+'</textarea><input type="file" id="anteInput" multiple onchange="agregarArchivosAntecedentes(event)" style="display:none"><button type="button" class="btn btn-ghost" onclick="document.getElementById(\'anteInput\').click()">📎 Agregar archivos</button><div id="anteFiles" style="margin-top:10px">'+renderArchivosAntecedentes(c.archivos)+'</div><div class="form-actions" style="margin-top:18px;display:flex;gap:10px"><button type="button" class="btn btn-ghost" style="flex:1" onclick="cerrarAntecedentes()">Cancelar</button><button type="button" class="btn btn-primary" style="flex:1" onclick="guardarAntecedentes('+idx+')">Guardar</button></div></div></div>';
   document.body.insertAdjacentHTML('beforeend',h); window.anteTemp={idx:idx,notas:c.notas,archivos:c.archivos.slice()};
 }
-function renderArchivosAntecedentes(a){var h='';for(var i=0;i<a.length;i++){var d=a[i];h+='<div class="ante-file"><span>📄 '+esc(d.nombre||'Documento')+' <small class="ante-count">'+esc(d.tamano||'')+'</small></span><button type="button" class="btn btn-danger" style="padding:4px 8px" onclick="quitarArchivoAntecedente('+i+')">🗑️</button></div>';}return h||'<div class="ante-count">No hay archivos agregados.</div>';}
+function renderArchivosAntecedentes(a){var h='';for(var i=0;i<a.length;i++){var d=a[i];var href=d.datos||'';h+='<div class="ante-file"><span>📄 '+esc(d.nombre||'Documento')+' <small class="ante-count">'+esc(d.tamano||'')+'</small></span><span style="display:flex;gap:5px"><a class="btn btn-ghost" style="padding:4px 8px;text-decoration:none" href="'+href+'" target="_blank" rel="noopener">👁️ Abrir</a><a class="btn btn-ghost" style="padding:4px 8px;text-decoration:none" href="'+href+'" download="'+esc(d.nombre||'documento')+'">⬇️</a><button type="button" class="btn btn-danger" style="padding:4px 8px" onclick="quitarArchivoAntecedente('+i+')">🗑️</button></span></div>';}return h||'<div class="ante-count">No hay archivos agregados.</div>'; }
 function agregarArchivosAntecedentes(e){var fs=e.target.files||[];for(var i=0;i<fs.length;i++)(function(f){var r=new FileReader();r.onload=function(x){window.anteTemp.archivos.push({nombre:f.name,tipo:f.type||'application/octet-stream',tamano:formatoTamano(f.size),fecha:new Date().toISOString(),datos:x.target.result});document.getElementById('anteFiles').innerHTML=renderArchivosAntecedentes(window.anteTemp.archivos);};r.readAsDataURL(f);})(fs[i]);e.target.value='';}
 function quitarArchivoAntecedente(i){window.anteTemp.archivos.splice(i,1);document.getElementById('anteFiles').innerHTML=renderArchivosAntecedentes(window.anteTemp.archivos);}
 function cerrarAntecedentes(){var e=document.getElementById('anteModal');if(e)e.remove();window.anteTemp=null;}
