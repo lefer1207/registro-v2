@@ -442,7 +442,7 @@ function guardarConRedundancia(d){guardarEnDB("rp_todos",d);guardarEnDB("rp_back
 <div class="toast" id="toast"></div>
 
 <header>
-  <h1>🛡️ Registro Policial<span style="display:block;font-size:0.6rem;font-weight:normal;opacity:0.6;margin-top:2px;">v142</span></h1>
+  <h1>🛡️ Registro Policial<span style="display:block;font-size:0.6rem;font-weight:normal;opacity:0.6;margin-top:2px;">v143</span></h1>
   <span class="count" id="headerCount">0</span>
 </header>
 
@@ -1600,7 +1600,7 @@ function confirmarCrop() {
 }
 
 var documentosActuales = [], antecedentesNotasActuales = '';
-function obtenerCarpetaAntecedentes(p) { var x=p&&p[12]; if(Array.isArray(x)) return {notas:'',archivos:x}; if(x&&typeof x==='object') return {notas:x.notas||'',archivos:Array.isArray(x.archivos)?x.archivos:[]}; return {notas:'',archivos:[]}; }
+function obtenerCarpetaAntecedentes(p) { var x=p&&p[12]; if(Array.isArray(x)) return {notas:'',archivos:x}; if(x&&typeof x==='object') return {notas:(typeof x.notas==='string'?x.notas:''),archivos:Array.isArray(x.archivos)?x.archivos:[]}; return {notas:'',archivos:[]}; }
 function formatoTamano(n) { if(n<1024)return n+' B'; if(n<1048576)return Math.round(n/1024)+' KB'; return (n/1048576).toFixed(1)+' MB'; }
 function actualizarResumenCarpeta(){var e=document.getElementById('fpDocsSummary');if(e)e.textContent=(documentosActuales.length+' archivo(s)'+(antecedentesNotasActuales?' · con notas':'')+' · tocar para abrir');}
 function renderDocumentosFormulario(){actualizarResumenCarpeta();}
@@ -1613,7 +1613,7 @@ function renderArchivosAntecedentes(a){var h='';for(var i=0;i<a.length;i++){var 
 function agregarArchivosAntecedentes(e){var fs=e.target.files||[];for(var i=0;i<fs.length;i++)(function(f){var r=new FileReader();r.onload=function(x){window.anteTemp.archivos.push({nombre:f.name,tipo:f.type||'application/octet-stream',tamano:formatoTamano(f.size),fecha:new Date().toISOString(),datos:x.target.result});document.getElementById('anteFiles').innerHTML=renderArchivosAntecedentes(window.anteTemp.archivos);};r.readAsDataURL(f);})(fs[i]);e.target.value='';}
 function quitarArchivoAntecedente(i){window.anteTemp.archivos.splice(i,1);document.getElementById('anteFiles').innerHTML=renderArchivosAntecedentes(window.anteTemp.archivos);}
 function cerrarAntecedentes(){var e=document.getElementById('anteModal');if(e)e.remove();window.anteTemp=null;}
-function guardarAntecedentes(idx){var notas=document.getElementById('anteNotas').value.trim();if(idx>=0&&D[idx]){D[idx][12]={notas:notas,archivos:window.anteTemp.archivos};guardarConRedundancia(D);cerrarAntecedentes();verPersona(idx);}else{antecedentesNotasActuales=notas;documentosActuales=window.anteTemp.archivos;cerrarAntecedentes();actualizarResumenCarpeta();} }
+function guardarAntecedentes(idx){try{var notas=(document.getElementById('anteNotas').value||'').trim();var archivos=(window.anteTemp&&Array.isArray(window.anteTemp.archivos))?window.anteTemp.archivos.slice():[];if(idx>=0&&D[idx]){D[idx][12]={notas:notas,archivos:archivos};guardarConRedundancia(D);cerrarAntecedentes();verPersona(idx);showToast('✅ Antecedentes guardados');}else{antecedentesNotasActuales=notas;documentosActuales=archivos;cerrarAntecedentes();actualizarResumenCarpeta();showToast('✅ Antecedentes preparados');}}catch(err){console.error(err);showToast('No se pudo guardar. Probá nuevamente.');}}
 
 function guardarPersona() {
   try {
