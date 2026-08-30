@@ -432,7 +432,7 @@
 .ante-modal{position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px}.ante-box{background:var(--card,#fff);width:100%;max-width:560px;max-height:90vh;overflow:auto;border-radius:18px;padding:18px;box-shadow:0 15px 50px rgba(0,0,0,.3)}.ante-box h2{margin:0 0 14px}.ante-file{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 0;border-bottom:1px solid var(--border,#e5e7eb);flex-wrap:wrap}.ante-folder-btn{width:100%;text-align:left;border:1px solid var(--border,#e5e7eb);background:var(--card,#fff);border-radius:12px;padding:13px;color:inherit;font-size:1rem;cursor:pointer}.ante-count{color:var(--muted);font-size:.85rem}
 </style>
 <script src="html5-qrcode.min.js">
-function guardarConRedundancia(d){guardarEnDB("rp_todos",d);guardarEnDB("rp_backup_v2",d);try{localStorage.setItem("rp_backup_datos",JSON.stringify(d))}catch(e){}}
+function guardarConRedundancia(d,cb){var pendientes=2,fin=function(){pendientes--;if(pendientes<=0&&cb)cb();};guardarEnDB("rp_todos",d,fin);guardarEnDB("rp_backup_v2",d,fin);try{localStorage.setItem("rp_backup_datos",JSON.stringify(d))}catch(e){}}
 </script>
 </head>
 <body>
@@ -442,7 +442,7 @@ function guardarConRedundancia(d){guardarEnDB("rp_todos",d);guardarEnDB("rp_back
 <div class="toast" id="toast"></div>
 
 <header>
-  <h1>🛡️ Registro Policial<span style="display:block;font-size:0.6rem;font-weight:normal;opacity:0.6;margin-top:2px;">v147</span></h1>
+  <h1>🛡️ Registro Policial<span style="display:block;font-size:0.6rem;font-weight:normal;opacity:0.6;margin-top:2px;">v148</span></h1>
   <span class="count" id="headerCount">0</span>
 </header>
 
@@ -1614,7 +1614,7 @@ function agregarArchivosAntecedentes(e){var fs=e.target.files||[];for(var i=0;i<
 function verArchivoAntecedente(i){var d=window.anteTemp&&window.anteTemp.archivos[i];var e=document.getElementById('antePreview');if(!d||!e)return;var tipo=d.tipo||'';if(tipo.indexOf('image/')===0){e.innerHTML='<div id="imagenCompleta" style="position:fixed;inset:0;background:rgba(0,0,0,.94);z-index:2000;display:flex;align-items:center;justify-content:center;padding:8px;cursor:pointer" onclick="this.remove()"><img src="'+d.datos+'" style="max-width:100vw;max-height:100vh;width:auto;height:auto;object-fit:contain"><span style="position:absolute;top:14px;right:18px;color:#fff;font-size:2rem">×</span></div>';}else if(tipo==='application/pdf')e.innerHTML='<iframe src="'+d.datos+'" style="width:100%;height:55vh;border:1px solid var(--border);border-radius:8px"></iframe>';else e.innerHTML='<div class="ante-count">Este tipo de archivo no se puede previsualizar aquí. Usá ⬇️ para descargarlo.</div>'; }
 function quitarArchivoAntecedente(i){window.anteTemp.archivos.splice(i,1);document.getElementById('anteFiles').innerHTML=renderArchivosAntecedentes(window.anteTemp.archivos);}
 function cerrarAntecedentes(){var e=document.getElementById('anteModal');if(e)e.remove();window.anteTemp=null;}
-function guardarAntecedentes(idx){var notas=(document.getElementById('anteNotas').value||'').trim();var archivos=(window.anteTemp&&Array.isArray(window.anteTemp.archivos))?window.anteTemp.archivos.slice():[];cerrarAntecedentes();try{if(idx>=0&&D[idx]){D[idx][12]={notas:notas,archivos:archivos};guardarConRedundancia(D);renderPersonas();reportarEspacioOcupado();showTab('personas');showToast('✅ Antecedentes guardados');}else{antecedentesNotasActuales=notas;documentosActuales=archivos;actualizarResumenCarpeta();showToast('✅ Antecedentes preparados');}}catch(err){console.error(err);showTab('personas');showToast('Guardado en memoria; exportá un respaldo para confirmar.');}}
+function guardarAntecedentes(idx){var notas=(document.getElementById('anteNotas').value||'').trim();var archivos=(window.anteTemp&&Array.isArray(window.anteTemp.archivos))?window.anteTemp.archivos.slice():[];cerrarAntecedentes();try{if(idx>=0&&D[idx]){D[idx][12]={notas:notas,archivos:archivos};showTab('personas');renderPersonas();guardarConRedundancia(D,function(){reportarEspacioOcupado();showToast('✅ Antecedentes guardados');});}else{antecedentesNotasActuales=notas;documentosActuales=archivos;actualizarResumenCarpeta();showToast('✅ Antecedentes preparados');}}catch(err){console.error(err);showTab('personas');showToast('No se pudo guardar. Probá nuevamente.');}}
 
 function guardarPersona() {
   try {
