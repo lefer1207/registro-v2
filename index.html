@@ -430,6 +430,7 @@
 #scannerContainer img { border-radius: 0; }
 
 .ante-modal{position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px}.ante-box{background:var(--card,#fff);width:100%;max-width:560px;max-height:90vh;overflow:auto;border-radius:18px;padding:18px;box-shadow:0 15px 50px rgba(0,0,0,.3)}.ante-box h2{margin:0 0 14px}.ante-file{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 0;border-bottom:1px solid var(--border,#e5e7eb);flex-wrap:wrap}.ante-folder-btn{width:100%;text-align:left;border:1px solid var(--border,#e5e7eb);background:var(--card,#fff);border-radius:12px;padding:13px;color:inherit;font-size:1rem;cursor:pointer}.ante-count{color:var(--muted);font-size:.85rem}
+.libreta-chat{display:flex;flex-direction:column;gap:9px;padding:4px 0}.libreta-mensaje{align-self:flex-end;max-width:92%;background:#d9fdd3;border-radius:12px 12px 3px 12px;padding:9px 11px;box-shadow:0 1px 2px rgba(0,0,0,.12);border:1px solid rgba(0,0,0,.05)}.libreta-mensaje .hora{font-size:.68rem;color:#55705a;text-align:right;margin-bottom:3px}.libreta-mensaje .texto{font-size:.88rem;white-space:pre-wrap;word-break:break-word}.libreta-mensaje .acciones{display:flex;gap:6px;margin-top:7px}.libreta-mensaje .acciones button{padding:4px 8px;border:0;border-radius:6px;cursor:pointer;font-size:.75rem}
 </style>
 <script src="html5-qrcode.min.js"></script>
 <script>
@@ -443,7 +444,7 @@ function guardarConRedundancia(d,cb){var pendientes=2,fin=function(){pendientes-
 <div class="toast" id="toast"></div>
 
 <header>
-  <h1>🛡️ Registro Policial<span style="display:block;font-size:0.6rem;font-weight:normal;opacity:0.6;margin-top:2px;">v149</span></h1>
+  <h1>🛡️ Registro Policial<span style="display:block;font-size:0.6rem;font-weight:normal;opacity:0.6;margin-top:2px;">v150</span></h1>
   <span class="count" id="headerCount">0</span>
 </header>
 
@@ -1015,34 +1016,12 @@ function guardarLibreta() {
 }
 
 function renderLibreta() {
-  var el = document.getElementById('libretaLista');
-  if (!el) return;
-  var q = (document.getElementById('libretaSearch').value || '').trim().toLowerCase();
-  if (L.length === 0) {
-    el.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:.9rem;">📓 Sin anotaciones todavía.<br>Escribí algo abajo y tocá ➕</div>';
-    return;
-  }
-  var h = '';
-  var cant = 0;
-  for (var i = L.length - 1; i >= 0; i--) {
-    var n = L[i];
-    if (q && ((n.titulo||'').toLowerCase().indexOf(q)===-1) && ((n.contenido||'').toLowerCase().indexOf(q)===-1) && ((n.fecha||'').toLowerCase().indexOf(q)===-1)) continue;
-    cant++;
-    var titulo = n.titulo ? '<div style="font-weight:600;font-size:.95rem;margin-bottom:4px;">'+esc(n.titulo)+'</div>' : '';
-    h += '<div style="background:var(--card);border-radius:10px;padding:12px;margin-bottom:10px;border:1px solid var(--border);">'+
-      '<div style="font-size:.7rem;color:var(--muted);margin-bottom:4px;">'+esc(n.fecha)+'</div>'+
-      titulo+
-      '<div style="font-size:.85rem;white-space:pre-wrap;word-break:break-word;">'+esc(n.contenido)+'</div>'+
-      '<div style="display:flex;gap:8px;margin-top:8px;">'+
-        '<button onclick="editarNotaLibreta('+i+')" style="flex:1;padding:6px;border:none;border-radius:6px;background:#444;color:white;cursor:pointer;font-size:.8rem;">✏️ Editar</button>'+
-        '<button onclick="eliminarNotaLibreta('+i+')" style="flex:1;padding:6px;border:none;border-radius:6px;background:#a33;color:white;cursor:pointer;font-size:.8rem;">🗑️ Borrar</button>'+
-      '</div></div>';
-  }
-  if (q && cant === 0) {
-    el.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:.9rem;">🔍 Sin resultados para "<b>'+esc(q)+'</b>"</div>';
-  } else {
-    el.innerHTML = h;
-  }
+  var el=document.getElementById('libretaLista'); if(!el)return;
+  var q=(document.getElementById('libretaSearch').value||'').trim().toLowerCase();
+  if(L.length===0){el.innerHTML='<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:.9rem;">📓 Sin anotaciones todavía.<br>Escribí algo abajo y tocá ➕</div>';return;}
+  var h='<div class="libreta-chat">',cant=0;
+  for(var i=L.length-1;i>=0;i--){var n=L[i];if(q&&((n.titulo||'').toLowerCase().indexOf(q)===-1)&&((n.contenido||'').toLowerCase().indexOf(q)===-1)&&((n.fecha||'').toLowerCase().indexOf(q)===-1))continue;cant++;var titulo=n.titulo?'<div style="font-weight:600;font-size:.82rem;margin-bottom:3px;">'+esc(n.titulo)+'</div>':'';h+='<div class="libreta-mensaje"><div class="hora">'+esc(n.fecha||'')+' ✓✓</div>'+titulo+'<div class="texto">'+esc(n.contenido||'')+'</div><div class="acciones"><button onclick="editarNotaLibreta('+i+')">✏️ Editar</button><button onclick="eliminarNotaLibreta('+i+')" style="background:#a33;color:white">🗑️ Borrar</button></div></div>';}
+  h+='</div>';if(q&&cant===0)h='<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:.9rem;">🔍 Sin resultados para "<b>'+esc(q)+'</b>"</div>';el.innerHTML=h;
 }
 
 function agregarNotaLibreta() {
