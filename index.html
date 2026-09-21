@@ -444,7 +444,7 @@ function guardarConRedundancia(d,cb){var pendientes=2,fin=function(){pendientes-
 <div class="toast" id="toast"></div>
 
 <header>
-  <h1>🛡️ Registro Policial<span style="display:block;font-size:0.6rem;font-weight:normal;opacity:0.6;margin-top:2px;">v155</span></h1>
+  <h1>🛡️ Registro Policial<span style="display:block;font-size:0.6rem;font-weight:normal;opacity:0.6;margin-top:2px;">v156</span></h1>
   <span class="count" id="headerCount">0</span>
 </header>
 
@@ -1944,7 +1944,7 @@ function importarRespaldo(event) {
       }
       D = respaldo.personas;
       document.getElementById('headerCount').textContent = D.length + ' registros';
-      renderizar();
+      renderPersonas();
       renderLibreta();
       alert('Respaldo restaurado correctamente');
     } catch(err) {
