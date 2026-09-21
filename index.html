@@ -444,7 +444,7 @@ function guardarConRedundancia(d,cb){var pendientes=2,fin=function(){pendientes-
 <div class="toast" id="toast"></div>
 
 <header>
-  <h1>🛡️ Registro Policial<span style="display:block;font-size:0.6rem;font-weight:normal;opacity:0.6;margin-top:2px;">v154</span></h1>
+  <h1>🛡️ Registro Policial<span style="display:block;font-size:0.6rem;font-weight:normal;opacity:0.6;margin-top:2px;">v155</span></h1>
   <span class="count" id="headerCount">0</span>
 </header>
 
@@ -498,6 +498,8 @@ function guardarConRedundancia(d,cb){var pendientes=2,fin=function(){pendientes-
       <h3 style="margin-bottom:20px;">💾 Respaldo de Datos</h3>
       <p style="color:var(--muted);margin-bottom:20px;font-size:.85rem;">Exportá tus datos para guardarlos o pasarlos a otro dispositivo. También podés importar un respaldo anterior.</p>
       <button onclick="exportarDatos()" style="width:100%;padding:14px;margin-bottom:12px;border:none;border-radius:10px;background:var(--primary);color:white;font-size:1rem;cursor:pointer;">📤 Exportar datos</button>
+      <button onclick="document.getElementById('inputRestaurarRespaldo').click()" style="width:100%;padding:14px;margin-bottom:12px;border:none;border-radius:10px;background:#15803d;color:white;font-size:1rem;cursor:pointer;">🔄 Restaurar respaldo completo</button>
+      <input type="file" id="inputRestaurarRespaldo" accept=".json,application/json" onchange="importarRespaldo(event)" style="display:none">
       
       <button onclick="document.getElementById('importFileInput').click()" style="width:100%;padding:14px;margin-bottom:12px;border:none;border-radius:10px;background:#444;color:white;font-size:1rem;cursor:pointer;">📥 Importar datos</button>
       <button id="btnImportar8k" onclick="importar8k()" style="width:100%;padding:14px;margin-bottom:12px;border:none;border-radius:10px;background:#27ae60;color:white;font-size:1rem;cursor:pointer;">⚡ Importar registros</button>
